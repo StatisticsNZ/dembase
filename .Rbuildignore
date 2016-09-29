@@ -1,0 +1,4 @@
+^\.hg$
+under_construction
+^.*\.Rproj$
+^\.Rproj\.user$

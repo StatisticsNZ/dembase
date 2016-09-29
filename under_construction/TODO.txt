@@ -1,0 +1,158 @@
+
+functions for manipulating 'Net' and 'Pool' objects
+
+rotating age-time plan
+
+$ operator works with concordances
+
+'translate' can return factor, with levels in same order as classification - depending on stringsAsFactors
+
+
+panel functions for drawing lexis diagram
+
+inferDimscale does not try to guess dimscale of 'time' dimension when all consecutive integers
+
+ability to pass complete 'ax' with class 'Values' to lifeTable functions
+
+function to calculate 'ax' from other life table functions
+
+tests, documentation for collapseCategories, expandCategories, redistribute, redistributeCategory
+
+standardise use of 'n' argument when objects may have iterations. ('n' ignored if any arguments have iterations arg). 
+
+reorderCategories
+
+exposureBirths
+
+Function to create ins and outs directly from data frame
+
+> mis.b <- aperm(mis.b, perm = c("age", "sex", "time"))                        
+Error in aperm.default(a = a@.Data, perm = perm) : 
+ 'getCharCE' must be called on a CHARSXP
+> class(mis.b)
+[1] "Counts"
+attr(,"package")
+[1] "Demographic"
+> names(mis.b)
+[1] "age"    "sex"    "region" "time" 
+
+allow collapseIntervals without weights if no intervals are being collapsed
+
+fix up age 45-49 for nz.region.females
+
+
+addDimension method for Counts
+
+change dplot and subarray from methods to normal function so that subarray argument works properly (with nonstandard evaluation)
+
+
+Function to sample from an object, along the lines of
+y.smooth.small <- rbinom(n = length(y.smooth.large),
+                         size = y.smooth.large,
+                         prob = kFractionSmall)
+y.smooth.small <- array(y.smooth.small,
+                        dim = dim(y.smooth.large),
+                        dimnames = dimnames(y.smooth.large))
+y.smooth.small <- Counts(y.smooth.small)
+but with kFractionSmall potentially being an object of class Values
+
+ dp <- dplot(~ age | region,
++             weights = y,
++             na.rm = TRUE,
++             data = fetch(res, c("observation", "ir", "like", "mean")),
++             midpoints = "age",
++             scales = list(y = list(relation = "free")))
+Error in quantile.default(newX[, i], ...) : 
+ missing values and NaN's not allowed if 'na.rm' is FALSE
+Z[- problem appears to be because 'data' has categories that 'y' does not
+
+
+> slice(exposure.imig, dimension = "reg_dest", elements = 12)
+Error in validObject(.Object) : 
+ invalid class “MetaData” object: dimension "reg_orig" lacks pair
+slice does not account for orig-dest pairs
+
+
+Use of subset rather than subarray lead to variants being shown in the wrong order.
+Fix by using 'factor' to ensure levels in same order as data?
+dplot(count ~ age | au13desc,
+      data = d,
+      groups = variant,
+      layout = c(10, 5, 41),
+      subset = variant %in% dimnames(d)$variant[3:5],
+      as.table = TRUE,
+      par.settings = list(fontsize = list(text = 9)),
+      midpoints = "age",
+      col = col3,
+      prepanel = function(y) list(ylim = c(0, max(y))),
+      scales = list(y = list(relation = "free"), tck = 0.4),
+      key = list(text = list(dimnames(d)[["variant"]][3:5]),
+          lines = list(col = col3, lwd = 2)))
+
+
+
+
+tests for addOverlayToData
+
+add to 'triangles' part of class definition for MetaData:
+    if (sum(has.age, has.cohort, has.time) != 2L)
+        stop(gettextf("'%s' must have two of the following three dimtypes : %s",
+                      "object", "\"age\", \"cohort\", \"time\""))
+    for (dimtype in c("age", "cohort", "time")) {
+        DimScale <- get(sprintf("DimScale.%s", dimtype))
+        if (!is(DimScale, "Intervals"))
+            stop(gettextf("dimension with dimtype \"%s\" has dimscale \"%s\"",
+                          dimtype, class(DimScale)))
+    }
+
+
+make 'thin' a method of the function in 'coda'
+
+write a method for function 'time' from package 'stats'
+
+give 'panel.dplot' its own man page
+
+
+allow sensible subsetting of objects with dimtype "quantiles", eg
+
+ subarray(census5q, quantile == "97.5%")
+Error in doesNotHaveQuantiles(e2) : 
+  dimension "quantile" has dimtype "quantiles"
+
+function to accompany 'collapseIterations':
+normQuantile <- function(x, prob = c(0.025, 0.5, 0.975), na.rm = FALSE) {
+    mean <- mean(x, na.rm = na.rm)
+    sd <- sd(x, na.rm = na.rm)
+    qnorm(p = prob, mean = mean, sd = sd)
+}
+
+
+'interpolate' function
+
+Method for converting time series objects to Demographic objects
+
+method for Counts, Values when object has class Demographic
+
+subtotals argument for 'perturb' 
+
+more tests for 'extrapolate'
+
+more tests for 'dplot' and helper functions
+
+subarray(x, y != 0), where y is an array or Demographic object
+
+diff
+
+array method for 'toInteger'
+
+check all cases of .Data  <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata)) - make minimum possible change (to identify errors)
+
+subarray(x, age > 5)
+Error in collapse(metadata, transform = transform) : 
+  dimension with dimtype "quantiles"
+
+allow dplot to be used on objects with dimtype "quantiles", provided 'margin' includes all dimensions other than the quantiles dimension
+
+translate gives informative error if try to translate to 'many' classification of ManyToOne concordance
+
+intervalsToPoints in Demographic can't handle infinite lower bound

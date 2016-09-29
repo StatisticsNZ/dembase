@@ -1,0 +1,38 @@
+Package: dembase
+Type: Package
+Title: Analysing cross-classified data about populations
+Version: 0.0.0.9100
+Date: 2016-09-21
+Authors@R: c(
+    person(given = "John",
+           family = "Bryant",
+	   email = "john.bryant@stats.govt.nz",
+	   role = c("cre", "aut")),
+    person(given = "Jenny",
+           family = "Harlow",
+	   role = "ctb"),
+    person(given = "Brendon",
+           family = "Bycroft",
+	   role = "ctb"))
+Description: General-purpose tools for demographic analysis, broadly defined.
+    Includes facilities for data manipulation, multistate models, projections, and
+    plotting. Uses S4 classes and methods.
+Depends: R (>= 3.3.1)
+License: MIT + file LICENSE
+LazyLoad: yes
+LazyData: yes
+Imports:
+    MASS,
+    classconc,
+    graphics,
+    grDevices,
+    lattice,
+    methods,
+    stats,
+    utils
+Suggests:
+    testthat,
+    demdata,
+    knitr
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

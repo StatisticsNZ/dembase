@@ -1,0 +1,447 @@
+---
+title: "Overview"
+author: "John Bryant"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+
+# Introduction
+
+Package `dembase` consists of data structures and functions for manipulating and examining demographic data.  This vignette introduces the main features.  
+
+
+# Demographic arrays
+
+## The fundamental data structure
+
+The fundamental data structure of `dembase` is the "demographic array".  A demographic array is a set of cross-tabulated counts or values, with some metadata.  Here is a demographic array holding data on the Indian population (in thousands) in 2010, by age and sex:
+```{r}
+library(dembase)
+ind.popn <- demdata::india.popn # 'india.popn' is an array in package 'demdata'
+ind.popn <- Counts(ind.popn)
+ind.popn
+```
+The metadata, shown at the top of the array, gives the name, length, and characteristics of each dimension. 
+
+A second example is age-specific fertility rates (births per thousand women) for India, in 1991-2010:
+```{r}
+ind.fert <- demdata::india.fert
+ind.fert <- Values(ind.fert)
+ind.fert
+```
+
+A final example, this time with three dimensions, is deaths per thousand people in Virginia in 1940,
+```{r}
+va.rates <- demdata::VADeaths2
+va.rates <- Values(va.rates)
+va.rates
+```
+
+## Counts and Values
+
+Package `dembase` distinguishes between two types of demographic arrays: counts and values.  A counts array holds cross-classified data on numbers of people or events.  A values array holds all other types of cross-classified data.  Often, a values array holds data on the attributes of people or events described by a counts array.  The first demographic array above is a counts array, and the second two are values arrays.  
+
+The reason for distinguishing between counts and values is that the rules for manipulating them are different.  For instance, it makes sense to sum up the number of deaths in each region, but does not make sense to sum up the death rates.
+
+
+## Dimtypes and dimscales
+
+Every dimension of a demographic array has a dimtype and a dimscale.  The choices of dimtype, and the associated dimscales, are as follows:
+
+| dimtype | Description | Permitted dimscales |
+|:--------|:------------|:---------| 
+| `age`     | Age - typically age group | `Points` or `Intervals` |
+| `time`    | Time - point or period | `Points` or `Intervals` |
+| `cohort`  | Cohort | `Intervals` |
+| `triangle` | Lexis triangle | `Triangles` |
+| `state`   | General-purpose categorical dimension | `Categories` |
+| `origin`  | Special type of state dimension | `Categories` |
+| `destination` | Paired with `origin` | `Categories` |
+| `parent`  | Special type of state dimension | `Categories` |
+| `child`   | Paired with `parent` | `Categories` |
+| `iterations` | For output from simulations | `Iterations` |
+| `quantiles` | Summarising iterations | `Quantiles` |
+
+Dimtypes `age`, `time`, `cohort` and `triangle` describe the age-time plan of the data.  Dimtype `state` is used for most stratifying variables, such as sex, or country of birth.  Changes of category, such as moves between regions, are represented using `origin` and `destination` dimensions.  Dimtypes `parent` and `child` are used for tabulations of parents verus children, such as occupation of mother versus occupation of child.  Dimtypes `iterations` and `quantiles` are typically used to represent uncertainty.
+
+The Indian population data above refer to a point in time, so the year dimension has a `Points` dimscale. The fertility data, in contrast, have an `Intervals` dimscale.  
+
+
+# Creating demographic arrays
+
+Demographic arrays are normally created by supplying arrays or tables to functions `Counts` and `Values`.  The examples above all use arrays.  In the example below, we apply `xtabs` to a data.frame and then call `Counts`.
+```{r}
+income.df <- demdata::nz.income # a data.frame
+head(income.df)
+total.income <- xtabs(income ~ ethnicity + sex, 
+                      data = income.df)
+total.income <- Counts(total.income)
+total.income
+```
+To create an array of means, we can use `tapply` and `Values`.
+```{r}
+mean.income <- tapply(income.df$income, 
+                      INDEX = income.df[c("ethnicity", "sex")], 
+                      FUN = mean)
+mean.income <- Values(mean.income)
+round(mean.income)
+```
+
+Functions `Counts` and `Values` attempt to infer dimtypes and dimscales from the dimnames attribute of the array or table.  It may sometimes be necessary to process the input data---particulary ages and times---to get it into the format that `Counts` and `Values` expect.
+
+```{r, error = TRUE, purl = FALSE}
+df <- data.frame(age = c("age0_4", "age5_9", "age0_4", "age5_9"), 
+                 sex = c("f", "f", "m", "m"),
+                 count = c(10, 25, 5, 20))
+xt <- xtabs(count ~ age + sex,
+            data = df)
+## the following throws an error!
+Counts(xt)
+## We need to recode the age column in 'df',
+## Here's one way of doing so.
+df$age <- factor(df$age,
+                 levels = c("age0_4", "age5_9"),
+                 labels = c("0-4", "5-9"))
+## try again
+xt <- xtabs(count ~ age + sex,
+            data = df)
+Counts(xt)
+```
+
+When dealing with ages and times, `demest` distinguishes between points (eg midnight on 31 December 2016) and intervals (eg the period between midnight 31 December 2015 and midnight 31 December 2016).  Points are represented by the `"Points"` dimscale, and intervals are represented by the `"Intervals"` dimscale.  In many cases, `Counts` and `Values` can guess whether the dimnames for an array or table refer to points or intervals.  However, units that are consecutive integers, such as ages 0, 1, 2, or years 2016, 2017, 2018, could in principle describe points or intervals.
+
+In a demographic dataset, "age" almost always means "age group", ie, an interval rather than a point.  When functions `Counts` and `Values` encounter ages measured in single years, they assume that they should apply dimscale `"Intervals"`, though they notify the user that they have done so.
+```{r}
+rus.births <- demdata::russia.births
+rus.births.subset.08 <- xtabs(count ~ age + sex,
+                              data = rus.births,
+                              subset = year == 2008 & age %in% 15:19,
+                              drop.unused.levels = TRUE)
+rus.births.subset.08
+Counts(rus.births.subset.08) # 'Counts' issues a message
+```
+
+To avoid the message, or to document the choice of dimscale, use the `dimscales` argument,
+```{r}
+Counts(rus.births.subset.08,
+       dimscales = c(age = "Intervals")) # no message
+```
+
+In contrast to age, time is often measured using points, so, without further information, it would not be safe to assume that a sequence such as 2001, 2002, 2003 referred to intervals.  When confronted with a series of single years, and no information on dimscales, `Counts` and `Values` do not try to guess, but instead raise a error.
+
+```{r, error = TRUE, purl = FALSE}
+rus.births.subset.12 <- xtabs(count ~ year + sex,
+                              data = rus.births,
+                              subset = age == 12,
+                              drop.unused.levels = TRUE)
+rus.births.subset.12
+Counts(rus.births.subset.12) # 'Counts' raises an error
+```
+
+To supply `Counts` or `Values` with the information they need, use the `dimscales` argument,
+```{r}
+Counts(rus.births.subset.12,
+       dimscales = c(year = "Intervals")) # no message
+```
+
+
+# Coercion
+
+Function `as` can be used to convert between counts and values arrays.
+```{r}
+va.popn <- demdata::VAPopn
+va.popn <- Counts(va.popn)
+va.popn.values <- as(va.popn, "Values")
+class(va.popn.values)
+```
+
+Counts and values arrays can be turned into ordinary arrays using `as`
+```{r}
+va.popn.array <- as(va.popn, "array")
+class(va.popn.array)
+```
+...or using `as.array'
+```{r}
+va.popn.array.2 <- as.array(va.popn)
+class(va.popn.array.2)
+```
+
+Counts and values arrays can be converted to data.frames via `as.data.frame`. We typically want the `"long"` version.
+```{r}
+va.popn.df <- as.data.frame(va.popn, 
+                            direction = "long")
+head(va.popn.df)
+```
+
+The `midpoints` argument is sometimes useful.
+```{r}
+va.popn.mid <- as.data.frame(va.popn, 
+                             direction = "long",
+                             midpoints = "age")
+head(va.popn.mid)
+```
+
+# Manipulating demographic arrays
+
+## Collapsing
+
+Collapsing the dimension of a `Counts` object is easy:
+```{r}
+ind.popn
+collapseDimension(ind.popn, dimension = "age")
+```
+
+Collapsing the dimension of a `Values` object requires weights:
+```{r}
+collapseDimension(va.rates, dimension = "age", weights = va.popn)
+```
+
+Note that `va.popn` has a dimension, `"color"`, that `va.rates` does not:
+```{r}
+summary(va.popn)
+summary(va.rates)
+```
+Function `collapseDimension` automatically collapses the `"color"` dimension of `va.popn` before using `va.popn` to weight `va.rates`.
+
+`dembase` also has functions for aggregating categories, iterations, origin-destination dimensions, and intervals.  For instance,
+```{r}
+collapseIntervals(ind.popn, dimension = "age", width = 10)
+```
+
+## Arithmetic
+
+`demdata` rearranges arrays to make the compatible before performing arithmetic with them.  An artificial example:
+```{r}
+ind.popn.2 <- subarray(ind.popn, age < 60)
+ind.popn.2 <- collapseIntervals(ind.popn.2,
+                                dimension = "age", 
+                                breaks = c(10, 25, 50))
+ind.popn.2 <- t(ind.popn.2)
+ind.popn.2
+ind.popn - ind.popn.2
+```
+
+Adding or substracting a counts array from a counts array, or multiplying a counts array by a counts array, produces a counts array.  All other arithmetic involving both counts and values arrays produces values arrays.
+
+
+## Subsetting
+
+Function `subarray` extracts arrays from within a larger array.  The function exploits the metadata on the dimensions to allow convenient indexing:
+```{r}
+subarray(ind.fert, age > 30)
+subarray(va.rates, residence == "Urban" & age < 62)
+```
+
+Function `subarray` uses expressions and non-standard evaluation.  For programming, function `slab` may be easier, and/or more reliable.
+```{r}
+slab(va.rates, 
+     dimension = "residence",
+     elements = "Urban")
+```
+
+When doing arithmetic on pairs of objects, `demest` removes categories from one object if these are not found in the other object.  In the example below, `births` covers more years than `females`, and `females` has more age groups than `births`.
+```{r}
+births <- demdata::nz.births
+popn <- demdata::nz.popn.reg
+births <- Counts(births,
+                 dimscales = c(year = "Intervals"))
+popn <- Counts(popn,
+               dimscales = c(year = "Intervals"))
+females <- subarray(popn, sex == "Female")
+limits(births)
+limits(females)
+```
+
+When `demest` divides `births` by `females`, it subsets both, so that they cover the same ages and periods.  It sends two messages, to let the user know that the subsetting has occurred.
+```{r}
+rates <- births / females  # message
+limits(rates)
+```
+
+In production code, it might be better to do the subsetting explicitly.
+```{r}
+births.sub <- subarray(births, year > 2005 & year < 2014)
+females.sub <- subarray(females, age > 15 & age < 45)
+rates.sub <- births.sub / females.sub  # no message
+limits(rates)
+```
+
+
+## Combining
+
+Arrays can be joined together using `dbind`:
+```{r}
+ind.popn.young <- subarray(ind.popn, age < 40)
+ind.popn.old <- subarray(ind.popn, age > 40)
+ind.popn.young
+ind.popn.old
+dbind(ind.popn.young, ind.popn.old, along = "age")
+```
+
+`dbind` permutes and rearranges where necessary
+```{r}
+ind.popn.young <- t(ind.popn.young)
+ind.popn.young
+dbind(ind.popn.old, ind.popn.young, along = "age")
+```
+
+# Plotting demographic arrays
+
+Function `plot` is a quick way to examine the contents of an array:
+```{r, fig.width = 6}
+plot(va.popn)
+```
+
+Function `dplot` produces lattice plots.  
+```{r, fig.width = 6}
+dplot(~ age | period, 
+      data = ind.fert,
+      midpoints = "age")
+```
+
+It can manipulate data in the background:
+```{r, fig.width = 6}
+dplot(~ age | sex,
+      data = va.rates,
+      weights = va.popn) # collapses 'residence' dimension
+```
+
+To use other graphing functions, such as `ggplot2` or `xyplot`, collapse the data down to the required dimensions, and then convert to a data.frame. The `midpoints` replaces intervals with their midpoints, which can lead to nicer plots. 
+```{r, fig.width = 6}
+va.rates.collapsed <- collapseDimension(va.rates, 
+                                        margin = c("age", "sex"),
+                                        weights = va.popn)
+va.rates.df <- as.data.frame(va.rates.collapsed,
+                             direction = "long",
+                             midpoints = "age")
+lattice::xyplot(value ~ age | sex, 
+                data = va.rates.df,
+                type = "b")
+```
+
+# Uncertainty
+
+Demographic arrays use a simulation-based approach to representing uncertainty.  An array can contain multiple versions of the same set of rates or counts, with quantities that are more uncertain varying more across versions  Alternative versions are distinguished using a dimension with dimtype `"iterations"`.
+
+The values array `waikato.tfr` contains 1,000 sets of total fertility rates for the Waikato region of Zealand:
+```{r}
+tfr <- demdata::waikato.tfr
+tfr <- Values(tfr, dimscales = c(year = "Intervals"))
+summary(tfr)
+subarray(tfr, iteration <= 5)
+```
+
+It can be helpful to think of an array with an iterations dimension as a collection of arrays, rather than as a single array.  Consider what happens when taking the mean of an array with an iterations dimension.
+```{r}
+mean.tfr <- mean(tfr)
+summary(mean.tfr)
+subarray(mean.tfr, iteration <= 5)
+```
+Rather than a single mean, we get 1,000 means: one for each iteration.  
+
+The distribution of the 1,000 estimated means can be visualised using a density plot:
+```{r, fig.width = 5}
+density.mean.tfr <- density(mean.tfr)
+plot(density.mean.tfr)
+```
+
+Summary measures of the variation across the iterations can be constructed using function `collapseIterations':
+```{r}
+collapseIterations(tfr)
+```
+To obtain different quantiles, supply a `prob` argument:
+```{r}
+collapseIterations(tfr, prob = c(0.025, 0.5, 0.975))
+```
+Although quantiles are the most common way to summarise iterations, `collapseIterations` accepts any summary functions, including customised ones,
+```{r}
+collapseIterations(tfr, FUN = mean)
+
+meanAndCI <- function(x) {
+  mean <- mean(x)
+  sd <- sd(x)
+  lower <- mean - 2*sd
+  upper <- mean + 2*sd
+  c(mean = mean, lower = lower, upper = upper)
+}
+collapseIterations(tfr, FUN = meanAndCI)
+```
+
+In practice, we probably don't want to display so many digits,
+```{r}
+quant.tfr <- collapseIterations(tfr, prob = c(0.025, 0.5, 0.975))
+round(quant.tfr, digits = 2)
+```
+
+Function `dplot` automatically displays 2.5%, 25%, 50%, 75%, and 97.5% quantiles,
+```{r, fig.width = 6}
+dplot(~ year,
+      data = tfr)
+```
+
+Alternative quantiles can be specified using the `prob` argument,
+```{r, fig.width = 6}
+dplot(~ year,
+      data = tfr,
+      prob = c(0.05, 0.5, 0.95))
+```
+
+Operations on quantiles often do not make sense, 
+```{r, error = TRUE, purl = FALSE}
+mean(quant.tfr)
+```
+
+Instead, it may be better perform the calculations on the original iterations, and then calculate quantiles
+```{r}
+mean.tfr <- mean(tfr)
+collapseIterations(mean.tfr, 
+                   prob = c(0.025, 0.5, 0.975))
+```
+
+
+# Features under development
+
+## Demographic accounts
+
+The biggest feature currently missing from `dembase` is classes and methods for demographic accounts.  These will be added in stages over 2016-2017.
+
+## Rewrite of `dplot`
+
+`dplot` will be rewritten to handle nonstandard evaluation better, and to add some extra features, such as improved plotting of categorical variables, and improved overlays.
+
+## `dapply`
+
+It would be useful to have a version of `apply` specialised for demographic arrays.
+
+## Demographic indices and measures
+
+The demographic literature has many indices for describing demographic data, such as indices measuring population ageing. These will gradually be added to the package.
+
+## Functions for manipulating metadata
+
+Manipulating metadata in a way that avoids creating invalid arrays is tricky, but more functions for doing so are needed.
+
+## Functions for cleaning data before creating demographic arrays
+
+More functions for cleaning data, eg for creating age labels, would be useful.
+
+## A "sex" dimtype
+
+It's likely that a new dimtype, representing sex, will be added.
+
+## Specialised dimscales for quarterly and monthly data
+
+A dimscale is needed that knows what to do with measurements such as `2016Q1`, `2016Q2`, `2016Q3`.
+
+
+
+
