@@ -25,5 +25,7 @@ Install `dembase` from github with:
 devtools::install_github("StatisticsNZ/dembase")
 ```
 
-The package is Crown copyright (c) 2016, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under an MIT License (see LICENSE file).
+---
+__Copyright and Licensing__
 
+The package is Crown copyright (c) 2016, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under a MIT License (see LICENSE file).
