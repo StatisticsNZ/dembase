@@ -1,2 +1,11 @@
 .Rproj.user
-under_construction
+*.o
+*.so
+\#*
+*~
+src-i386
+src-x86_64
+*.Rhistory
+*.DS_Store
+symbols.rds
+*.dll
