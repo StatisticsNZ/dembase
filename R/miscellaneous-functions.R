@@ -3492,6 +3492,18 @@ redistributeInnerDistn <- function(counts, weights, transform, useC) {
 }
 
 
+## FUNCTIONS RELATED TO LIFE TABLES ##################################################
+
+## These functions belong more naturally in 'demlife', but we put it here,
+## so that 'demest' has access to it without needing to install 'demlife'
+
+imputeA0 <- function(m0, sex = c("Female", "Male")) {
+    sex <- match.arg(sex)
+    NULL
+}
+    
+
+
 ## FUNCTIONS RELATED TO CONCORDANCES ##################################################
 
 ## HAS_TESTS
@@ -3514,7 +3526,7 @@ tidyConcordanceList <- function(concordances, object) {
         stop(gettextf("'%s' does not have names",
                       "concordances"))
     if (any(duplicated(names.conc)))
-        stop(gettextf("'%s' has duplicates",
+        stop(gettextf("'%s' has duplicate names",
                       "concordances"))
     dimtypes <- dimtypes(metadata, use.names = FALSE)
     DimScales <- DimScales(metadata, use.names = FALSE)

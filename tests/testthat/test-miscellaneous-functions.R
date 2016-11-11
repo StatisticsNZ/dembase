@@ -4817,8 +4817,9 @@ test_that("tidyConcordanceList works", {
                           sex = c("m", "f"),
                           eth_child = c("a", "b"))))
     conc <- Concordance(data.frame(from = c("a", "b"), to = "A"))
-    expect_error(tidyConcordanceList(concordances = list(eth = conc, eth = conc), object = x),
-                 "'concordances' has duplicates")    
+    expect_error(tidyConcordanceList(concordances = list(eth = conc, eth = conc),
+                                     object = x),
+                 "'concordances' has duplicate names")    
 })
 
 

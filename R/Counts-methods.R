@@ -259,7 +259,6 @@ as.data.frame.Counts <- function(x, row.names = NULL, optional = FALSE,
                                  stringsAsFactors = TRUE, responseName = "count",
                                  direction = c("wide", "long"),
                                  midpoints = FALSE, ...) {
-
     direction <- match.arg(direction)
     if (!identical(midpoints, FALSE)) {
         if (isTRUE(midpoints))
