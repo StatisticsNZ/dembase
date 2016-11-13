@@ -24,6 +24,14 @@ setAs(from = "Triangles", to = "Quantiles",
           methods::new("Quantiles")
       })
 
+setAs(from = "Triangles", to = "Sexes",
+      function(from) {
+        if (length(from) > 0L)
+          stop("labels not valid for dimscale")
+        else
+          methods::new("Sexes")
+      })
+
 setAs(from = "Triangles", to = "Iterations",
       function(from) {
         if (length(from) > 0L)

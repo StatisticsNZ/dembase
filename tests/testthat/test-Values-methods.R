@@ -587,42 +587,46 @@ test_that("canMakePairCompatible works in simple cases", {
     x <- Values(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-14", "15-19"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     y <- Values(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10-19"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))))
     expect_true(canMakePairCompatible(x, y))
     expect_true(canMakePairCompatible(y, x))
     x <- Values(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-14", "15-19"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     y <- Counts(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10-19"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))))
     expect_error(canMakePairCompatible(x, y),
                  paste("\"age\" dimensions have incompatible dimscales :",
                        "intervals do not align"))
     x <- Values(array(0,
                       dim = c(4, 2),
                       dimnames = list(age = c("0-4", "5-14", "15-19", "20+"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))),
+                dimtypes = c(sex = "state"))
     y <- Values(array(0,
                       dim = c(2, 3),
                       dimnames = list(age = c("5-9", "10-19"),
-                      sex = c("f", "m", "other"))))
+                                      sex = c("f", "m", "other"))),
+                dimtypes = c(sex = "state"))
     expect_true(canMakePairCompatible(x, y))
     expect_true(canMakePairCompatible(y, x))
     x <- Values(array(0,
                       dim = c(4, 2),
                       dimnames = list(age = c("0-4", "5-14", "15-19", "20+"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))),
+                dimtypes = c(sex = "state"))
     y <- Counts(array(0,
                       dim = c(2, 3),
                       dimnames = list(age = c("5-9", "10-19"),
-                      sex = c("f", "m", "other"))))
+                                      sex = c("f", "m", "other"))),
+                dimtypes = c(sex = "state"))
     expect_error(canMakePairCompatible(x, y),
                  "\"age\" dimensions have incompatible dimscales : intervals do not align")
     expect_error(canMakePairCompatible(y, x),
@@ -1830,11 +1834,13 @@ test_that("makePairTransforms method for Values and Counts works", {
     x <- Values(array(0,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))),
+                dimtypes = c(sex = "state"))
     y <- Counts(array(0,
                       dim = c(3, 3),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("m", "f", "o"))))
+                                      sex = c("m", "f", "o"))),
+                dimtypes = c(sex = "state"))
     expect_identical(makePairTransforms(x, y),
                      list(new("ExtendTransform",
                               dims = 1:2,
@@ -1852,22 +1858,22 @@ test_that("makePairTransforms method for Values and Counts works", {
     y <- Counts(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10-14"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     expect_identical(makePairTransforms(x, y),
                      list(new("ExtendTransform",
                               dims = c(1L, 0L),
                               indices = list(c(1L, 1L, 2L), c(1L, 1L)),
                               dimBefore = 3L,
                               dimAfter = c(3L, 2L)),
-                     new("CollapseTransform",
-                         dims = 1:2,
-                         indices = list(1:3, 1:2),
-                         dimBefore = c(3L, 2L),
-                         dimAfter = c(3L, 2L))))
+                          new("CollapseTransform",
+                              dims = 1:2,
+                              indices = list(1:3, 1:2),
+                              dimBefore = c(3L, 2L),
+                              dimAfter = c(3L, 2L))))
     x <- Values(array(0,
                       dim = c(3, 0),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = NULL)))
+                                      sex = NULL)))
     y <- Counts(array(0,
                       dim = c(0, 2),
                       dimnames = list(sex = NULL, age = c("0-4", "5-9"))))
@@ -1902,10 +1908,12 @@ test_that("makePairTransforms method for Values and Counts works", {
     x <- Values(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))),
+                dimtypes = c(sex = "state"))
     y <- Counts(array(1:6,
                       dim = c(3, 2),
-                      dimnames = list(sex = c("f", "m", "o"), age = c("0-4", "5-9"))))
+                      dimnames = list(sex = c("f", "m", "o"), age = c("0-4", "5-9"))),
+                dimtypes = c(sex = "state"))
     expect_identical(makePairTransforms(x, y),
                      list(new("ExtendTransform",
                               dims = 1:2,
@@ -1983,11 +1991,13 @@ test_that("makePairTransforms method for Values works", {
                       dim = c(2, 3, 2),
                       dimnames = list(age = c("0-4", "5+"),
                       sex = c("o", "m", "f"),
-                      region = c("a", "b"))))
+                      region = c("a", "b"))),
+                dimtypes = c(sex = "state"))
     y <- Values(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))),
+                dimtypes = c(sex = "state"))
     expect_identical(makePairTransforms(x, y),
                      list(new("ExtendTransform",
                               dims = 1:3,
@@ -2134,10 +2144,10 @@ test_that("tfr works", {
     expect_equal(ans.obtained, ans.expected)
     x <- Values(array(runif(n = 2 * 3 * 2),
                       dim = c(2, 3, 2),
-                      dimnames = list(sexx = c("f", "m"),
+                      dimnames = list(gender = c("f", "m"),
                           age = c("15-19", "20-24", "25-34"),
                           time = c("2001-2005", "2006-2010"))))
-    ans.obtained <- tfr(x, sex = "sexx")
+    ans.obtained <- tfr(x)
     ans.expected <- collapseDimension(Counts(rep(c(5, 5, 10), each = 2) * x),
                                       margin = "time")
     expect_equal(ans.obtained, ans.expected)
@@ -2145,9 +2155,10 @@ test_that("tfr works", {
                       dim = c(2, 3, 2),
                       dimnames = list(sexx = c("f", "m"),
                           age = c("15-19", "20-24", "25-34"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2001-2005", "2006-2010"))),
+                dimtypes = c(sexx = "sex"))
     x[1] <- NA
-    ans.obtained <- tfr(x, sex = "sexx")
+    ans.obtained <- tfr(x)
     ans.expected <- collapseDimension(Counts(rep(c(5, 5, 10), each = 2) * x),
                                       margin = "time")
     expect_equal(ans.obtained, ans.expected)
@@ -2155,7 +2166,8 @@ test_that("tfr works", {
                       dim = c(2, 3, 2),
                       dimnames = list(sexx = c("f", "m"),
                           age = c("15-19", "20-24", "25-34"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2001-2005", "2006-2010"))),
+                dimtypes = c(sexx = "sex"))
     expect_error(tfr(x),
                  "negative values")
     expect_error(tfr(ValuesOne(integer(), labels = character(), name = "age")),

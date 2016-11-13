@@ -1,6 +1,17 @@
 
 context("Categories-methods")
 
+test_that("coercion from Categories to Sexes works", {
+    expect_identical(as(new("Categories", dimvalues = c("Male", "Female")), "Sexes"),
+                     new("Sexes", dimvalues = c("Male", "Female")))
+    expect_identical(as(new("Categories", dimvalues = "females"), "Sexes"),
+                     new("Sexes", dimvalues = "females"))
+    expect_identical(as(new("Categories"), "Sexes"),
+                     new("Sexes"))
+    expect_error(as(new("Categories", dimvalues = c("a", "b")), "Sexes"),
+                 "labels not valid for dimscale")
+})
+
 test_that("coercion from Categories to Triangles works", {
   expect_that(as(new("Categories", dimvalues = c("Upper", "Lower")), "Triangles"),
               is_identical_to(new("Triangles", dimvalues = c("Upper", "Lower"))))
@@ -11,7 +22,6 @@ test_that("coercion from Categories to Triangles works", {
   expect_that(as(new("Categories", dimvalues = c("a", "b")), "Triangles"),
               throws_error("labels not valid for dimscale"))
 })
-
 
 test_that("coercion from Categories to Intervals works", {
   expect_that(as(new("Categories", dimvalues = c("0-4", "5-9")), "Intervals"),
@@ -98,7 +108,8 @@ test_that("canMakeDimScalesCompatible works", {
     conc <- Concordance(data.frame(from = c("a", "b", "c"), to = c("XX", "XX", "YY")))
     expect_error(canMakeDimScalesCompatible(x = x, y = y, subset = TRUE,
                                             collapse = TRUE, concordance = conc),
-                 "value not found in classification \"from\" : \"d\"")
+                 sprintf("value not found in classification \"from\" : %s",
+                         dQuote("d")))
     ## has concordance, collapse = FALSE
     x <- new("Categories", dimvalues = c("XX", "YY"))
     y <- new("Categories", dimvalues = c("a", "b", "c", "d"))
@@ -123,7 +134,8 @@ test_that("canMakeDimScalesCompatible works", {
     conc <- Concordance(data.frame(from = c("a", "b", "c"), to = c("XX", "XX", "YY")))
     expect_error(canMakeDimScalesCompatible(x = x, y = y, subset = TRUE,
                                             collapse = FALSE, concordance = conc),
-                 "value not found in classification \"from\" : \"d\"")
+                 sprintf("value not found in classification \"from\" : %s",
+                         dQuote("d")))
 })    
                 
 test_that("labels method for Categories works", {

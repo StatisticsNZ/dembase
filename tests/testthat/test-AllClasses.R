@@ -5,10 +5,10 @@ context("AllClasses")
 test_that("valid objects of class MetaData are created correctly", {
   expect_true(validObject(new("MetaData",
                               nms = c("region", "sex", "age"),
-                              dimtypes = c("state", "state", "age"),
+                              dimtypes = c("state", "sex", "age"),
                               DimScales = list(
                                 new("Categories", dimvalues = c("Region 1", "Region 2")),
-                                new("Categories", dimvalues = c("Male", "Female")),
+                                new("Sexes", dimvalues = c("Male", "Female")),
                                 new("Intervals", dimvalues = c(0, 5, 10, Inf))))))
   expect_error(validObject(new("MetaData")), "must have at least 1 dimension")
 })
@@ -50,10 +50,10 @@ test_that("dimtypes validity tests for MetaData work as expected", {
                 throws_error("more than one dimension with dimtype \"age\""))
     expect_that(new("MetaData",
                     nms = c("region", "sex", "age"),
-                    dimtypes = c(a = "state", b = "state", c = "age"),
+                    dimtypes = c(a = "state", b = "sex", c = "age"),
                     DimScales = list(
                         new("Categories", dimvalues = c("Region 1", "Region 2")),
-                        new("Categories", dimvalues = c("Male", "Female")),
+                        new("Sexes", dimvalues = c("Male", "Female")),
                         new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
                 throws_error("'dimtypes' has names"))
 })
@@ -609,6 +609,16 @@ test_that("class Categories works", {
   expect_error(new("Categories", dimvalues = c("a", "a")),
               "duplicated values")
   expect_true(validObject(new("Categories")))
+})
+
+test_that("class Sexes works", {
+  expect_true(validObject(new("Sexes", dimvalues = c("Females", "Males"))))
+  expect_true(validObject(new("Sexes", dimvalues = c("males", "females"))))
+  expect_true(validObject(new("Sexes", dimvalues = c("Male", "Female"))))
+  expect_error(new("Sexes", dimvalues = c(NA, "Female")), "missing values")
+  expect_error(new("Sexes", dimvalues = c("male", "females")), "invalid values")
+  expect_error(new("Sexes", dimvalues = c("Male", "Female", "Female")), "duplicated values")
+  expect_error(new("Sexes", dimvalues = c("Male", "Wrong")), "invalid values")
 })
 
 test_that("class Triangles works", {

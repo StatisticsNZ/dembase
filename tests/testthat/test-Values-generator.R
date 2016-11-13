@@ -9,14 +9,14 @@ test_that("Values creates valid object from valid arguments", {
                sex = c("Male", "Female")))
     expect_is(Values(a), "Values")
     expect_identical(dimtypes(Values(a)),
-                     c(age = "age", sex = "state"))
+                     c(age = "age", sex = "sex"))
     expect_identical(dimtypes(Values(a,
                                      dimtypes = c(age = "state"))),
-                     c(age = "state", sex = "state"))
+                     c(age = "state", sex = "sex"))
     expect_identical(dimscales(Values(a,
                                       dimtypes = c(age = "state"),
                                       dimscales = c(age = "Categories"))),
-                     c(age = "Categories", sex = "Categories"))
+                     c(age = "Categories", sex = "Sexes"))
     a <- array(0L,
                dim = c(3, 0),
                dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -24,11 +24,11 @@ test_that("Values creates valid object from valid arguments", {
     expect_is(Values(a), "Values")
     expect_identical(dim(Values(a)), c(3L, 0L))
     expect_identical(dimtypes(Values(a)),
-                     c(age = "age", sex = "state"))
+                     c(age = "age", sex = "sex"))
     expect_identical(dimtypes(Values(a, dimtypes = c(age = "state"))),
-                     c(age = "state", sex = "state"))
+                     c(age = "state", sex = "sex"))
     expect_identical(dimscales(Values(a, dimtypes = c(age = "state"))),
-                     c(age = "Categories", sex = "Categories"))
+                     c(age = "Categories", sex = "Sexes"))
     a <- array(1:3,
                dim = 3,
                dimnames = list(age = c("0-4", "5-9", "10+")))

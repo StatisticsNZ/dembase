@@ -150,13 +150,16 @@ test_that("Ops works when e2 is Values", {
     expect_identical(x * y, z)
     x <- Counts(array(1:3,
                       dim = 3,
-                      dimnames = list(sex = c("m", "f", "o"))))
+                      dimnames = list(sex = c("m", "f", "o"))),
+                dimtypes = c(sex = "state"))
     y <- Values(array(1:2,
                       dim = 2,
-                      dimnames = list(sex = c("f", "m"))))
+                      dimnames = list(sex = c("f", "m"))),
+                dimtypes = c(sex = "state"))
     z <- Counts(array((1:2) * (2:1),
                       dim = 2,
-                      dimnames = list(sex = c("m", "f"))))
+                      dimnames = list(sex = c("m", "f"))),
+                dimtypes = c(sex = "state"))
     expect_identical(x * y, z)
 })
 
@@ -615,11 +618,13 @@ test_that("canMakePairCompatible works in simple cases", {
     x <- Counts(array(0,
                       dim = 3:2,
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("Male", "Female"))))
+                                      sex = c("Male", "Female"))),
+                dimtypes = c(sex = "state"))
     y <- Values(array(0,
                       dim = c(2, 3),
                       dimnames = list(age = c("0-4", "5+"),
-                      sex = c("Male", "Female", "Other"))))
+                                      sex = c("Male", "Female", "Other"))),
+                dimtypes = c(sex = "state"))
     expect_true(canMakePairCompatible(x, y))
     expect_true(canMakePairCompatible(y, x))
     ## orig-dest dimensions
@@ -637,11 +642,13 @@ test_that("canMakePairCompatible works in simple cases", {
     x <- Counts(array(0,
                       dim = c(2, 3),
                       dimnames = list(age = c("0-4", "5-9"),
-                      sex = c("Male", "Female", "Other"))))
+                                      sex = c("Male", "Female", "Other"))),
+                dimtypes = c(sex = "state"))
     y <- Counts(array(0,
                       dim = 3:2,
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("Male", "Female"))))
+                                      sex = c("Male", "Female"))),
+                dimtypes = c(sex = "state"))
     expect_true(canMakePairCompatible(x, y))
     expect_true(canMakePairCompatible(y, x))
     ## need to expand vaues intervals
@@ -1319,7 +1326,7 @@ test_that("collapseIntervals works using breaks argument", {
     expect_error(collapseIntervals(x, dimension = 3, breaks = 2002),
                  sprintf("subscript %s outside valid range", sQuote("3")))
     expect_error(collapseIntervals(x, dimension = 1, breaks = 2002),
-                 "dimension \"sex\" has dimscale \"Categories\"")
+                 "dimension \"sex\" has dimscale \"Sexes\"")
     expect_error(collapseIntervals(x, dimension = 2, breaks = c(2002, NA)),
                  "'breaks' has missing values")
     expect_error(collapseIntervals(x, dimension = 2, breaks = c(2002, 2001)),
@@ -1529,7 +1536,7 @@ test_that("dbind2 works", {
                       dim = c(2, 1),
                       dimnames = list(age = c("0-4", "5+"), sex = "m")))
     ans.obtained <- dbind2(e1 = x, e2 = y, name1 = "x", name2 = "y", along = "sex",
-                           dimtypeAlong = "state")
+                           dimtypeAlong = "sex")
     ans.expected <- Counts(array(1:4,
                                  dim = c(2, 2),
                                  dimnames = list(age = c("0-4", "5+"), sex = c("f", "m"))))
@@ -2451,10 +2458,12 @@ test_that("makePairTransforms method for Counts and Counts works", {
     x <- Counts(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))),
+                dimtype = c(sex = "state"))
     y <- Counts(array(1:6,
                       dim = c(3, 2),
-                      dimnames = list(sex = c("f", "m", "o"), age = c("0-4", "5+"))))
+                      dimnames = list(sex = c("f", "m", "o"), age = c("0-4", "5+"))),
+                dimtype = c(sex = "state"))
     expect_identical(makePairTransforms(x, y),
                      list(new("CollapseTransform",
                               dims = 1:2,
@@ -2468,17 +2477,18 @@ test_that("makePairTransforms method for Counts and Counts works", {
                               dimAfter = c(2L, 2L))))
 })
 
-
 test_that("makePairTransforms method for Counts and Values works", {
     makePairTransforms <- dembase:::makePairTransforms
     x <- Counts(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))),
+                dimtype = c(sex = "state"))
     y <- Values(array(0,
                       dim = c(2, 3),
                       dimnames = list(age = c("0-4", "5+"),
-                      sex = c("f", "m", "o"))))
+                                      sex = c("f", "m", "o"))),
+                dimtype = c(sex = "state"))
     expect_identical(makePairTransforms(x, y),
                      list(new("CollapseTransform",
                               dims = 1:2,
@@ -2546,10 +2556,12 @@ test_that("makePairTransforms method for Counts and Values works", {
     x <- Counts(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("f", "m"))))
+                                      sex = c("f", "m"))),
+                dimtype = c(sex = "state"))
     y <- Values(array(1:6,
                       dim = c(3, 2),
-                      dimnames = list(sex = c("f", "m", "o"), age = c("0-4", "5+"))))
+                      dimnames = list(sex = c("f", "m", "o"), age = c("0-4", "5+"))),
+                dimtype = c(sex = "state"))
     expect_identical(makePairTransforms(x, y),
                      list(new("CollapseTransform",
                               dims = 1:2,
@@ -2896,20 +2908,20 @@ test_that("redistribute works when given valid inputs - counts is Counts", {
     ## no iterations, no 'n'
     counts <- Counts(array(rpois(n = 8, lambda = 10),
                            dim = c(4, 2),
-                           dimnames = list(age = 0:3, sex = 1:2)))
+                           dimnames = list(age = 0:3, sex = c("f", "m"))))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(collapseDimension(ans, dimension = "reg"),
                      counts)
     ## no iterations, has 'n'
     counts <- Counts(array(rpois(n = 8, lambda = 10),
                            dim = c(4, 2),
-                           dimnames = list(age = 0:3, sex = 1:2)))
+                           dimnames = list(age = 0:3, sex = c("f", "m"))))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     ans <- redistribute(counts = counts, weights = weights, n = 5)
     expect_identical(dim(ans), c(4:2, 5L))
     expect_identical(collapseDimension(ans[,,,3L], dim = "reg"),
@@ -2917,11 +2929,11 @@ test_that("redistribute works when given valid inputs - counts is Counts", {
     ## counts has iterations; weights does not
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(dim(ans), c(4:2, 3L))
     expect_identical(collapseDimension(ans[,,,3], dim = "reg"),
@@ -2929,10 +2941,10 @@ test_that("redistribute works when given valid inputs - counts is Counts", {
     ## counts does not have iterations; weights does
     counts <- Counts(array(rpois(n = 8, lambda = 10),
                            dim = c(4, 2),
-                           dimnames = list(age = 0:3, sex = 1:2)))
+                           dimnames = list(age = 0:3, sex = c("f", "m"))))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(dim(ans), c(4:2, 3L))
@@ -2941,11 +2953,11 @@ test_that("redistribute works when given valid inputs - counts is Counts", {
     ## counts and weights both have iterations
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(dim(ans), c(4:2, 3L))
@@ -2957,7 +2969,7 @@ test_that("redistribute works when given valid inputs - counts is numeric", {
     ## no iterations, no 'n'
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     ans <- redistribute(counts = 24, weights = weights)
     expect_identical(collapseDimension(ans, margin = character()),
                      24L)
@@ -2965,7 +2977,7 @@ test_that("redistribute works when given valid inputs - counts is numeric", {
     counts <- 10
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     ans <- redistribute(counts = counts, weights = weights, n = 5)
     expect_identical(dim(ans), c(4:2, 5L))
     expect_identical(collapseDimension(ans, margin = "iteration"),
@@ -2973,11 +2985,11 @@ test_that("redistribute works when given valid inputs - counts is numeric", {
     ## counts has iterations; weights does not
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(dim(ans), c(4:2, 3L))
     expect_identical(collapseDimension(ans[,,,3], dim = "reg"),
@@ -2985,10 +2997,10 @@ test_that("redistribute works when given valid inputs - counts is numeric", {
     ## counts does not have iterations; weights does
     counts <- Counts(array(rpois(n = 8, lambda = 10),
                            dim = c(4, 2),
-                           dimnames = list(age = 0:3, sex = 1:2)))
+                           dimnames = list(age = 0:3, sex = c("f", "m"))))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(dim(ans), c(4:2, 3L))
@@ -2997,11 +3009,11 @@ test_that("redistribute works when given valid inputs - counts is numeric", {
     ## counts and weights both have iterations
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     ans <- redistribute(counts = counts, weights = weights)
     expect_identical(dim(ans), c(4:2, 3L))
@@ -3016,13 +3028,13 @@ test_that("redistribute throws appropriate errors", {
                            dimnames = list(age = 0:3, quantile = c(0.1, 0.9))))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = 4:2,
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
     expect_error(redistribute(counts, weights),
                  "'counts' has dimension with dimtype \"quantile\"")
     ## arguments have length > 0
     counts <- Counts(array(rpois(n = 8, lambda = 10),
                            dim = c(4, 2),
-                           dimnames = list(age = 0:3, sex = 1:2)))
+                           dimnames = list(age = 0:3, sex = c("f", "m"))))
     weights <- Counts(array(0L,
                             dim = 0,
                             dimnames = list(age = character())))
@@ -3031,11 +3043,11 @@ test_that("redistribute throws appropriate errors", {
     ## no missing values
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     counts[1] <- NA
     expect_error(redistribute(counts, weights),
@@ -3043,11 +3055,11 @@ test_that("redistribute throws appropriate errors", {
     ## no negative values
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     weights[1] <- -1
     expect_error(redistribute(counts, weights),
@@ -3055,22 +3067,22 @@ test_that("redistribute throws appropriate errors", {
     ## weights do not sum to 0
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(0,
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     expect_error(redistribute(counts, weights),
                  "'weights' sum to 0")
     ## counts all integer
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 1:2,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"),
                                 iteration = 1:3)))
     counts[2] <- 1.01
     expect_error(redistribute(counts, weights),
@@ -3078,11 +3090,11 @@ test_that("redistribute throws appropriate errors", {
     ## weights is not compatible with counts
     counts <- Counts(array(rpois(n = 24, lambda = 10),
                            dim = c(4, 2, 3),
-                           dimnames = list(age = 0:3, sex = 1:2,
+                           dimnames = list(age = 0:3, sex = c("f", "m"),
                                iteration = 1:3)))
     weights <- Counts(array(rpois(n = 24, lambda = 10),
                             dim = c(4:2, 3),
-                            dimnames = list(age = 0:3, reg = 1:3, sex = 0:1,
+                            dimnames = list(age = 0:3, reg = 1:3, sex = c("female", "male"),
                                 iteration = 1:3)))
     expect_error(redistribute(counts, weights),
                  "'weights' not compatible with 'counts'")

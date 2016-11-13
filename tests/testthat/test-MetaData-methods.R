@@ -60,9 +60,9 @@ test_that("dimtypes<- works", {
     m <- metadata(x)
     dimtypes(m)["quant"] <- "quantile"
     expect_identical(dimtypes(m),
-                     c(quant = "quantile", sex = "state"))
+                     c(quant = "quantile", sex = "sex"))
     expect_identical(dimscales(m),
-                     c(quant = "Quantiles", sex = "Categories"))
+                     c(quant = "Quantiles", sex = "Sexes"))
     expect_error(dimtypes(m)["quant"] <- "triangle",
                  "labels not valid for dimscale")
     a <- array(0,
@@ -89,9 +89,9 @@ test_that("dimscales<- works", {
                sex = c("Male", "Female")))
     x <- Counts(a, dimscales = c(age = "Points"))
     m <- metadata(x)
-    dimscales(m) <- c("Intervals", "Categories")
+    dimscales(m) <- c("Intervals", "Sexes")
     expect_identical(dimscales(m),
-                     c(age = "Intervals", sex = "Categories"))
+                     c(age = "Intervals", sex = "Sexes"))
     expect_identical(DimScales(m)[[1]],
                      new("Intervals", dimvalues = c(0, 1, 2, 3)))
     m <- metadata(x)

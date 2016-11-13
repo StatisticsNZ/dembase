@@ -395,10 +395,10 @@ test_that("DimScales method works", {
   x <- Counts(a)
   expect_that(DimScales(x),
               is_identical_to(list(age = new("Intervals", dimvalues = c(0, 5, 10, Inf)),
-                                   sex = new("Categories", dimvalues = c("Male", "Female")))))
+                                   sex = new("Sexes", dimvalues = c("Male", "Female")))))
   expect_that(DimScales(x, use.names = FALSE),
               is_identical_to(list(new("Intervals", dimvalues = c(0, 5, 10, Inf)),
-                                   new("Categories", dimvalues = c("Male", "Female")))))
+                                   new("Sexes", dimvalues = c("Male", "Female")))))
 })
 
 test_that("ageTimeStep works", {
@@ -681,12 +681,12 @@ test_that("dimscales methods work", {
                sex = c("Male", "Female")))
   x <- Counts(a, dimscales = c(age = "Points"))
   expect_that(dimscales(x),
-              is_identical_to(c(age = "Points", sex = "Categories")))
+              is_identical_to(c(age = "Points", sex = "Sexes")))
   expect_that(dimscales(x, use.names = FALSE),
-              is_identical_to(c("Points", "Categories")))
+              is_identical_to(c("Points", "Sexes")))
   dimscales(x)[1] <- "Intervals"
   expect_that(dimscales(x),
-              is_identical_to(c(age = "Intervals", sex = "Categories")))
+              is_identical_to(c(age = "Intervals", sex = "Sexes")))
   expect_that(dimscales(x)[1] <- "Categories",
               throws_error("dimension \"age\" has dimtype \"age\" but dimscale \"Categories\""))
   a <- array(1:6,
@@ -694,9 +694,9 @@ test_that("dimscales methods work", {
              dimnames = list(region = c("a", "b", "c"),
                sex = c("Male", "Female")))
   x <- Counts(a)
-  dimscales(x) <- "Categories"
+  dimscales(x) <- c("Categories", "Sexes")
   expect_that(dimscales(x),
-              is_identical_to(c(region = "Categories", sex = "Categories")))
+              is_identical_to(c(region = "Categories", sex = "Sexes")))
 })
 
 test_that("dimtypes methods work", {
@@ -706,11 +706,11 @@ test_that("dimtypes methods work", {
                sex = c("Male", "Female")))
   x <- Counts(a)
   expect_identical(dimtypes(x),
-                   c(age = "age", sex = "state"))
+                   c(age = "age", sex = "sex"))
   expect_identical(dimtypes(x, use.names = FALSE),
-                   c("age", "state"))
+                   c("age", "sex"))
   dimtypes(x)[1] <- "state"
-  expect_identical(dimtypes(x)[[2]], "state")
+  expect_identical(dimtypes(x)[[2]], "sex")
 })
 
 test_that("drop works", {
@@ -835,7 +835,7 @@ test_that("extrapolate throws appropriate errors", {
                       dimnames = list(year = 2000:2002, sex = c("f", "m"))),
                 dimscales = c(year = "Intervals"))
     expect_error(extrapolate(x, labels = "wrong", along = "sex"),
-                 "'along' dimension \\[\"sex\"\\] has dimscale \"Categories\"")
+                 "'along' dimension \\[\"sex\"\\] has dimscale \"Sexes\"")
 })
 
 test_that("hasRegularAgeTime works", {

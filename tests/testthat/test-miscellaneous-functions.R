@@ -111,12 +111,14 @@ test_that("getSynonymsForOpenIntervalSymbol works", {
 test_that("getUniqueDimtypes works", {
   getUniqueDimtypes <- dembase:::getUniqueDimtypes
   expect_false("sex" %in% getUniqueDimtypes())
+  expect_true("time" %in% getUniqueDimtypes())
   expect_false("origin" %in% getUniqueDimtypes())
 })
 
 test_that("getValidDimtypes works", {
   getValidDimtypes <- dembase:::getValidDimtypes
   expect_true("state" %in% getValidDimtypes())
+  expect_true("sex" %in% getValidDimtypes())
   expect_false("class" %in% getValidDimtypes())
   expect_false("pool" %in% getValidDimtypes())
 })
@@ -317,24 +319,30 @@ test_that("expandNamesSupplied works", {
                      c("eth_parent", "eth_child"))
 })
 
-test_that("getISex works", {
-    getISex <- dembase:::getISex
-    expect_identical(getISex(names = c("age", "sex"), sex = c("sex", "gender")),
-                     2L)
-    expect_identical(getISex(names = c("age", "time", "Sex"), sex = c("sex", "gender")),
-                     3L)
-    expect_identical(getISex(names = c("age", "time", "region"), sex = c("sex", "gender")),
-                     0L)    
-    expect_identical(getISex(names = c("GENDER", "time", "region"), sex = c("sex", "gender")),
-                     1L)
-    expect_error(getISex(names = 1:3, sex = c("sex", "gender")),
-                 "'names' does not have type \"character\"")    
-    expect_error(getISex(names = c("age", "sex"), sex = character()),
-                 "'sex' has length 0")    
-    expect_error(getISex(names = c("age", "sex"), sex = as.character(NA)),
-                 "'sex' has missing values")    
-    expect_error(getISex(names = c("GENDER", "sex", "region"), sex = c("sex", "gender")),
-                 "more than one dimension matches 'sex' argument")
+test_that("iFemale Works", {
+    DimScale <- new("Sexes", dimvalues = c("f", "m"))
+    expect_identical(iFemale(DimScale), 1L)
+    DimScale <- new("Sexes", dimvalues = c("male", "female"))
+    expect_identical(iFemale(DimScale), 2L)
+    DimScale <- new("Sexes", dimvalues = "females")
+    expect_identical(iFemale(DimScale), 1L)
+    DimScale <- new("Sexes", dimvalues = "males")
+    expect_identical(iFemale(DimScale), 0L)
+    expect_error(iFemale("wrong"),
+                 "'DimScale' has class \"character\"")
+})
+
+test_that("iMale Works", {
+    DimScale <- new("Sexes", dimvalues = c("f", "m"))
+    expect_identical(iMale(DimScale), 2L)
+    DimScale <- new("Sexes", dimvalues = c("male", "female"))
+    expect_identical(iMale(DimScale), 1L)
+    DimScale <- new("Sexes", dimvalues = "females")
+    expect_identical(iMale(DimScale), 0L)
+    DimScale <- new("Sexes", dimvalues = "males")
+    expect_identical(iMale(DimScale), 1L)
+    expect_error(iMale("wrong"),
+                 "'DimScale' has class \"character\"")
 })
 
 test_that("invertSubscript works", {
@@ -1344,16 +1352,16 @@ test_that("makeMetaDataSubarraysBefore works", {
     expect_identical(ans.obtained[[1]],
                      new("MetaData",
                          nms = c("age", "sex", "region"),
-                         dimtypes = c("age", "state", "state"),
+                         dimtypes = c("age", "sex", "state"),
                          DimScales = list(new("Intervals", dimvalues = c(0, 5, 10)),
-                             new("Categories", dimvalues = c("f", "m")),
+                             new("Sexes", dimvalues = c("f", "m")),
                              new("Categories", dimvalues = "c"))))
     expect_identical(ans.obtained[[4]],
                      new("MetaData",
                          nms = c("age", "sex", "region"),
-                         dimtypes = c("age", "state", "state"),
+                         dimtypes = c("age", "sex", "state"),
                          DimScales = list(new("Intervals", dimvalues = c(10, 15, 20, Inf)),
-                             new("Categories", dimvalues = c("f", "m")),
+                             new("Sexes", dimvalues = c("f", "m")),
                              new("Categories", dimvalues = "b"))))
     x <- Counts(array(1,
                       dim = c(5, 2, 3),
@@ -1373,16 +1381,16 @@ test_that("makeMetaDataSubarraysBefore works", {
     expect_identical(ans.obtained[[1]],
                      new("MetaData",
                          nms = c("age", "sex", "region"),
-                         dimtypes = c("age", "state", "state"),
+                         dimtypes = c("age", "sex", "state"),
                          DimScales = list(new("Intervals", dimvalues = c(0, 5, 10)),
-                             new("Categories", dimvalues = "f"),
+                             new("Sexes", dimvalues = "f"),
                              new("Categories", dimvalues = "a"))))
     expect_identical(ans.obtained[[2]],
                      new("MetaData",
                          nms = c("age", "sex", "region"),
-                         dimtypes = c("age", "state", "state"),
+                         dimtypes = c("age", "sex", "state"),
                          DimScales = list(new("Intervals", dimvalues = c(0, 5, 10)),
-                             new("Categories", dimvalues = "f"),
+                             new("Sexes", dimvalues = "f"),
                              new("Categories", dimvalues = "b"))))
     x <- Counts(array(1,
                       dim = c(5, 2, 3),
@@ -1972,12 +1980,27 @@ test_that("inferDimScale works", {
                                labels = c("a", "b"),
                                name = "year"),
                  "unable to infer dimscale for dimension \"year\" with dimtype \"time\"")
+    expect_identical(inferDimScale(dimtype = "sex",
+                                   dimscale = NULL,
+                                   labels = c("female", "male"),
+                                   name = "gender"),
+                     new("Sexes", dimvalues = c("female", "male")))
+    expect_identical(inferDimScale(dimtype = "sex",
+                                   dimscale = NULL,
+                                   labels = c("Males", "Females"),
+                                   name = "Sex"),
+                     new("Sexes", dimvalues = c("Males", "Females")))
+    expect_error(inferDimScale(dimtype = "sex",
+                               dimscale = NULL,
+                               labels = c("Male", "Females"),
+                               name = "Sex"),
+                 "unable to infer dimscale for dimension \"Sex\" with dimtype \"sex\"")
 })
 
 test_that("inferDimtypes works as expected", {
     inferDimtypes <- dembase:::inferDimtypes
     expect_identical(inferDimtypes(c("age", "age5", "age10yr", "sex", "year")),
-                     c("age", "age", "age", "state", "time"))
+                     c("age", "age", "age", "sex", "time"))
     expect_identical(inferDimtypes(c("duration", "unknown")),
                      c("age", "state"))
     expect_identical(inferDimtypes(c("start", "end")),
@@ -1992,6 +2015,8 @@ test_that("inferDimtypes works as expected", {
                      c("parent", "child"))
     expect_identical(inferDimtypes(c("Lexis triangle", "Lexis Triangles", "triangle", "Triangles")),
                      rep("triangle", 4))
+    expect_identical(inferDimtypes(c("Sex", "sexes", "gender", "Genders")),
+                     rep("sex", 4))
 })
 
 
@@ -2180,51 +2205,55 @@ test_that("canMakeSharedDimScalePairsCompatible works", {
     e1 <- Counts(array(0,
                        dim = c(3, 2),
                        dimnames = list(age = c("0-4", "5-9", "10+"),
-                       sex = c("m", "f"))))
+                                       sex = c("m", "f"))))
     e2 <- Values(array(0,
                        dim = c(2, 2),
                        dimnames = list(age = c("0-9", "10+"),
-                       sex = c("f", "m"))))
+                                       sex = c("f", "m"))))
     expect_true(canMakeSharedDimScalePairsCompatible(e1, e2))
     expect_true(canMakeSharedDimScalePairsCompatible(e2, e1))
     e1 <- Counts(array(0,
                        dim = c(2, 2),
                        dimnames = list(age = c("-5-4", "5-9"),
-                       sex = c("m", "f"))))
+                                       sex = c("m", "f"))))
     e2 <- Counts(array(0,
                        dim = c(1, 2),
                        dimnames = list(age = "0-9",
-                       sex = c("f", "m"))))
+                                       sex = c("f", "m"))))
     expect_error(canMakeSharedDimScalePairsCompatible(e1, e2),
-                paste("\"age\" dimensions have incompatible dimscales :",
-                      "intervals do not align"))
+                 paste("\"age\" dimensions have incompatible dimscales :",
+                       "intervals do not align"))
     e1 <- Counts(array(0,
                        dim = c(3, 2),
                        dimnames = list(age = c("0-4", "5-9", "10+"),
-                       sex = c("m", "f"))))
+                                       sex = c("m", "f"))),
+                 dimtypes = c(sex = "state"))
     e2 <- Values(array(0,
                        dim = c(2, 3),
                        dimnames = list(age = c("0-9", "10+"),
-                       sex = c("f", "m", "wrong"))))
+                                       sex = c("f", "m", "wrong"))),
+                 dimtypes = c(sex = "state"))
     expect_true(canMakeSharedDimScalePairsCompatible(e1, e2))
     e1 <- Values(array(0,
                        dim = c(3, 2),
                        dimnames = list(age = c("0-4", "5-9", "10+"),
-                       sex = c("m", "f"))))
+                                       sex = c("m", "f"))),
+                 dimtypes = c(sex = "state"))
     e2 <- Counts(array(0,
                        dim = c(2, 3),
                        dimnames = list(age = c("0-9", "10+"),
-                       sex = c("f", "m", "wrong"))))
+                                       sex = c("f", "m", "wrong"))),
+                 dimtypes = c(sex = "state"))
     expect_error(canMakeSharedDimScalePairsCompatible(e1, e2),
                  "\"age\" dimensions have incompatible dimscales : intervals do not align")
     e1 <- Counts(array(0,
                        dim = c(3, 2),
                        dimnames = list(age = c("0-4", "5-9", "10+"),
-                       sex = c("m", "f"))))
+                                       sex = c("m", "f"))))
     e2 <- Counts(array(0,
                        dim = c(2, 2),
                        dimnames = list(age = c("0-9", "10+"),
-                       sex = c("F", "M"))))
+                                       sex = c("F", "M"))))
     expect_error(canMakeSharedDimScalePairsCompatible(e1, e2),
                  "\"sex\" dimensions have incompatible dimscales : no values in common")
 })
@@ -2579,8 +2608,8 @@ test_that("combineDbindMetadataCounts works", {
     ans.obtained <- combineDbindMetadataCounts(e1 = e1, e2 = e2, along = "iteration")
     ans.expected <- new("MetaData",
                         nms = c("sex", "iteration"),
-                        dimtypes = c("state", "iteration"),
-                        DimScales = list(new("Categories", dimvalues = c("m", "f")),
+                        dimtypes = c("sex", "iteration"),
+                        DimScales = list(new("Sexes", dimvalues = c("m", "f")),
                             new("Iterations", dimvalues = 1:5)))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -2603,8 +2632,8 @@ test_that("combineDbindMetadataValues works", {
                                                along = "iteration")
     ans.expected <- new("MetaData",
                         nms = c("sex", "iteration"),
-                        dimtypes = c("state", "iteration"),
-                        DimScales = list(new("Categories", dimvalues = c("m", "f")),
+                        dimtypes = c("sex", "iteration"),
+                        DimScales = list(new("Sexes", dimvalues = c("m", "f")),
                             new("Iterations", dimvalues = 1:5)))
     expect_identical(ans.obtained, ans.expected)
     e1 <- Values(array(1:4,
@@ -2621,8 +2650,8 @@ test_that("combineDbindMetadataValues works", {
                                                along = "region")
     ans.expected <- new("MetaData",
                         nms = c("sex", "age", "region"),
-                        dimtypes = c("state", "age", "state"),
-                        DimScales = list(new("Categories", dimvalues = c("m", "f")),
+                        dimtypes = c("sex", "age", "state"),
+                        DimScales = list(new("Sexes", dimvalues = c("m", "f")),
                             new("Intervals", dimvalues = as.numeric(0:4)),
                             new("Categories", dimvalues = c("a", "b", "c"))))
     expect_identical(ans.obtained, ans.expected)
@@ -3024,11 +3053,11 @@ test_that("mergeMetadata works", {
                                    transform2 = pair[[2]]),
                      new("MetaData",
                          nms = c("reg_orig", "reg_dest", "age", "sex"),
-                         dimtypes = c("origin", "destination", "age", "state"),
+                         dimtypes = c("origin", "destination", "age", "sex"),
                          DimScales = list(new("Categories", dimvalues = c("a", "b")),
                          new("Categories", dimvalues = c("a", "b")),
                          new("Intervals", dimvalues = c(0, 5, 10, Inf)),
-                         new("Categories", dimvalues = c("m", "f")))))
+                         new("Sexes", dimvalues = c("m", "f")))))
 })
 
 
@@ -4677,7 +4706,7 @@ test_that("redistributeInnerDistn works with cases encountered when counts is nu
         set.seed(seed)
         weights <- Counts(array(rpois(n = 24, lambda = 10),
                                 dim = 4:2,
-                                dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                                dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
         counts <- rep(10, 5)
         weights <- rep(rpois(24, lambda = 20), 5)
         transform <- new("CollapseTransform",
@@ -4714,7 +4743,7 @@ test_that("redistributeInnerDistn works with cases encountered when counts is nu
         set.seed(seed)
         weights <- Counts(array(rpois(n = 24, lambda = 10),
                                 dim = 4:2,
-                                dimnames = list(age = 0:3, reg = 1:3, sex = 1:2)))
+                                dimnames = list(age = 0:3, reg = 1:3, sex = c("f", "m"))))
         counts <- rep(10, 5)
         weights <- rep(rpois(24, lambda = 20), 5)
         transform <- new("CollapseTransform",
@@ -4741,6 +4770,50 @@ test_that("redistributeInnerDistn works with cases encountered when counts is nu
         else
             expect_equal(ans.R, ans.C)
     }
+})
+
+
+## FUNCTIONS RELATED TO LIFE TABLES ##################################################
+
+test_that("imputeA works", {
+    imputeA <- dembase::imputeA
+    ans.obtained <- imputeA(m0 = c(0.2, 0.05),
+                            A = "1a0",
+                            sex = "Female")
+    ans.expected <- c(0.35, 0.053 + 2.8 * 0.05)
+    expect_equal(ans.obtained, ans.expected)
+    ans.obtained <- imputeA(m0 = c(0.2, 0.05),
+                            A = "4a1",
+                            sex = "Female")
+    ans.expected <- c(1.361, 1.522 - 1.518 * 0.05)
+    expect_equal(ans.obtained, ans.expected)
+    ans.obtained <- imputeA(m0 = c(0.2, 0.05),
+                            A = "1a0",
+                            sex = "Male")
+    ans.expected <- c(0.33, 0.045 + 2.684 * 0.05)
+    expect_equal(ans.obtained, ans.expected)
+    ans.obtained <- imputeA(m0 = c(0.2, 0.05),
+                            A = "4a1",
+                            sex = "Male")
+    ans.expected <- c(1.352, 1.651 - 2.816 * 0.05)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("makeAxStart works", {
+    mx <- Values(array(c(0.005, 0.006, 0.003, 0.004),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0", "1-4"),
+                                       sex = c("f", "m"))))
+    ans.obtained <- makeAxStart(mx)
+    ans.expected <- c(imputeA(mx[1], A = "1a0", sex = "Female"),
+                      imputeA(mx[1], A = "4a1", sex = "Female"),
+                      imputeA(mx[3], A = "1a0", sex = "Male"),
+                      imputeA(mx[3], A = "4a1", sex = "Male"))
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(2, 2),
+                                 dimnames = list(age = c("0", "1-4"),
+                                                 sex = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 
@@ -4921,16 +4994,16 @@ test_that("checkAndTidyInitial works", {
     checkAndTidyInitial <- dembase:::checkAndTidyInitial
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     expect_identical(checkAndTidyInitial(initial), initial)
     expect_identical(checkAndTidyInitial(toDouble(initial)), initial)
     initial <- Counts(array(c(NA, 0:4), 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     expect_identical(checkAndTidyInitial(initial), initial)
     initial <- Counts(array(c(NA, 0:4), 
                             dim = 3:1,
-                            dimnames = list(age = 0:2, sex = 1:2, time = 2000)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), time = 2000)),
                       dimscales = c(time = "Points"))
     expect_identical(checkAndTidyInitial(initial), initial)
     expect_error(checkAndTidyInitial("wrong"),
@@ -4939,18 +5012,18 @@ test_that("checkAndTidyInitial works", {
                  "'initial' has length 0")
     initial <- Counts(array(c(-1, 0:4), 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     expect_error(checkAndTidyInitial(initial),
                  "'initial' has negative values")
     initial <- Counts(array(c(NA, 0:10), 
                             dim = c(3,2,2),
-                            dimnames = list(age = 0:2, sex = 1:2, time = 2000:2001)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), time = 2000:2001)),
                       dimscales = c(time = "Points"))
     expect_error(checkAndTidyInitial(initial),
                  "time dimension for 'initial' does not have length 1")
     initial <- Counts(array(c(NA, 0:4), 
                             dim = 3:1,
-                            dimnames = list(age = 0:2, sex = 1:2, time = 2000)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), time = 2000)),
                       dimscales = c(time = "Intervals"))
     expect_error(checkAndTidyInitial(initial),
                  "time dimension for 'initial' has dimscale \"Intervals\"")
@@ -4962,7 +5035,7 @@ test_that("checkAndTidyInitial works", {
                  "'initial' has only one dimension, which has dimtype \"time\"")
     initial <- Counts(array(c(1.1, 0:4), 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     expect_error(checkAndTidyInitial(initial),
                  "'initial' invalid : non-integer values")
     initial <- CountsOne(values = 1:5, labels = c("<0", 0:3), name = "age")
@@ -4975,64 +5048,64 @@ test_that("checkAndTidyIterations works", {
     ## n is NULL, externalIn has iteration
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, iteration = 1:5))),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:5))),
                   externalOut = Values(array(0.3, 
                       dim = 3:2,
-                      dimnames = list(age = 0:2, sex = 1:2))))
+                      dimnames = list(age = 0:2, sex = c("f", "m")))))
     ans.obtained <- checkAndTidyIterationsProject(initial = initial,
                                                   param = param,
                                                   n = NULL)
     ans.expected <- list(initial = Counts(array(1:6, 
                              dim = c(3, 2, 5),
-                             dimnames = list(age = 0:2, sex = 1:2,
+                             dimnames = list(age = 0:2, sex = c("f", "m"),
                                  iteration = 1:5))),
                          param = list(externalIn = Values(array(0.5, 
                                           dim = c(3, 2, 5),
-                                          dimnames = list(age = 0:2, sex = 1:2,
+                                          dimnames = list(age = 0:2, sex = c("f", "m"),
                                               iteration = 1:5))),
                              externalOut = Values(array(0.3, 
                                  dim = c(3, 2, 5),
-                                 dimnames = list(age = 0:2, sex = 1:2,
+                                 dimnames = list(age = 0:2, sex = c("f", "m"),
                                      iteration = 1:5)))))
     expect_identical(ans.obtained, ans.expected)
     ## n is NULL; initial and externalOut both have iteration
     initial <- Counts(array(1:6, 
                             dim = c(3, 2, 10),
-                            dimnames = list(age = 0:2, sex = 1:2, iteration = 1:10)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:10)))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))),
+                      dimnames = list(age = 0:2, sex = c("f", "m")))),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 10, 2),
-                      dimnames = list(age = 0:2, iteration = 1:10, sex = 1:2))))
+                      dimnames = list(age = 0:2, iteration = 1:10, sex = c("f", "m")))))
     ans.obtained <- checkAndTidyIterationsProject(initial = initial,
                                                   param = param,
                                                   n = NULL)
     ans.expected <- list(initial = Counts(array(1:6, 
                              dim = c(3, 2, 10),
-                             dimnames = list(age = 0:2, sex = 1:2, iteration = 1:10))),
+                             dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:10))),
                          param = list(externalIn = Values(array(0.5, 
                                           dim = c(3, 2, 10),
-                                          dimnames = list(age = 0:2, sex = 1:2,
+                                          dimnames = list(age = 0:2, sex = c("f", "m"),
                                               iteration = 1:10))),
                              externalOut = Values(array(0.3, 
                                  dim = c(3, 10, 2),
                                  dimnames = list(age = 0:2, iteration = 1:10,
-                                     sex = 1:2)))))
+                                     sex = c("f", "m"))))))
     expect_identical(ans.obtained, ans.expected)
     ## n is NULL; no iteration
     initial <- Counts(array(1:6, 
                             dim = c(3, 2),
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))),
+                      dimnames = list(age = 0:2, sex = c("f", "m")))),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))))
+                      dimnames = list(age = 0:2, sex = c("f", "m")))))
     ans.obtained <- checkAndTidyIterationsProject(initial = initial,
                                                   param = param,
                                                   n = NULL)
@@ -5041,65 +5114,65 @@ test_that("checkAndTidyIterations works", {
     ## n is 5; no iteration
     initial <- Counts(array(1:6, 
                             dim = c(3, 2),
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))),
+                      dimnames = list(age = 0:2, sex = c("f", "m")))),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))))
+                      dimnames = list(age = 0:2, sex = c("f", "m")))))
     ans.obtained <- checkAndTidyIterationsProject(initial = initial,
                                                   param = param,
                                                   n = 5)
     ans.expected <- list(initial = Counts(array(1:6, 
                              dim = c(3, 2, 5),
-                             dimnames = list(age = 0:2, sex = 1:2, iteration = 1:5))),
+                             dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:5))),
                          param = list(externalIn = Values(array(0.5, 
                                           dim = c(3, 2, 5),
-                                          dimnames = list(age = 0:2, sex = 1:2,
+                                          dimnames = list(age = 0:2, sex = c("f", "m"),
                                               iteration = 1:5))),
                              externalOut = Values(array(0.3, 
                                  dim = c(3, 2, 5),
-                                 dimnames = list(age = 0:2, sex = 1:2,
+                                 dimnames = list(age = 0:2, sex = c("f", "m"),
                                      iteration = 1:5)))))
     expect_identical(ans.obtained, ans.expected)
     ## n is 5; initial has iteration
     initial <- Counts(array(1:6, 
                             dim = c(3, 2, 10),
-                            dimnames = list(age = 0:2, sex = 1:2,
+                            dimnames = list(age = 0:2, sex = c("f", "m"),
                                 iteration = 10:1)))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))),
+                      dimnames = list(age = 0:2, sex = c("f", "m")))),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))))
+                      dimnames = list(age = 0:2, sex = c("f", "m")))))
     ans.obtained <- checkAndTidyIterationsProject(initial = initial,
                                                   param = param,
                                                   n = 5)
     ans.expected <- list(initial = Counts(array(1:6, 
                              dim = c(3, 2, 5),
-                             dimnames = list(age = 0:2, sex = 1:2, iteration = 1:5))),
+                             dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:5))),
                          param = list(externalIn = Values(array(0.5, 
                                           dim = c(3, 2, 5),
-                                          dimnames = list(age = 0:2, sex = 1:2,
+                                          dimnames = list(age = 0:2, sex = c("f", "m"),
                                               iteration = 1:5))),
                              externalOut = Values(array(0.3, 
                                  dim = c(3, 2, 5),
-                                 dimnames = list(age = 0:2, sex = 1:2,
+                                 dimnames = list(age = 0:2, sex = c("f", "m"),
                                      iteration = 1:5)))))
     expect_identical(ans.obtained, ans.expected)
     ## n is 5; initial has 3 iteration
     initial <- Counts(array(1:6, 
                             dim = c(3, 2, 3),
-                            dimnames = list(age = 0:2, sex = 1:2,
+                            dimnames = list(age = 0:2, sex = c("f", "m"),
                                 iteration = 1:3)))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))),
+                      dimnames = list(age = 0:2, sex = c("f", "m")))),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = 1:2))))
+                      dimnames = list(age = 0:2, sex = c("f", "m")))))
     expect_error(checkAndTidyIterationsProject(initial = initial,
                                                param = param,
                                                n = 5),
@@ -5107,13 +5180,13 @@ test_that("checkAndTidyIterations works", {
     ## externalIn and externalOut have different number of iterations    
     initial <- Counts(array(1:6, 
                             dim = c(3, 2),
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, iteration = 1:5))),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:5))),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2, 6),
-                      dimnames = list(age = 0:2, sex = 1:2, iteration = 1:6))))
+                      dimnames = list(age = 0:2, sex = c("f", "m"), iteration = 1:6))))
     expect_error(checkAndTidyIterationsProject(initial = initial,
                                                param = param,
                                                n = NULL),
@@ -5156,13 +5229,13 @@ test_that("checkAndTidyParam works", {
     checkAndTidyParam <- dembase:::checkAndTidyParam
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5, 4),
-                      dimnames = list(age = 0:2, sex = 1:2,
+                      dimnames = list(age = 0:2, sex = c("f", "m"),
                           iteration = 1:5, time = 2001:2004)),
                 dimscales = c(time = "Intervals"))
     y <- Values(array(0.3, 
                       dim = c(3, 4, 2),
                       dimnames = list(age = 0:2, time = 2001:2004,
-                          sex = 1:2)),
+                          sex = c("f", "m"))),
                 dimscales = c(time = "Intervals"))
     ans.obtained <- checkAndTidyParam(birth = NULL,
                                       death = NULL,
@@ -5232,7 +5305,7 @@ test_that("checkAndTidyParam works", {
     ## is regular
     x.wrong <- Values(array(0.5, 
                       dim = c(3, 2, 5, 4),
-                      dimnames = list(age = c("0-4", "5-9", "10+"), sex = 1:2,
+                      dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"),
                           iteration = 1:5, time = 2001:2004)),
                       dimscales = c(time = "Intervals"))
           expect_error(checkAndTidyParam(birth = x,
@@ -5246,7 +5319,7 @@ test_that("checkAndTidyParam works", {
     ## has time dimension with Intervals dimscale
     x.wrong <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = c("0-4", "5-9", "10+"), sex = 1:2,
+                      dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"),
                           iteration = 1:5)))
     expect_error(checkAndTidyParam(birth = x,
                                    death = x,
@@ -5257,7 +5330,7 @@ test_that("checkAndTidyParam works", {
                  "'externalIn' does not have dimension with dimtype \"time\"")
     x.wrong <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = c("0-4", "5-9", "10+"), sex = 1:2,
+                      dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"),
                           time = c(2000, 2005, 2010, 2015, 2020))))
     expect_error(checkAndTidyParam(birth = x,
                                    death = x,
@@ -5269,7 +5342,7 @@ test_that("checkAndTidyParam works", {
     ## all param have same time dimscale
     x.wrong <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2,
+                      dimnames = list(age = 0:2, sex = c("f", "m"),
                           time = 2001:2005)),
                       dimscales = c(time = "Intervals"))
     expect_error(checkAndTidyParam(birth = x,
@@ -5280,28 +5353,6 @@ test_that("checkAndTidyParam works", {
                                    internalOut = x.wrong),
                  "time dimensions of 'internalOut' and 'birth' differ")
 })    
-
-test_that("checkDominant works", {
-    checkDominant <- dembase:::checkDominant
-    initial <- Counts(array(1:6, 
-                            dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
-    expect_identical(checkDominant(dominant = NULL, sex = NULL, initial = initial), 
-                     NULL)
-    expect_identical(checkDominant(dominant = NULL, sex = "sex", 
-                                   initial = subarray(initial, sex == "1", drop = FALSE)), 
-                     NULL)
-    expect_identical(checkDominant(dominant = "1", sex = "sex", initial),
-                     NULL)
-    expect_error(checkDominant(dominant = 1, sex = "sex", initial = initial),
-                 "'dominant' does not have type \"character\"")
-    expect_error(checkDominant(dominant = c("Male", "Female"), sex = "sex", initial = initial),
-                 "'dominant' does not have length 1")
-    expect_error(checkDominant(dominant = as.character(NA), sex = "sex", initial = initial),
-                 "'dominant' is missing")
-    expect_error(checkDominant(dominant = "wrong", sex = "sex", initial = initial),
-                 "'sex' dimension of 'initial' does not have category specified by 'dominant'")
-})
 
 test_that("checkInternalDims works", {
     checkInternalDims <- dembase:::checkInternalDims
@@ -5340,41 +5391,17 @@ test_that("checkInternalDims works", {
                  "dimension \"age\" specified by 'internalDims' has dimtype \"age\"")    
 })
 
-test_that("checkSex works", {
-    checkSex <- dembase:::checkSex
-    initial <- Counts(array(1:6, 
-                            dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)),
-                      dimtypes = c(sex = "iteration"))
-    expect_identical(checkSex(sex = NULL, initial = initial), 
-                     NULL)
-    expect_error(checkSex(sex = 1, initial = initial),
-                 "'sex' does not have type \"character\"")
-    expect_error(checkSex(sex = c("sex", "gender"), initial = initial),
-                 "'sex' does not have length 1")
-    expect_error(checkSex(sex = as.character(NA), initial = initial),
-                 "'sex' is missing")
-    expect_error(checkSex(sex = "wrong", initial = initial),
-                 "\"wrong\" is not a dimension of 'initial'")
-    initial <- Counts(array(1:6, 
-                            dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)),
-                      dimtypes = c(sex = "iteration"))
-    expect_error(checkSex(sex = "sex", initial = initial),
-                 "'sex' dimension of 'initial' does not have dimtype \"state\"")    
-})
-
 test_that("convertToCountsObj works", {
     convertToCountsObj <- dembase:::convertToCountsObj
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(year = "Intervals"))
     ans.obtained <- convertToCountsObj(x)
     ans.expected <- Counts(array(as.integer(NA), 
                                  dim = c(3, 2, 5),
                                  dimnames = list(age = 0:2,
-                                     sex = 1:2,
+                                     sex = c("f", "m"),
                                      year = 2001:2005)),
                            dimscales = c(year = "Intervals"))
     expect_identical(ans.obtained, ans.expected)
@@ -5784,10 +5811,10 @@ test_that("makeParamCompatibleWithInitial works", {
     ## init does not have time dimension
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(year = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     ans.obtained <- makeParamCompatibleWithInitial(initial = initial, param = param)
@@ -5795,11 +5822,11 @@ test_that("makeParamCompatibleWithInitial works", {
     ## init has time dimension
     initial <- Counts(array(1:6, 
                             dim = c(1, 3, 2),
-                            dimnames = list(time = 2001, age = 0:2, sex = 1:2)),
+                            dimnames = list(time = 2001, age = 0:2, sex = c("f", "m"))),
                       dimscales = c(time = "Intervals"))
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                 dimscales = c(time = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     ans.obtained <- makeParamCompatibleWithInitial(initial = initial, param = param)
@@ -5811,17 +5838,17 @@ test_that("makeParamCompatibleWithInitial works", {
     initial <- Counts(array(1:19, 
                             dim = c(1, 19, 2),
                             dimnames = list(time = 2001, age = age.labels,
-                                sex = c("f", "m"))),
+                                            sex = c("f", "m"))),
                       dimscales = c(time = "Intervals"))
     birth <- Values(array(0.5, 
                           dim = c(7, 2, 5),
                           dimnames = list(age = age.labels[4:10],
-                              sex = c("f", "m"), time = 2001:2005)),
+                                          sex = c("f", "m"), time = 2001:2005)),
                     dimscales = c(time = "Intervals"))
     death <- Values(array(0.5, 
                           dim = c(19, 2, 5),
                           dimnames = list(age = age.labels,
-                              sex = c("f", "m"), time = 2001:2005)),
+                                          sex = c("f", "m"), time = 2001:2005)),
                     dimscales = c(time = "Intervals"))
     param <- list(birth = birth, death = death)
     ans.obtained <- makeParamCompatibleWithInitial(initial = initial, param = param)
@@ -5831,11 +5858,11 @@ test_that("makeParamCompatibleWithInitial works", {
     ## year dimension name clash
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(year = 0:2, sex = 1:2)),
+                            dimnames = list(year = 0:2, sex = c("f", "m"))),
                       dimtypes = c(year = "age"))
     x <- Values(array(0.5,
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(year = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     expect_error(makeParamCompatibleWithInitial(initial = initial, param = param),
@@ -5843,10 +5870,10 @@ test_that("makeParamCompatibleWithInitial works", {
     ## initial has age dimension but births does not
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     x <- Values(array(0.5,
                       dim = c(2, 5),
-                      dimnames = list(sex = 1:2, year = 2001:2005)),
+                      dimnames = list(sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(year = "Intervals"))
     param <- list(birth = x)
     expect_error(makeParamCompatibleWithInitial(initial = initial, param = param),
@@ -5854,9 +5881,9 @@ test_that("makeParamCompatibleWithInitial works", {
     ## age dimensions of initial and birth not compatible
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     birth <- Values(array(0.5,
-                      dim = c(3, 5),
+                          dim = c(3, 5),
                           dimnames = list(age = 1:3, year = 2001:2005)),
                     dimscales = c(year = "Intervals"))
     param <- list(birth = birth)
@@ -5865,15 +5892,17 @@ test_that("makeParamCompatibleWithInitial works", {
     ## dimensions incompatible
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)))
+                            dimnames = list(age = 0:2, sex = c("f", "m"))))
     death <- Values(array(0.5,
-                      dim = c(3, 2, 5),
+                          dim = c(3, 2, 5),
                           dimnames = list(age = 0:2, region = 1:2, year = 2001:2005)),
                     dimscales = c(year = "Intervals"))
     param <- list(death = death)
     expect_error(makeParamCompatibleWithInitial(initial = initial, param = param),
-                 paste("'death' and 'initial' not compatible :",
-                       "one object has dimension \\[\"region\"\\] that other does not"))
+                 paste0("'death' and 'initial' not compatible : ",
+                        "one object has dimension \\[",
+                        dQuote("region"),
+                        "\\] that other does not"))
 })
     
 test_that("makePopulationObj works", {
@@ -5881,46 +5910,46 @@ test_that("makePopulationObj works", {
     ## initial does not have time dimension
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"))),
                       dimscales = c(age = "Intervals"))
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(age = "Intervals", year = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     ans.obtained <- makePopulationObj(initial = initial, param = param)
     ans.expected <- Counts(array(as.integer(NA),
                                  dim = c(3, 2, 6),
-                                 dimnames = list(age = 0:2, sex = 1:2,
+                                 dimnames = list(age = 0:2, sex = c("f", "m"),
                                      year = 2000:2005)),
                            dimscales = c(age = "Intervals", year = "Points"))
     expect_identical(ans.obtained, ans.expected)
     ## initial has time dimension
     initial <- Counts(array(1:6, 
                             dim = 3:1,
-                            dimnames = list(age = 0:2, sex = 1:2, year = 2000)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), year = 2000)),
                       dimscales = c(age = "Intervals", year = "Points"))
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(age = "Intervals", year = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     ans.obtained <- makePopulationObj(initial = initial, param = param)
     ans.expected <- Counts(array(as.integer(NA),
                                  dim = c(3, 2, 6),
-                                 dimnames = list(age = 0:2, sex = 1:2,
+                                 dimnames = list(age = 0:2, sex = c("f", "m"),
                                      year = 2000:2005)),
                            dimscales = c(age = "Intervals", year = "Points"))
     expect_identical(ans.obtained, ans.expected)
     ## year dimension name clash
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(year = 0:2, sex = 1:2)),
+                            dimnames = list(year = 0:2, sex = c("f", "m"))),
                       dimtypes = c(year = "age"),
                       dimscales = c(year = "Intervals"))
     x <- Values(array(0.5,
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
                 dimscales = c(age = "Intervals", year = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     expect_error(makePopulationObj(initial = initial, param = param),
@@ -5955,59 +5984,59 @@ test_that("makeProjectForward works", {
     ## project.forward is TRUE
     initial <- Counts(array(1:6, 
                             dim = 3:2,
-                            dimnames = list(age = 0:2, sex = 1:2)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"))),
                       dimscales = c(age = "Intervals"))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                                       dimscales = c(age = "Intervals", time = "Intervals")),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                   dimscales = c(age = "Intervals", time = "Intervals")))
     ans.obtained <- makeProjectForward(initial = initial, param = param)
     expect_true(ans.obtained)
     initial <- Counts(array(1:6, 
                             dim = 3:1,
-                            dimnames = list(age = 0:2, sex = 1:2, time = 2000)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), time = 2000)),
                       dimscales = c(age = "Intervals", time = "Points"))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                                       dimscales = c(age = "Intervals", time = "Intervals")),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                                        dimscales = c(age = "Intervals", time = "Intervals")))
     ans.obtained <- makeProjectForward(initial = initial, param = param)
     expect_true(ans.obtained)
     ## project.forward is FALSE
     initial <- Counts(array(1:6, 
                             dim = 3:1,
-                            dimnames = list(age = 0:2, sex = 1:2, time = 2005)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), time = 2005)),
                       dimscales = c(age = "Intervals", time = "Points"))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                                       dimscales = c(age = "Intervals", time = "Intervals")),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                       dimscales = c(age = "Intervals", time = "Intervals")))
     ans.obtained <- makeProjectForward(initial = initial, param = param)
     expect_false(ans.obtained)
     ## time dimensions incompatible
     initial <- Counts(array(1:6, 
                             dim = 3:1,
-                            dimnames = list(age = 0:2, sex = 1:2, time = 1995)),
+                            dimnames = list(age = 0:2, sex = c("f", "m"), time = 1995)),
                       dimscales = c(age = "Intervals", time = "Points"))
     param <- list(externalIn = Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                       dimscales = c(age = "Intervals", time = "Intervals")),
                   externalOut = Values(array(0.3, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = 1:2, time = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), time = 2001:2005)),
                       dimscales = c(age = "Intervals", time = "Intervals")))
     expect_error(makeProjectForward(initial = initial, param = param),
                  "time dimensions for 'initial' and 'externalIn' incompatible")

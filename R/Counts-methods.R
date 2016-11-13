@@ -500,19 +500,21 @@ setMethod("collapseCategories",
                   dv.after <- unique(dv.after.rep)
                   DimScale.after <- methods::new("Categories", dimvalues = dv.after)
                   DimScales[[i]] <- DimScale.after
+                  if (dimtypes[i] %in% c("sex", "triangle"))
+                      dimtypes[i] <- "state"
                   indices[[i]] <- match(dv.after.rep, dv.after)
               }
               metadata.after <- methods::new("MetaData",
-                                    nms = names,
-                                    dimtypes = dimtypes,
-                                    DimScales = DimScales)
+                                             nms = names,
+                                             dimtypes = dimtypes,
+                                             DimScales = DimScales)
               dim.after <- dim(metadata.after)
               dimnames.after <- dimnames(metadata.after)
               transform <- methods::new("CollapseTransform",
-                               dims = dims,
-                               indices = indices,
-                               dimBefore = dim.before,
-                               dimAfter = dim.after)
+                                        dims = dims,
+                                        indices = indices,
+                                        dimBefore = dim.before,
+                                        dimAfter = dim.after)
               .Data.after <- collapse(.Data.before, transform = transform)
               .Data.after <- array(.Data.after,
                                    dim = dim.after,
@@ -550,11 +552,13 @@ setMethod("collapseCategories",
                       stop(gettextf("problem translating dimension \"%s\" : %s",
                                     names[dimension[i]], dv.new$message))
                   DimScales[[i]] <- methods::new("Categories", dimvalues = dv.new)
+                  if (dimtypes[i] %in% c("sex", "triangle"))
+                      dimtypes[i] <- "state"
               }
               metadata.new <- methods::new("MetaData",
-                                  nms = names,
-                                  dimtypes = dimtypes,
-                                  DimScales = DimScales)
+                                           nms = names,
+                                           dimtypes = dimtypes,
+                                           DimScales = DimScales)
               dimnames(.Data) <- dimnames(metadata.new)
               methods::new("Counts", .Data = .Data, metadata = metadata.new)
           })

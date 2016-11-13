@@ -1,4 +1,12 @@
 
+setAs(from = "Points", to = "Sexes",
+      function(from) {
+        if (length(from) > 0L)
+          stop("labels not valid for dimscale")
+        else
+          methods::new("Sexes")
+      })
+
 setAs(from = "Points", to = "Triangles",
       function(from) {
         if (length(from) > 0L)

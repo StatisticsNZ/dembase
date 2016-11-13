@@ -1,6 +1,8 @@
 
 ## FUNCTIONS TO OBTAIN CONSTANTS ###################################################
 
+getDefaultSexRatio <- function() 105
+
 ## HAS_TESTS
 ## Given dimtypes that have pairs (eg origin, parent),
 ## return the pairs (eg destination, child).
@@ -76,6 +78,7 @@ getPossibleDimscales <- function(dimtype)
          origin = "Categories",
          parent = "Categories",
          quantile = "Quantiles",
+         sex = "Sexes",
          state = "Categories",
          time = c("Intervals", "Points"),
          triangle = "Triangles",
@@ -122,7 +125,7 @@ getSynonymsForOpenIntervalSymbol <- function(which = c("final", "firstLeft", "fi
 }
 
 ## HAS_TESTS
-## dimtypes that do not come in pairs (eg not origin or parent)
+## dimtypes that where only one dimension is possible per object
 getUniqueDimtypes <- function()
   c("age", "cohort", "iteration", "quantile", "time", "triangle")
 
@@ -130,7 +133,7 @@ getUniqueDimtypes <- function()
 ## all valid dimtypes
 getValidDimtypes <- function()
   c("age", "child", "cohort", "destination", "iteration", "origin",
-    "parent", "quantile", "state", "time", "triangle")
+    "parent", "quantile", "sex", "state", "time", "triangle")
 
 
 
@@ -252,30 +255,31 @@ expandNamesSupplied <- function(namesSupplied, namesAll) {
 }
 
 ## HAS_TESTS
-getISex <- function(names, sex) {
-    for (name in c("names", "sex")) {
-        value <- get(name)
-        if (!is.character(value))
-            stop(gettextf("'%s' does not have type \"%s\"",
-                          name, "character"))
-        if (identical(length(value), 0L))
-            stop(gettextf("'%s' has length %d",
-                          name, 0L))
-        if (any(is.na(value)))
-            stop(gettextf("'%s' has missing values",
-                          name))
-    }
-    i <- match(tolower(names), tolower(sex), nomatch = 0L)
-    is.non.zero <- i > 0L
-    n.nonzero <- sum(is.non.zero)
-    if (n.nonzero == 0L)
-        0L
-    else if (n.nonzero == 1L)
-        which(is.non.zero)
-    else {
-        stop(gettextf("more than one dimension matches '%s' argument",
-                      "sex"))
-    }
+#' @rdname exported-not-api
+#' @export
+iFemale <- function(DimScale) {
+    kFemale <- c("f", "female", "females")
+    if (!is(DimScale, "Sexes"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "DimScale", class(DimScale)))
+    dimvalues <- DimScale@dimvalues
+    dimvalues <- tolower(dimvalues)
+    i <- match(kFemale, dimvalues, nomatch = 0L)
+    max(i)
+}
+
+## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
+iMale <- function(DimScale) {
+    kMale <- c("m", "male", "males")
+    if (!is(DimScale, "Sexes"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "DimScale", class(DimScale)))
+    dimvalues <- DimScale@dimvalues
+    dimvalues <- tolower(dimvalues)
+    i <- match(kMale, dimvalues, nomatch = 0L)
+    max(i)
 }
 
 ## HAS_TESTS
@@ -1307,12 +1311,16 @@ inferDimtypes <- function(names) {
                                 age10year = "age",
                                 "age group" = "age",
                                 agegroup = "age",
-                                duration = "age",
-                                cohort = "cohort",
                                 "birth cohort" = "cohort",
+                                cohort = "cohort",
+                                duration = "age",
+                                gender = "sex",
+                                genders = "sex",
                                 iterations = "iteration",
                                 iter = "iteration",
                                 iteration = "iteration",
+                                sex = "sex",
+                                sexes = "sex",
                                 sim = "iteration",
                                 simulation = "iteration",
                                 quantile = "quantile",
@@ -3494,14 +3502,192 @@ redistributeInnerDistn <- function(counts, weights, transform, useC) {
 
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################
 
-## These functions belong more naturally in 'demlife', but we put it here,
-## so that 'demest' has access to it without needing to install 'demlife'
+## These functions belong more naturally in 'demlife', but they are included here
+## so that 'demest' has access to them without needing to install 'demlife'.
 
-imputeA0 <- function(m0, sex = c("Female", "Male")) {
+## Based on Coale-Demeny formulas given in Preston et al. 2001.
+## Demography. p48
+imputeA <- function(m0, A = c("1a0", "4a1"), sex = c("Female", "Male")) {
+    if (!is.numeric(m0))
+        stop(gettextf("'%s' is non-numeric",
+                      "m0"))
+    if (any(m0[!is.na(m0)] < 0))
+        stop(gettextf("'%s' has negative values",
+                      "m0"))
+    A <- match.arg(A)
     sex <- match.arg(sex)
-    NULL
+    ans <- rep(as.numeric(NA), times = length(m0))
+    is.high <- !is.na(m0) & m0 >= 0.107
+    is.low <- !is.na(m0) & m0 < 0.107
+    if (identical(sex, "Female")) {
+        if (identical(A, "1a0")) {
+            ans[is.high] <- 0.35
+            ans[is.low] <- 0.053 + 2.8 * m0[is.low]
+        }
+        else {
+            ans[is.high] <- 1.361
+            ans[is.low] <- 1.522 - 1.518 * m0[is.low]
+        }
+    }
+    else {
+        if (identical(A, "1a0")) {
+            ans[is.high] <- 0.33
+            ans[is.low] <- 0.045 + 2.684 * m0[is.low]
+        }
+        else {
+            ans[is.high] <- 1.352
+            ans[is.low] <- 1.651 - 2.816 * m0[is.low]
+        }
+    }
+    ans
 }
-    
+
+#' @rdname exported-not-api
+#' @export
+makeAxStart <- function(mx) {
+    if (!is(mx, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "mx", class(mx)))
+    if (length(mx) == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "mx", 0L))
+    dim <- dim(mx)
+    names <- names(mx)
+    dimtypes <- dimtypes(mx, use.names = FALSE)
+    DimScales <- DimScales(mx, use.names = FALSE)
+    i.age <- match("age", dimtypes, nomatch = 0L)
+    i.sex <- match("sex", dimtypes, nomatch = 0L)
+    has.age <- i.age > 0L
+    has.sex <- i.sex > 0L
+    if (!has.age)
+        stop(gettextf("'%s' does not have dimension with %s \"%s\"",
+                      "mx", "dimtype", "age"))
+    DimScale.age <- DimScales[[i.age]]
+    if (!methods::is(DimScale.age, "Intervals"))
+        stop(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                      "mx", "dimtype", "age", "dimscale", "Intervals"))
+    dv.age <- dimvalues(DimScale.age)
+    n.age <- length(DimScale.age)
+    if (has.sex) {
+        DimScale.sex <- DimScales[[i.sex]]
+        n.sex <- length(DimScale.sex)
+    }
+    has.1m0 <- (isTRUE(all.equal(dv.age[1L], 0))
+        && isTRUE(all.equal(dv.age[2L], 1)))
+    has.4m1 <- ((n.age > 1L)
+        && isTRUE(all.equal(dv.age[2L], 1))
+        && isTRUE(all.equal(dv.age[3L], 5)))
+    nrow.ans <- if (has.4m1) 2L else 1L
+    ncol.ans <- prod(dim[-c(i.age, i.sex)])
+    .Data.ans.female <- matrix(nrow = nrow.ans,
+                               ncol = ncol.ans)
+    .Data.ans.male <- .Data.ans.female
+    if (has.1m0) {
+        m0 <- slab(mx,
+                   dimension = i.age,
+                   elements = 1L,
+                   drop = FALSE)
+        if (has.sex) {
+            i.female <- iFemale(DimScale.sex)
+            i.male <- iMale(DimScale.sex)
+            has.female <- i.female > 0L
+            has.male <- i.male > 0L
+            if (has.female) {
+                m0.female <- slab(m0,
+                                  dimension = i.sex,
+                                  elements = i.female)
+                m0.female <- as.numeric(m0.female)
+                .Data.ans.female[1L, ] <- imputeA(m0 = m0.female,
+                                                  A = "1a0",
+                                                  sex = "Female")
+            }
+            if (has.male) {
+                m0.male <- slab(m0,
+                                dimension = i.sex,
+                                elements = i.male)
+                m0.male <- as.numeric(m0.male)
+                .Data.ans.male[1L, ] <- imputeA(m0 = m0.male,
+                                                A = "1a0",
+                                                sex = "Male")
+            }
+        }
+        else {
+            m0 <- as.numeric(m0)
+            .Data.ans.female[1L, ] <- imputeA(m0 = m0,
+                                              A = "1a0",
+                                              sex = "Female")
+            .Data.ans.male[1L, ] <- imputeA(m0 = m0,
+                                            A = "1a0",
+                                            sex = "Male")
+        .}
+        if (has.4m1) {
+            if (has.sex) {
+                if (has.female)
+                    .Data.ans.female[2L, ] <- imputeA(m0 = m0.female,
+                                                      A = "4a1",
+                                                      sex = "Female")
+                if (has.male)
+                    .Data.ans.male[2L, ] <- imputeA(m0 = m0.male,
+                                                    A = "4a1",
+                                                    sex = "Male")
+            }
+            else {
+                .Data.ans.female[2L, ] <- imputeA(m0 = m0,
+                                                  A = "4a1",
+                                                  sex = "Female")
+                .Data.ans.male[2L, ] <- imputeA(m0 = m0,
+                                                A = "4a1",
+                                                sex = "Male")
+            }
+        }
+    }
+    else {
+        nx <- dv.age[2L] - dv.age[1L]
+        .Data.ans.female[] <- nx / 2
+        .Data.ans.male[] <- nx / 2
+    }
+    if (has.sex) {
+        if (has.female && has.male) {
+            if (i.female == 1L)
+                .Data.ans <- c(.Data.ans.female, .Data.ans.male)
+            else
+                .Data.ans <- c(.Data.ans.male, .Data.ans.female)
+        }
+        else {
+            if (has.female)
+                .Data.ans <- .Data.ans.female
+            else
+                .Data.ans <- .Data.ans.male
+        }
+    }
+    else {
+        sex.ratio <- getDefaultSexRatio()
+        pr.female <- 100 / (100 + sex.ratio)
+        .Data.ans <- (pr.female * .Data.ans.female
+            + (1 - pr.female) * .Data.ans.male)
+    }
+    dv.age.ans <- if (has.4m1) dv.age[1:3] else dv.age[1:2]
+    DimScale.age.ans <- new("Intervals",
+                            dimvalues = dv.age.ans)
+    DimScales.ans <- replace(DimScales,
+                             list = i.age,
+                             values = list(DimScale.age.ans))
+    s <- seq_along(dim)
+    perm <- c(i.age, s[-c(i.age, i.sex)], i.sex)
+    names.ans <- names[perm]
+    dimtypes.ans <- dimtypes[perm]
+    DimScales.ans <- DimScales.ans[perm]
+    metadata.ans <- new("MetaData",
+                        nms = names.ans,
+                        dimtypes = dimtypes.ans,
+                        DimScales = DimScales.ans)
+    .Data.ans <- array(.Data.ans,
+                       dim = dim(metadata.ans),
+                       dimnames = dimnames(metadata.ans))
+    new("Values",
+        .Data = .Data.ans,
+        metadata = metadata.ans)
+}    
 
 
 ## FUNCTIONS RELATED TO CONCORDANCES ##################################################
@@ -3835,41 +4021,6 @@ checkAndTidyParam <- function(birth, death,
 
 
 ## HAS_TESTS
-## assume 'sex' and 'initial' valid
-checkDominant <- function(dominant, sex, initial) {
-    if (is.null(dominant)) {
-        if (is.null(sex))
-            NULL
-        else {
-            i.sex <- match(sex, names(initial))
-            n.sex <- dim(initial)[i.sex]
-            if (n.sex == 1L)
-                NULL
-            else
-                stop(gettextf("'%s' is %s, but '%s' dimension has length %d",
-                              "dominant", "NULL", "sex", n.sex))
-        }
-    }
-    else {
-        if (!is.character(dominant))
-            stop(gettextf("'%s' does not have type \"%s\"",
-                          "dominant", "character"))
-        if (!identical(length(dominant), 1L))
-            stop(gettextf("'%s' does not have length %d",
-                          "dominant", 1L))
-        if (is.na(dominant))
-            stop(gettextf("'%s' is missing",
-                          "dominant"))
-        sex.labels <- dimnames(initial)[[sex]]
-        if (!(dominant %in% sex.labels)) {
-            stop(gettextf("'%s' dimension of '%s' does not have category specified by '%s'",
-                          "sex", "initial", "dominant"))
-        }
-        NULL
-    }
-}
-
-## HAS_TESTS
 ## assume 'initial' valid
 checkInternalDims <- function(internalDims, initial, internalIn) {
     if (is.null(internalDims)) {
@@ -3907,31 +4058,6 @@ checkInternalDims <- function(internalDims, initial, internalIn) {
         }
         NULL
     }
-}
-
-## HAS_TESTS
-checkSex <- function(sex, initial) {
-    if (is.null(sex))
-        return(NULL)
-    if (!is.character(sex))
-        stop(gettextf("'%s' does not have type \"%s\"",
-                      "sex", "character"))
-    if (!identical(length(sex), 1L))
-        stop(gettextf("'%s' does not have length %d",
-                      "sex", 1L))
-    if (is.na(sex))
-        stop(gettextf("'%s' is missing",
-                      "sex"))
-    i <- match(sex, names(initial), nomatch = 0L)
-    has.sex <- i > 0L
-    if (!has.sex)
-        stop(gettextf("\"%s\" is not a dimension of '%s'",
-                      sex, "initial"))
-    dimtype.sex <- dimtypes(initial)[[i]]
-    if (!identical(dimtype.sex, "state"))
-        stop(gettextf("'%s' dimension of '%s' does not have dimtype \"%s\"",
-                      "sex", "initial", "state"))
-    NULL
 }
 
 ## HAS_TESTS

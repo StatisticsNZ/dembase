@@ -1,5 +1,14 @@
 
 ## NO_TESTS
+setAs(from = "Quantiles", to = "Sexes",
+      function(from) {
+        if (length(from) > 0L)
+          stop("labels not valid for dimscale")
+      else
+        methods::new("Sexes")
+      })
+
+## NO_TESTS
 setAs(from = "Quantiles", to = "Triangles",
       function(from) {
         if (length(from) > 0L)

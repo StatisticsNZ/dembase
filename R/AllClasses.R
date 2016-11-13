@@ -41,6 +41,7 @@
 #' @param expectedDimscale Name of a \code{\link{dimscale}}.
 #' @param dimtype A \code{\link{dimtype}}.
 #' @param dimscale A \code{\link{dimscale}}.
+#' @param DimScale An object of class DimScale.
 #' @param labels A character vector with labels for a dimension.
 #' @param name Character. A dimension name.
 #' @param iterations  Integer.  The iteractions to extract.
@@ -375,6 +376,20 @@ setClass("Categories",
                  return(gettext("values with length 0"))
              if (any(duplicated(dimvalues)))
                  return(gettext("duplicated values"))
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("Sexes",
+         contains = "Categories",
+         validity = function(object) {
+             dimvalues <- dimvalues(object)
+             dimvalues <- tolower(dimvalues)
+             valid.singular <- all(dimvalues %in% c("female", "male"))
+             valid.plural <- all(dimvalues %in% c("females", "males"))
+             valid.letters <- all(dimvalues %in% c("f", "m"))
+             if (!(valid.singular || valid.plural || valid.letters))
+                 return(gettext("invalid values"))
              TRUE
          })
 

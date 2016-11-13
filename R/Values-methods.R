@@ -1493,7 +1493,7 @@ setMethod("redistribute",
 #' @export
 setMethod("tfr",
           signature(object = "Values"),
-          function(object, sex = c("sex", "gender")) {
+          function(object) {
               .Data <- object@.Data
               metadata <- object@metadata
               dim <- dim(.Data)
@@ -1506,14 +1506,16 @@ setMethod("tfr",
                                 "object", 0L))
               if (any(.Data < 0, na.rm = TRUE))
                   stop(gettext("negative values"))
-              i.sex <- getISex(names = names, sex = sex)
+              i.sex <- match("sex", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
               i.age <- match("age", dimtypes, nomatch = 0L)
               checkAge(object, minAges = 1L)
               has.triangle <- i.triangle > 0
               if (has.triangle) {
                   width <- ageTimeStep(object)
-                  .Data.person.years <- array(0.5 * width, dim = dim, dimnames = dimnames)
+                  .Data.person.years <- array(0.5 * width,
+                                              dim = dim,
+                                              dimnames = dimnames)
               }
               else {
                   DimScale.age <- DimScales[[i.age]]
@@ -1523,9 +1525,13 @@ setMethod("tfr",
                       each <- prod(dim[seq_len(i.age - 1L)])
                       widths <- rep(widths, each = each)
                   }
-                  .Data.person.years <- array(widths, dim = dim, dimnames = dimnames)
+                  .Data.person.years <- array(widths,
+                                              dim = dim,
+                                              dimnames = dimnames)
               }
-              person.years <- methods::new("Counts", .Data = .Data.person.years, metadata = metadata)
+              person.years <- methods::new("Counts",
+                                           .Data = .Data.person.years,
+                                           metadata = metadata)
               object <- person.years * object
               dimension <- c(i.age, i.sex, i.triangle)
               dimension <- dimension[dimension != 0L]

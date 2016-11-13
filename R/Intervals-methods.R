@@ -1,5 +1,14 @@
 
 ## HAS_TESTS
+setAs(from = "Intervals", to = "Sexes",
+      function(from) {
+          if (length(from) > 0L)
+              stop("labels not valid for dimscale")
+          else
+              methods::new("Sexes")
+      })
+
+## HAS_TESTS
 setAs(from = "Intervals", to = "Triangles",
       function(from) {
           if (length(from) > 0L)

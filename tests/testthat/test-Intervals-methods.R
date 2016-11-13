@@ -3,6 +3,13 @@
 context("Intervals-methods")
 
 
+test_that("coercion from Intervals to Sexes works", {
+    expect_error(as(new("Intervals", dimvalues = c(0, 1, 2)), "Sexes"),
+                 "labels not valid for dimscale")
+    expect_identical(as(new("Intervals"), "Sexes"),
+                     new("Sexes"))
+})
+
 test_that("coercion from Intervals to Triangles works", {
   expect_that(as(new("Intervals", dimvalues = c(0, 1, 2)), "Triangles"),
               throws_error("labels not valid for dimscale"))

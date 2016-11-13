@@ -1,5 +1,18 @@
 
 ## HAS_TESTS
+setAs(from = "Categories", to = "Sexes",
+      function(from) {
+        dimvalues <- dimvalues(from)
+        dimvalues.lower <- tolower(dimvalues)
+        valid.singular <- all(dimvalues.lower %in% c("female", "male"))
+        valid.plural <- all(dimvalues.lower %in% c("females", "males"))
+        if (valid.singular || valid.plural)
+            methods::new("Sexes", dimvalues = dimvalues)
+        else
+          stop("labels not valid for dimscale")
+      })
+
+## HAS_TESTS
 setAs(from = "Categories", to = "Triangles",
       function(from) {
         dimvalues <- dimvalues(from)

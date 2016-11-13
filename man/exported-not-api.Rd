@@ -29,6 +29,7 @@
 \alias{getIAfter}
 \alias{getIBefore}
 \alias{getIShared}
+\alias{iFemale}
 \alias{incrementDimScale}
 \alias{incrementDimScale,DimScale-method}
 \alias{incrementDimScale,Intervals-method}
@@ -124,6 +125,8 @@ stepLengths(object)
 
 checkAndTidyAlong(along, metadata, numericDimScales)
 
+iFemale(DimScale)
+
 makeCollapseTransformExtra(transform)
 
 getIAfter(i, transform, check = TRUE, useC = FALSE)
@@ -178,6 +181,8 @@ before trying to perform it.}
 
 \item{numericDimScales}{Logical. Whether to require that \code{along}
 dimension have \code{\link{dimscale}} \code{"Points"} or \code{"Intervals"}.}
+
+\item{DimScale}{An object of class \code{\linkS4class{DimScale}}.}
 
 \item{i}{Integer. Index for cell within.}
 
