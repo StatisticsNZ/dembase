@@ -6,17 +6,14 @@
 \alias{tfr,Values-method}
 \title{Calculate total fertility rates.}
 \usage{
-tfr(object, sex = c("sex", "gender"))
+tfr(object)
 
-\S4method{tfr}{Values}(object, sex = c("sex", "gender"))
+\S4method{tfr}{Values}(object)
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{Values}}.
 \code{object} must have a dimension with \code{\link{dimtype}}
 \code{"age"}.}
-
-\item{sex}{Name of the "sex" variable, if the name is not \code{"sex"}
-or \code{"gender"} (case insensitive).}
 }
 \value{
 An object of class \code{\linkS4class{Values}}, with no
@@ -37,17 +34,13 @@ for each combination of these other variables.
 
 The calculations are done aggregating the "age", and, if present,
 "sex" and Lexis triangle dimensions.  See \code{\link{dimtypes}}
-for more on age and Lexis triangle dimtypes.) If \code{object} contains
-a "sex" dimension, this is assumed to be the sex of the child,
+for more on age, sex, and Lexis triangle dimtypes.)
+If \code{object} containsa "sex" dimension, this is assumed
+to be the sex of the child,
 not the parent. Total fertility rates do not distinguish
 female and male births.
 
-A dimension is assumed to measure sex if it has the name
-\code{"sex"} or \code{"gender"} (case insenstive).  If another
-name is used, function \code{tfr} can be informed via the \code{sex}
-argument.
-
-If \code{object} has iterations, capturing uncertainty, so will
+If \code{object} has iterations, to capture uncertainty, so will
 the return value.
 }
 \examples{
@@ -60,13 +53,5 @@ popn <- Counts(popn, dimscales = c(year = "Intervals"))
 females <- subarray(popn, sex == "Female")
 fert.rates <- births / females
 tfr(fert.rates)
-
-## use of 'sex' argument
-fake.data <- array(runif(4, max = 0.05),
-                   dim = c(2, 2),
-                   dimnames = list(age = c("15-29", "30-49"),
-                       "sex of child" = c("Female", "Male")))
-fake.data <- Values(fake.data)
-tfr(fake.data, sex = "sex of child")
 }
 

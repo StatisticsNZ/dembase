@@ -3505,6 +3505,101 @@ redistributeInnerDistn <- function(counts, weights, transform, useC) {
 ## These functions belong more naturally in 'demlife', but they are included here
 ## so that 'demest' has access to them without needing to install 'demlife'.
 
+
+## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
+expandAx <- function(ax, object) {
+    names.ax <- names(ax)
+    names.obj <- names(object)
+    dimtypes.ax <- dimtypes(ax)
+    dimtypes.obj <- dimtypes(object)
+    DimScales.ax <- DimScales(ax, use.names = FALSE)
+    DimScales.obj <- DimScales(object, use.names = FALSE)
+    dimnames.ax <- dimnames(ax)
+    dimnames.obj <- dimnames(object)
+    i.age.ax <- match("age", dimtypes.ax, nomatch = 0L)
+    i.age.obj <- match("age", dimtypes.obj, nomatch = 0L)
+    has.age.ax <- i.age.ax > 0L
+    has.age.obj <- i.age.obj > 0L
+    if (!has.age.ax)
+        stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                      "ax", "dimtype", "age"))
+    if (!has.age.obj)
+        stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                      "object", "dimtype", "age"))
+    DimScale.age.ax <- DimScales.ax[[i.age.ax]]
+    DimScale.age.obj <- DimScales.obj[[i.age.obj]]
+    if (!methods::is(DimScale.age.ax, "Intervals"))
+        stop(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                      "ax", "dimtype", "age", "dimscale", "Intervals"))
+    if (!methods::is(DimScale.age.obj, "Intervals"))
+        stop(gettextf("dimension of '%s' with %s \"%s\" does not have %s \"%s\"",
+                      "object", "dimtype", "age", "dimscale", "Intervals"))
+    dv.ax.old <- DimScale.age.ax@dimvalues
+    dv.obj <- DimScale.age.obj@dimvalues
+    n.dv.ax.old <- length(dv.ax.old)
+    n.dv.obj <- length(dv.obj)
+    dn.ax <- dimnames.ax[[i.age.ax]]
+    dn.obj <- dimnames.obj[[i.age.obj]]
+    if (is.infinite(dv.ax.old[1L]))
+        stop(gettextf("first age interval of '%s' is open on left",
+                      "ax"))
+    if (is.infinite(dv.obj[1L]))
+        stop(gettextf("first age interval of '%s' is open on left",
+                      "object"))
+    min.dv.ax.old <- min(dv.ax.old)
+    i.min <- match(min.dv.ax.old, dv.obj, nomatch = 0L)
+    if (i.min > 1L) {
+        s <- seq_len(i.min)
+        labels.lower <- dn.obj[s[-length(s)]]
+        ax <- extrapolate(ax,
+                          along = i.age.ax,
+                          labels = labels.lower,
+                          type = "missing")
+        nx <- diff(dv.obj[s])
+        index <- slice.index(ax@.Data, MARGIN = i.age.ax)
+        for (i in seq_along(nx))
+            ax[index == i] <- 0.5 * nx[i]
+        ## in future add better approximation for age group 0 and 1-4
+    }
+    max.dv.ax.old <- max(dv.ax.old)
+    i.max <- match(max.dv.ax.old, dv.obj, nomatch = 0L)
+    if ((0L < i.max ) && (i.max < n.dv.obj)) {
+        s <- seq.int(from = i.max, to = n.dv.obj)
+        labels.higher <- dn.obj[s[-length(s)]]
+        ax <- extrapolate(ax,
+                          along = i.age.ax,
+                          labels = labels.higher,
+                          type = "missing")
+        nx <- diff(dv.obj[s])
+        index <- slice.index(ax@.Data, MARGIN = i.age.ax)
+        for (i in seq_along(nx)) {
+            if (is.finite(nx[i]))
+                ax[index == s[i]] <- 0.5 * nx[i]
+            else
+                ax[index == s[i]] <- 0.5 * nx[i - 1L]
+        }
+    }
+    DimScale.ax.new <- DimScales(ax)[[i.age.ax]]
+    dv.ax.new <- DimScale.ax.new@dimvalues
+    ## use stricter test for compatibility than standard one, since do not want
+    ## ax values shared across multiple age intervals in object
+    if (!isTRUE(all(dv.obj %in% dv.ax.new)))
+        stop(gettextf("dimensions of '%s' and '%s' with dimtype \"%s\" not compatible",
+                      "ax", "object", "age"))
+    ans <- tryCatch(makeCompatible(x = ax,
+                                   y = object,
+                                   subset = TRUE,
+                                   check = TRUE),
+                    error = function(e) e)
+    if (methods::is(ans, "error"))
+        stop(gettextf("'%s' and '%s' not compatible : %s",
+                      "ax", "object", ans$message))
+    ans
+}
+
+## HAS_TESTS
 ## Based on Coale-Demeny formulas given in Preston et al. 2001.
 ## Demography. p48
 imputeA <- function(m0, A = c("1a0", "4a1"), sex = c("Female", "Male")) {
@@ -3542,6 +3637,7 @@ imputeA <- function(m0, A = c("1a0", "4a1"), sex = c("Female", "Male")) {
     ans
 }
 
+## HAS_TESTS
 #' @rdname exported-not-api
 #' @export
 makeAxStart <- function(mx) {
@@ -3577,12 +3673,12 @@ makeAxStart <- function(mx) {
     has.4m1 <- ((n.age > 1L)
         && isTRUE(all.equal(dv.age[2L], 1))
         && isTRUE(all.equal(dv.age[3L], 5)))
-    nrow.ans <- if (has.4m1) 2L else 1L
-    ncol.ans <- prod(dim[-c(i.age, i.sex)])
-    .Data.ans.female <- matrix(nrow = nrow.ans,
-                               ncol = ncol.ans)
-    .Data.ans.male <- .Data.ans.female
     if (has.1m0) {
+        nrow.ans <- if (has.4m1) 2L else 1L
+        ncol.ans <- prod(dim[-c(i.age, i.sex)])
+        .Data.ans.female <- matrix(nrow = nrow.ans,
+                                   ncol = ncol.ans)
+        .Data.ans.male <- .Data.ans.female
         m0 <- slab(mx,
                    dimension = i.age,
                    elements = 1L,
@@ -3619,7 +3715,7 @@ makeAxStart <- function(mx) {
             .Data.ans.male[1L, ] <- imputeA(m0 = m0,
                                             A = "1a0",
                                             sex = "Male")
-        .}
+        }
         if (has.4m1) {
             if (has.sex) {
                 if (has.female)
@@ -3640,31 +3736,30 @@ makeAxStart <- function(mx) {
                                                 sex = "Male")
             }
         }
+        if (has.sex) {
+            if (has.female && has.male) {
+                if (i.female == 1L)
+                    .Data.ans <- c(.Data.ans.female, .Data.ans.male)
+                else
+                    .Data.ans <- c(.Data.ans.male, .Data.ans.female)
+            }
+            else {
+                if (has.female)
+                    .Data.ans <- .Data.ans.female
+                else
+                    .Data.ans <- .Data.ans.male
+            }
+        }
+        else {
+            sex.ratio <- getDefaultSexRatio()
+            pr.female <- 100 / (100 + sex.ratio)
+            .Data.ans <- (pr.female * .Data.ans.female
+                + (1 - pr.female) * .Data.ans.male)
+        }
     }
     else {
         nx <- dv.age[2L] - dv.age[1L]
-        .Data.ans.female[] <- nx / 2
-        .Data.ans.male[] <- nx / 2
-    }
-    if (has.sex) {
-        if (has.female && has.male) {
-            if (i.female == 1L)
-                .Data.ans <- c(.Data.ans.female, .Data.ans.male)
-            else
-                .Data.ans <- c(.Data.ans.male, .Data.ans.female)
-        }
-        else {
-            if (has.female)
-                .Data.ans <- .Data.ans.female
-            else
-                .Data.ans <- .Data.ans.male
-        }
-    }
-    else {
-        sex.ratio <- getDefaultSexRatio()
-        pr.female <- 100 / (100 + sex.ratio)
-        .Data.ans <- (pr.female * .Data.ans.female
-            + (1 - pr.female) * .Data.ans.male)
+        .Data.ans <- rep(nx / 2, times = length(mx))
     }
     dv.age.ans <- if (has.4m1) dv.age[1:3] else dv.age[1:2]
     DimScale.age.ans <- new("Intervals",

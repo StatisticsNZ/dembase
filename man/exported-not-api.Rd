@@ -23,6 +23,7 @@
 \alias{collapse,MetaData,CollapseTransform-method}
 \alias{collapse,Values,CollapseTransform-method}
 \alias{collapse,array,CollapseTransform-method}
+\alias{expandAx}
 \alias{exported-not-api}
 \alias{extend}
 \alias{extend,array,ExtendTransform-method}
@@ -30,11 +31,13 @@
 \alias{getIBefore}
 \alias{getIShared}
 \alias{iFemale}
+\alias{iMale}
 \alias{incrementDimScale}
 \alias{incrementDimScale,DimScale-method}
 \alias{incrementDimScale,Intervals-method}
 \alias{incrementDimScale,Points-method}
 \alias{inferDimScale}
+\alias{makeAxStart}
 \alias{makeCollapseTransformExtra}
 \alias{makeCompatible}
 \alias{makeCompatible,Counts,DemographicArray-method}
@@ -127,6 +130,8 @@ checkAndTidyAlong(along, metadata, numericDimScales)
 
 iFemale(DimScale)
 
+iMale(DimScale)
+
 makeCollapseTransformExtra(transform)
 
 getIAfter(i, transform, check = TRUE, useC = FALSE)
@@ -143,6 +148,10 @@ checkAge(object, minAges = 2L, regular = FALSE, openLeftOK = FALSE,
 inferDimScale(dimtype, dimscale = NULL, labels, name)
 
 addIterationsToMetadata(object, iterations)
+
+expandAx(ax, object)
+
+makeAxStart(mx)
 }
 \arguments{
 \item{object}{Typically an object of class
@@ -182,7 +191,7 @@ before trying to perform it.}
 \item{numericDimScales}{Logical. Whether to require that \code{along}
 dimension have \code{\link{dimscale}} \code{"Points"} or \code{"Intervals"}.}
 
-\item{DimScale}{An object of class \code{\linkS4class{DimScale}}.}
+\item{DimScale}{An object of class DimScale.}
 
 \item{i}{Integer. Index for cell within.}
 
@@ -209,6 +218,10 @@ have no minimum age.)}
 \item{name}{Character. A dimension name.}
 
 \item{iterations}{Integer.  The iteractions to extract.}
+
+\item{ax}{Separation factors.}
+
+\item{mx}{Mortality rates.}
 }
 \description{
 The classes functions listed below are exported, so that they can be

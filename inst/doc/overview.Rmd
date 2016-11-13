@@ -63,6 +63,7 @@ Every dimension of a demographic array has a dimtype and a dimscale.  The choice
 | `time`    | Time - point or period | `Points` or `Intervals` |
 | `cohort`  | Cohort | `Intervals` |
 | `triangle` | Lexis triangle | `Triangles` |
+| `sex`     | Typically biological sex | `Sexes`   |
 | `state`   | General-purpose categorical dimension | `Categories` |
 | `origin`  | Special type of state dimension | `Categories` |
 | `destination` | Paired with `origin` | `Categories` |
@@ -71,7 +72,7 @@ Every dimension of a demographic array has a dimtype and a dimscale.  The choice
 | `iterations` | For output from simulations | `Iterations` |
 | `quantiles` | Summarising iterations | `Quantiles` |
 
-Dimtypes `age`, `time`, `cohort` and `triangle` describe the age-time plan of the data.  Dimtype `state` is used for most stratifying variables, such as sex, or country of birth.  Changes of category, such as moves between regions, are represented using `origin` and `destination` dimensions.  Dimtypes `parent` and `child` are used for tabulations of parents verus children, such as occupation of mother versus occupation of child.  Dimtypes `iterations` and `quantiles` are typically used to represent uncertainty.
+Dimtypes `age`, `time`, `cohort` and `triangle` describe the age-time plan of the data.  Dimtype `sex` is used for biological sex, and allows only two values: female and male.  Dimtype `state` is used for most stratifying variables, such country of birth.  Changes of category, such as moves between regions, are represented using `origin` and `destination` dimensions.  Dimtypes `parent` and `child` are used for tabulations of parents verus children, such as occupation of mother versus occupation of child.  Dimtypes `iterations` and `quantiles` are typically used to represent uncertainty.
 
 The Indian population data above refer to a point in time, so the year dimension has a `Points` dimscale. The fertility data, in contrast, have an `Intervals` dimscale.  
 

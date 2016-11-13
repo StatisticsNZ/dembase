@@ -12,7 +12,7 @@
 
 <meta name="author" content="John Bryant" />
 
-<meta name="date" content="2016-09-30" />
+<meta name="date" content="2016-11-14" />
 
 <title>Overview</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Overview</h1>
 <h4 class="author"><em>John Bryant</em></h4>
-<h4 class="date"><em>2016-09-30</em></h4>
+<h4 class="date"><em>2016-11-14</em></h4>
 
 
 
@@ -88,13 +88,13 @@ ind.popn &lt;-<span class="st"> </span>demdata::india.popn <span class="co"># 'i
 ind.popn &lt;-<span class="st"> </span><span class="kw">Counts</span>(ind.popn)
 ind.popn
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   21        2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-4       Female    </span>
-<span class="co">#&gt; last:     100+      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   21        2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-4       Female</span>
+<span class="co">#&gt; last:     100+      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female  Male</span>
@@ -147,13 +147,13 @@ ind.fert
 va.rates &lt;-<span class="st"> </span><span class="kw">Values</span>(va.rates)
 va.rates
 <span class="co">#&gt; An object of class &quot;Values&quot;</span>
-<span class="co">#&gt;                                          </span>
-<span class="co">#&gt; name:     age       sex        residence </span>
-<span class="co">#&gt; length:   5         2          2         </span>
-<span class="co">#&gt; dimtype:  age       state      state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories Categories</span>
-<span class="co">#&gt; first:    50-54     Male       Rural     </span>
-<span class="co">#&gt; last:     70-74     Female     Urban     </span>
+<span class="co">#&gt;                                      </span>
+<span class="co">#&gt; name:     age       sex    residence </span>
+<span class="co">#&gt; length:   5         2      2         </span>
+<span class="co">#&gt; dimtype:  age       sex    state     </span>
+<span class="co">#&gt; dimscale: Intervals Sexes  Categories</span>
+<span class="co">#&gt; first:    50-54     Male   Rural     </span>
+<span class="co">#&gt; last:     70-74     Female Urban     </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; , , residence = Rural</span>
 <span class="co">#&gt; </span>
@@ -213,43 +213,48 @@ va.rates
 <td align="left"><code>Triangles</code></td>
 </tr>
 <tr class="odd">
+<td align="left"><code>sex</code></td>
+<td align="left">Typically biological sex</td>
+<td align="left"><code>Sexes</code></td>
+</tr>
+<tr class="even">
 <td align="left"><code>state</code></td>
 <td align="left">General-purpose categorical dimension</td>
 <td align="left"><code>Categories</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"><code>origin</code></td>
 <td align="left">Special type of state dimension</td>
 <td align="left"><code>Categories</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"><code>destination</code></td>
 <td align="left">Paired with <code>origin</code></td>
 <td align="left"><code>Categories</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"><code>parent</code></td>
 <td align="left">Special type of state dimension</td>
 <td align="left"><code>Categories</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"><code>child</code></td>
 <td align="left">Paired with <code>parent</code></td>
 <td align="left"><code>Categories</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left"><code>iterations</code></td>
 <td align="left">For output from simulations</td>
 <td align="left"><code>Iterations</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left"><code>quantiles</code></td>
 <td align="left">Summarising iterations</td>
 <td align="left"><code>Quantiles</code></td>
 </tr>
 </tbody>
 </table>
-<p>Dimtypes <code>age</code>, <code>time</code>, <code>cohort</code> and <code>triangle</code> describe the age-time plan of the data. Dimtype <code>state</code> is used for most stratifying variables, such as sex, or country of birth. Changes of category, such as moves between regions, are represented using <code>origin</code> and <code>destination</code> dimensions. Dimtypes <code>parent</code> and <code>child</code> are used for tabulations of parents verus children, such as occupation of mother versus occupation of child. Dimtypes <code>iterations</code> and <code>quantiles</code> are typically used to represent uncertainty.</p>
+<p>Dimtypes <code>age</code>, <code>time</code>, <code>cohort</code> and <code>triangle</code> describe the age-time plan of the data. Dimtype <code>sex</code> is used for biological sex, and allows only two values: female and male. Dimtype <code>state</code> is used for most stratifying variables, such country of birth. Changes of category, such as moves between regions, are represented using <code>origin</code> and <code>destination</code> dimensions. Dimtypes <code>parent</code> and <code>child</code> are used for tabulations of parents verus children, such as occupation of mother versus occupation of child. Dimtypes <code>iterations</code> and <code>quantiles</code> are typically used to represent uncertainty.</p>
 <p>The Indian population data above refer to a point in time, so the year dimension has a <code>Points</code> dimscale. The fertility data, in contrast, have an <code>Intervals</code> dimscale.</p>
 </div>
 </div>
@@ -270,13 +275,13 @@ total.income &lt;-<span class="st"> </span><span class="kw">xtabs</span>(income 
 total.income &lt;-<span class="st"> </span><span class="kw">Counts</span>(total.income)
 total.income
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                                </span>
-<span class="co">#&gt; name:     ethnicity  sex       </span>
-<span class="co">#&gt; length:   6          2         </span>
-<span class="co">#&gt; dimtype:  state      state     </span>
-<span class="co">#&gt; dimscale: Categories Categories</span>
-<span class="co">#&gt; first:    European   Female    </span>
-<span class="co">#&gt; last:     Other      Male      </span>
+<span class="co">#&gt;                            </span>
+<span class="co">#&gt; name:     ethnicity  sex   </span>
+<span class="co">#&gt; length:   6          2     </span>
+<span class="co">#&gt; dimtype:  state      sex   </span>
+<span class="co">#&gt; dimscale: Categories Sexes </span>
+<span class="co">#&gt; first:    European   Female</span>
+<span class="co">#&gt; last:     Other      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                        sex</span>
 <span class="co">#&gt; ethnicity                Female    Male</span>
@@ -293,13 +298,13 @@ total.income
 mean.income &lt;-<span class="st"> </span><span class="kw">Values</span>(mean.income)
 <span class="kw">round</span>(mean.income)
 <span class="co">#&gt; An object of class &quot;Values&quot;</span>
-<span class="co">#&gt;                                </span>
-<span class="co">#&gt; name:     ethnicity  sex       </span>
-<span class="co">#&gt; length:   6          2         </span>
-<span class="co">#&gt; dimtype:  state      state     </span>
-<span class="co">#&gt; dimscale: Categories Categories</span>
-<span class="co">#&gt; first:    European   Female    </span>
-<span class="co">#&gt; last:     Other      Male      </span>
+<span class="co">#&gt;                            </span>
+<span class="co">#&gt; name:     ethnicity  sex   </span>
+<span class="co">#&gt; length:   6          2     </span>
+<span class="co">#&gt; dimtype:  state      sex   </span>
+<span class="co">#&gt; dimscale: Categories Sexes </span>
+<span class="co">#&gt; first:    European   Female</span>
+<span class="co">#&gt; last:     Other      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;                        sex</span>
 <span class="co">#&gt; ethnicity               Female Male</span>
@@ -328,13 +333,13 @@ xt &lt;-<span class="st"> </span><span class="kw">xtabs</span>(count ~<span clas
             <span class="dt">data =</span> df)
 <span class="kw">Counts</span>(xt)
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   2         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-4       f         </span>
-<span class="co">#&gt; last:     5-9       m         </span>
+<span class="co">#&gt;                          </span>
+<span class="co">#&gt; name:     age       sex  </span>
+<span class="co">#&gt; length:   2         2    </span>
+<span class="co">#&gt; dimtype:  age       sex  </span>
+<span class="co">#&gt; dimscale: Intervals Sexes</span>
+<span class="co">#&gt; first:    0-4       f    </span>
+<span class="co">#&gt; last:     5-9       m    </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;      sex</span>
 <span class="co">#&gt; age    f  m</span>
@@ -358,13 +363,13 @@ rus.births.subset<span class="fl">.08</span>
 <span class="kw">Counts</span>(rus.births.subset<span class="fl">.08</span>) <span class="co"># 'Counts' issues a message</span>
 <span class="co">#&gt; assuming dimension &quot;age&quot; with dimtype &quot;age&quot; has dimscale &quot;Intervals&quot;</span>
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   5         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    15        Female    </span>
-<span class="co">#&gt; last:     19        Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   5         2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    15        Female</span>
+<span class="co">#&gt; last:     19        Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;     sex</span>
 <span class="co">#&gt; age  Female  Male</span>
@@ -377,13 +382,13 @@ rus.births.subset<span class="fl">.08</span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Counts</span>(rus.births.subset<span class="fl">.08</span>,
        <span class="dt">dimscales =</span> <span class="kw">c</span>(<span class="dt">age =</span> <span class="st">&quot;Intervals&quot;</span>)) <span class="co"># no message</span>
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   5         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    15        Female    </span>
-<span class="co">#&gt; last:     19        Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   5         2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    15        Female</span>
+<span class="co">#&gt; last:     19        Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;     sex</span>
 <span class="co">#&gt; age  Female  Male</span>
@@ -411,13 +416,13 @@ rus.births.subset<span class="fl">.12</span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Counts</span>(rus.births.subset<span class="fl">.12</span>,
        <span class="dt">dimscales =</span> <span class="kw">c</span>(<span class="dt">year =</span> <span class="st">&quot;Intervals&quot;</span>)) <span class="co"># no message</span>
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     year      sex       </span>
-<span class="co">#&gt; length:   5         2         </span>
-<span class="co">#&gt; dimtype:  time      state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    2007      Female    </span>
-<span class="co">#&gt; last:     2011      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     year      sex   </span>
+<span class="co">#&gt; length:   5         2     </span>
+<span class="co">#&gt; dimtype:  time      sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    2007      Female</span>
+<span class="co">#&gt; last:     2011      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;       sex</span>
 <span class="co">#&gt; year   Female Male</span>
@@ -476,13 +481,13 @@ va.popn.values &lt;-<span class="st"> </span><span class="kw">as</span>(va.popn,
 <p>Collapsing the dimension of a <code>Counts</code> object is easy:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ind.popn
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   21        2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-4       Female    </span>
-<span class="co">#&gt; last:     100+      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   21        2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-4       Female</span>
+<span class="co">#&gt; last:     100+      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female  Male</span>
@@ -509,13 +514,13 @@ va.popn.values &lt;-<span class="st"> </span><span class="kw">as</span>(va.popn,
 <span class="co">#&gt;   100+      13     6</span>
 <span class="kw">collapseDimension</span>(ind.popn, <span class="dt">dimension =</span> <span class="st">&quot;age&quot;</span>)
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                     </span>
-<span class="co">#&gt; name:     sex       </span>
-<span class="co">#&gt; length:   2         </span>
-<span class="co">#&gt; dimtype:  state     </span>
-<span class="co">#&gt; dimscale: Categories</span>
-<span class="co">#&gt; first:    Female    </span>
-<span class="co">#&gt; last:     Male      </span>
+<span class="co">#&gt;                 </span>
+<span class="co">#&gt; name:     sex   </span>
+<span class="co">#&gt; length:   2     </span>
+<span class="co">#&gt; dimtype:  sex   </span>
+<span class="co">#&gt; dimscale: Sexes </span>
+<span class="co">#&gt; first:    Female</span>
+<span class="co">#&gt; last:     Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; sex</span>
 <span class="co">#&gt; Female   Male </span>
@@ -523,13 +528,13 @@ va.popn.values &lt;-<span class="st"> </span><span class="kw">as</span>(va.popn,
 <p>Collapsing the dimension of a <code>Values</code> object requires weights:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">collapseDimension</span>(va.rates, <span class="dt">dimension =</span> <span class="st">&quot;age&quot;</span>, <span class="dt">weights =</span> va.popn)
 <span class="co">#&gt; An object of class &quot;Values&quot;</span>
-<span class="co">#&gt;                                </span>
-<span class="co">#&gt; name:     sex        residence </span>
-<span class="co">#&gt; length:   2          2         </span>
-<span class="co">#&gt; dimtype:  state      state     </span>
-<span class="co">#&gt; dimscale: Categories Categories</span>
-<span class="co">#&gt; first:    Male       Rural     </span>
-<span class="co">#&gt; last:     Female     Urban     </span>
+<span class="co">#&gt;                            </span>
+<span class="co">#&gt; name:     sex    residence </span>
+<span class="co">#&gt; length:   2      2         </span>
+<span class="co">#&gt; dimtype:  sex    state     </span>
+<span class="co">#&gt; dimscale: Sexes  Categories</span>
+<span class="co">#&gt; first:    Male   Rural     </span>
+<span class="co">#&gt; last:     Female Urban     </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;         residence</span>
 <span class="co">#&gt; sex         Rural    Urban</span>
@@ -537,24 +542,24 @@ va.popn.values &lt;-<span class="st"> </span><span class="kw">as</span>(va.popn,
 <span class="co">#&gt;   Female 20.30056 20.25369</span></code></pre></div>
 <p>Note that <code>va.popn</code> has a dimension, <code>&quot;color&quot;</code>, that <code>va.rates</code> does not:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(va.popn)
-<span class="co">#&gt;                                                     </span>
-<span class="co">#&gt; name:     age       sex        residence  color     </span>
-<span class="co">#&gt; length:   5         2          2          2         </span>
-<span class="co">#&gt; dimtype:  age       state      state      state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories Categories Categories</span>
-<span class="co">#&gt; first:    50-54     Male       Rural      White     </span>
-<span class="co">#&gt; last:     70-74     Female     Urban      Colored   </span>
+<span class="co">#&gt;                                                 </span>
+<span class="co">#&gt; name:     age       sex    residence  color     </span>
+<span class="co">#&gt; length:   5         2      2          2         </span>
+<span class="co">#&gt; dimtype:  age       sex    state      state     </span>
+<span class="co">#&gt; dimscale: Intervals Sexes  Categories Categories</span>
+<span class="co">#&gt; first:    50-54     Male   Rural      White     </span>
+<span class="co">#&gt; last:     70-74     Female Urban      Colored   </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
 <span class="co">#&gt;    1323    4376    7628   10430   15590   29720</span>
 <span class="kw">summary</span>(va.rates)
-<span class="co">#&gt;                                          </span>
-<span class="co">#&gt; name:     age       sex        residence </span>
-<span class="co">#&gt; length:   5         2          2         </span>
-<span class="co">#&gt; dimtype:  age       state      state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories Categories</span>
-<span class="co">#&gt; first:    50-54     Male       Rural     </span>
-<span class="co">#&gt; last:     70-74     Female     Urban     </span>
+<span class="co">#&gt;                                      </span>
+<span class="co">#&gt; name:     age       sex    residence </span>
+<span class="co">#&gt; length:   5         2      2         </span>
+<span class="co">#&gt; dimtype:  age       sex    state     </span>
+<span class="co">#&gt; dimscale: Intervals Sexes  Categories</span>
+<span class="co">#&gt; first:    50-54     Male   Rural     </span>
+<span class="co">#&gt; last:     70-74     Female Urban     </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span>
 <span class="co">#&gt;    8.40   14.95   25.60   30.92   43.25   71.10</span></code></pre></div>
@@ -562,13 +567,13 @@ va.popn.values &lt;-<span class="st"> </span><span class="kw">as</span>(va.popn,
 <p><code>dembase</code> also has functions for aggregating categories, iterations, origin-destination dimensions, and intervals. For instance,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">collapseIntervals</span>(ind.popn, <span class="dt">dimension =</span> <span class="st">&quot;age&quot;</span>, <span class="dt">width =</span> <span class="dv">10</span>)
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   11        2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-9       Female    </span>
-<span class="co">#&gt; last:     100+      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   11        2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-9       Female</span>
+<span class="co">#&gt; last:     100+      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female   Male</span>
@@ -594,13 +599,13 @@ ind.popn<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw
 ind.popn<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw">t</span>(ind.popn<span class="fl">.2</span>)
 ind.popn<span class="fl">.2</span>
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     sex        age      </span>
-<span class="co">#&gt; length:   2          4        </span>
-<span class="co">#&gt; dimtype:  state      age      </span>
-<span class="co">#&gt; dimscale: Categories Intervals</span>
-<span class="co">#&gt; first:    Female     0-9      </span>
-<span class="co">#&gt; last:     Male       50-59    </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     sex    age      </span>
+<span class="co">#&gt; length:   2      4        </span>
+<span class="co">#&gt; dimtype:  sex    age      </span>
+<span class="co">#&gt; dimscale: Sexes  Intervals</span>
+<span class="co">#&gt; first:    Female 0-9      </span>
+<span class="co">#&gt; last:     Male   50-59    </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;         age</span>
 <span class="co">#&gt; sex         0-9  10-24  25-49 50-59</span>
@@ -609,13 +614,13 @@ ind.popn<span class="fl">.2</span>
 ind.popn -<span class="st"> </span>ind.popn<span class="fl">.2</span>
 <span class="co">#&gt; omitted some elements of first object</span>
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   4         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-9       Female    </span>
-<span class="co">#&gt; last:     50-59     Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   4         2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-9       Female</span>
+<span class="co">#&gt; last:     50-59     Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female Male</span>
@@ -646,13 +651,13 @@ ind.popn -<span class="st"> </span>ind.popn<span class="fl">.2</span>
 <span class="co">#&gt;   45-49         8         6         6         4</span>
 <span class="kw">subarray</span>(va.rates, residence ==<span class="st"> &quot;Urban&quot;</span> &amp;<span class="st"> </span>age &lt;<span class="st"> </span><span class="dv">62</span>)
 <span class="co">#&gt; An object of class &quot;Values&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   2         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    50-54     Male      </span>
-<span class="co">#&gt; last:     55-59     Female    </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   2         2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    50-54     Male  </span>
+<span class="co">#&gt; last:     55-59     Female</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Male Female</span>
@@ -663,13 +668,13 @@ ind.popn -<span class="st"> </span>ind.popn<span class="fl">.2</span>
      <span class="dt">dimension =</span> <span class="st">&quot;residence&quot;</span>,
      <span class="dt">elements =</span> <span class="st">&quot;Urban&quot;</span>)
 <span class="co">#&gt; An object of class &quot;Values&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   5         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    50-54     Male      </span>
-<span class="co">#&gt; last:     70-74     Female    </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   5         2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    50-54     Male  </span>
+<span class="co">#&gt; last:     70-74     Female</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Male Female</span>
@@ -719,13 +724,13 @@ rates.sub &lt;-<span class="st"> </span>births.sub /<span class="st"> </span>fem
 ind.popn.old &lt;-<span class="st"> </span><span class="kw">subarray</span>(ind.popn, age &gt;<span class="st"> </span><span class="dv">40</span>)
 ind.popn.young
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   8         2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-4       Female    </span>
-<span class="co">#&gt; last:     35-39     Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   8         2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-4       Female</span>
+<span class="co">#&gt; last:     35-39     Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female  Male</span>
@@ -739,13 +744,13 @@ ind.popn.young
 <span class="co">#&gt;   35-39  39796 42812</span>
 ind.popn.old
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   13        2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    40-44     Female    </span>
-<span class="co">#&gt; last:     100+      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   13        2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    40-44     Female</span>
+<span class="co">#&gt; last:     100+      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female  Male</span>
@@ -764,13 +769,13 @@ ind.popn.old
 <span class="co">#&gt;   100+      13     6</span>
 <span class="kw">dbind</span>(ind.popn.young, ind.popn.old, <span class="dt">along =</span> <span class="st">&quot;age&quot;</span>)
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   21        2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-4       Female    </span>
-<span class="co">#&gt; last:     100+      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   21        2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-4       Female</span>
+<span class="co">#&gt; last:     100+      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female  Male</span>
@@ -799,13 +804,13 @@ ind.popn.old
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ind.popn.young &lt;-<span class="st"> </span><span class="kw">t</span>(ind.popn.young)
 ind.popn.young
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     sex        age      </span>
-<span class="co">#&gt; length:   2          8        </span>
-<span class="co">#&gt; dimtype:  state      age      </span>
-<span class="co">#&gt; dimscale: Categories Intervals</span>
-<span class="co">#&gt; first:    Female     0-4      </span>
-<span class="co">#&gt; last:     Male       35-39    </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     sex    age      </span>
+<span class="co">#&gt; length:   2      8        </span>
+<span class="co">#&gt; dimtype:  sex    age      </span>
+<span class="co">#&gt; dimscale: Sexes  Intervals</span>
+<span class="co">#&gt; first:    Female 0-4      </span>
+<span class="co">#&gt; last:     Male   35-39    </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;         age</span>
 <span class="co">#&gt; sex        0-4   5-9 10-14 15-19 20-24 25-29 30-34 35-39</span>
@@ -813,13 +818,13 @@ ind.popn.young
 <span class="co">#&gt;   Male   67698 67353 65378 62650 59528 54965 48131 42812</span>
 <span class="kw">dbind</span>(ind.popn.old, ind.popn.young, <span class="dt">along =</span> <span class="st">&quot;age&quot;</span>)
 <span class="co">#&gt; An object of class &quot;Counts&quot;</span>
-<span class="co">#&gt;                               </span>
-<span class="co">#&gt; name:     age       sex       </span>
-<span class="co">#&gt; length:   21        2         </span>
-<span class="co">#&gt; dimtype:  age       state     </span>
-<span class="co">#&gt; dimscale: Intervals Categories</span>
-<span class="co">#&gt; first:    0-4       Female    </span>
-<span class="co">#&gt; last:     100+      Male      </span>
+<span class="co">#&gt;                           </span>
+<span class="co">#&gt; name:     age       sex   </span>
+<span class="co">#&gt; length:   21        2     </span>
+<span class="co">#&gt; dimtype:  age       sex   </span>
+<span class="co">#&gt; dimscale: Intervals Sexes </span>
+<span class="co">#&gt; first:    0-4       Female</span>
+<span class="co">#&gt; last:     100+      Male  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;        sex</span>
 <span class="co">#&gt; age     Female  Male</span>

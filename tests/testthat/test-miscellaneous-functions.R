@@ -4775,8 +4775,170 @@ test_that("redistributeInnerDistn works with cases encountered when counts is nu
 
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################
 
+test_that("expandAx works", {
+    expandAx <- demlife:::expandAx
+    ## one dimension no adjustment needed
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0-4", "5-9", "10+"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0-4", "5-9", "10+"),
+                    name = "age")
+    ans.obtained <- expandAx(ax = ax, object = object)
+    ans.expected <- ax
+    expect_identical(ans.obtained, ans.expected)
+    ## one dimension, add one label below
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0-4", "5-9", "10+"),
+                        name = "age")
+    ax <- ValuesOne(c(2, 2),
+                    labels = c("5-9", "10+"),
+                    name = "age")
+    ans.obtained <- expandAx(ax = ax, object = object)
+    ans.expected <- ValuesOne(c(2.5, 2, 2),
+                              labels = c("0-4", "5-9", "10+"),
+                              name = "age")
+    expect_identical(ans.obtained, ans.expected)
+    ## one dimension and two labels above
+    object <- ValuesOne(c(0.2, 0.5, 0.3, 0.2),
+                        labels = c("0-4", "5-9", "10-12", "13+"),
+                        name = "age")
+    ax <- ValuesOne(c(2, 2),
+                    labels = c("0-4", "5-9"),
+                    name = "age")
+    ans.obtained <- expandAx(ax = ax, object = object)
+    ans.expected <- ValuesOne(c(2, 2, 1.5, 1.5),
+                              labels = c("0-4", "5-9", "10-12", "13+"),
+                              name = "age")
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions and two labels above
+    object <- Values(array(c(0.2, 0.3, 0.2, 0.3, 0.3, 0.4, 0.2, 0.25),
+                           dim = c(4, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                               sex = c("f", "m"))))
+    ax <- Values(array(c(1.2, 2, 1.3, 2.1),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-4", "5-9"),
+                           sex = c("f", "m"))))
+    ans.obtained <- expandAx(ax = ax, object = object)
+    ans.expected <- Values(array(c(1.2, 2, 2.5, 2.5, 1.3, 2.1, 2.5, 2.5),
+                                 dim = c(4, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                     sex = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions and two labels above - adding "reg" dimension
+    object <- Values(array(c(0.2, 0.3, 0.2, 0.3, 0.3, 0.4, 0.2, 0.25),
+                           dim = c(4, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                               sex = c("f", "m"),
+                               reg = c("a", "b"))))
+    ax <- Values(array(c(1.2, 2, 1.3, 2.1),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-4", "5-9"),
+                           sex = c("f", "m"))))
+    ans.obtained <- expandAx(ax = ax, object = object)
+    ans.expected <- Values(array(c(1.2, 2, 2.5, 2.5, 1.3, 2.1, 2.5, 2.5),
+                                 dim = c(4, 2, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                     sex = c("f", "m"),
+                                     reg = c("a", "b"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## single value
+    object <- Values(array(c(0.2, 0.3, 0.2, 0.3, 0.3, 0.4, 0.2, 0.25),
+                           dim = c(4, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                               sex = c("f", "m"),
+                               reg = c("a", "b"))))
+    ax <- ValuesOne(values = 1, labels = "0-4", name = "age")
+    ans.obtained <- expandAx(ax = ax, object = object)
+    ans.expected <- Values(array(c(1, 2.5, 2.5, 2.5, 1, 2.5, 2.5, 2.5),
+                                 dim = c(4, 2, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                                     sex = c("f", "m"),
+                                     reg = c("a", "b"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("expandAx throws appropriate errors", {
+    expandAx <- demlife:::expandAx
+    ## "'ax' does not have a dimension with dimtype "age"
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0-4", "5-9", "10+"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0-4", "5-9", "10+"),
+                    name = "wrong")
+    expect_error(expandAx(ax = ax, object = object),
+                 "'ax' does not have a dimension with dimtype \"age\"")
+    ## "'object' does not have a dimension with dimtype "age"
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0-4", "5-9", "10+"),
+                        name = "wrong")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0-4", "5-9", "10+"),
+                    name = "age")
+    expect_error(expandAx(ax = ax, object = object),
+                 "'object' does not have a dimension with dimtype \"age\"")
+    ## "age" dimension of "'ax' does not have dimscale "Intervals"
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0-4", "5-9", "10+"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0", "5", "10"),
+                    name = "age")
+    expect_error(expandAx(ax = ax, object = object),
+                 "dimension of 'ax' with dimtype \"age\" does not have dimscale \"Intervals\"")
+    ## "age" dimension of "'ax' does not have dimscale "Intervals"
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0", "5", "10"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0-4", "5-9", "10+"),
+                    name = "age")
+    expect_error(expandAx(ax = ax, object = object),
+                 "dimension of 'object' with dimtype \"age\" does not have dimscale \"Intervals\"")
+    ## first age interval of 'ax' open on left
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("0-4", "5-9", "10+"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("<5", "5-9", "10+"),
+                    name = "age")
+    expect_error(expandAx(ax = ax, object = object),
+                 "first age interval of 'ax' is open on left")
+    ## first age interval of 'ax' open on left
+    object <- ValuesOne(c(0.2, 0.5, 0.3),
+                        labels = c("<5", "5-9", "10+"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0-4", "5-9", "10+"),
+                    name = "age")
+    expect_error(expandAx(ax = ax, object = object),
+                 "first age interval of 'object' is open on left")
+    ## age dimensions not compatible
+    object <- ValuesOne(c(0.2, 0.3, 0.5, 0.3, 0.5),
+                        labels = c("0", "1-4", "5-9", "10-14", "15+"),
+                        name = "age")
+    ax <- ValuesOne(c(1, 2, 2),
+                    labels = c("0-4", "5-9", "10+"),
+                    name = "age")
+    expect_error(expandAx(ax = ax, object = object),
+                 "dimensions of 'ax' and 'object' with dimtype \"age\" not compatible")
+    ## 'ax' has dimension not in 'object'
+    object <- Values(array(c(0.2, 0.3, 0.2, 0.3, 0.3, 0.4, 0.2, 0.25),
+                           dim = c(4, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
+                               sex = c("f", "m"))))
+    ax <- Values(array(c(1.2, 2, 1.3, 2.1),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-4", "5-9"),
+                           region = c("a", "b"))))
+    expect_error(expandAx(ax = ax, object = object),
+                 "'ax' and 'object' not compatible")
+})
+
 test_that("imputeA works", {
-    imputeA <- dembase::imputeA
+    imputeA <- dembase:::imputeA
     ans.obtained <- imputeA(m0 = c(0.2, 0.05),
                             A = "1a0",
                             sex = "Female")
@@ -4800,6 +4962,8 @@ test_that("imputeA works", {
 })
 
 test_that("makeAxStart works", {
+    imputeA <- dembase:::imputeA
+    ## two sexes, two ages
     mx <- Values(array(c(0.005, 0.006, 0.003, 0.004),
                        dim = c(2, 2),
                        dimnames = list(age = c("0", "1-4"),
@@ -4814,7 +4978,123 @@ test_that("makeAxStart works", {
                                  dimnames = list(age = c("0", "1-4"),
                                                  sex = c("f", "m"))))
     expect_identical(ans.obtained, ans.expected)
+    ## two sexes, two ages, age dimension second
+    mx <- Values(array(c(0.005, 0.006, 0.003, 0.004),
+                       dim = c(2, 2),
+                       dimnames = list(sex = c("f", "m"),
+                                       age = c("0", "1-4"))))
+    ans.obtained <- makeAxStart(mx)
+    ans.expected <- c(imputeA(mx[1], A = "1a0", sex = "Female"),
+                      imputeA(mx[1], A = "4a1", sex = "Female"),
+                      imputeA(mx[2], A = "1a0", sex = "Male"),
+                      imputeA(mx[2], A = "4a1", sex = "Male"))
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(2, 2),
+                                 dimnames = list(age = c("0", "1-4"),
+                                                 sex = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## one sex, two ages
+    mx <- Values(array(c(0.005, 0.006, 0.003, 0.004),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0", "1-4"),
+                                       region = c("a", "b"))))
+    ans.obtained <- makeAxStart(mx)
+    pr.fem <- 100/205
+    ans.expected <- c(pr.fem * imputeA(mx[1], A = "1a0", sex = "Female") +
+                      (1-pr.fem) * imputeA(mx[1], A = "1a0", sex = "Male"),
+                      pr.fem * imputeA(mx[1], A = "4a1", sex = "Female") +
+                      (1-pr.fem) * imputeA(mx[1], A = "4a1", sex = "Male"),
+                      pr.fem * imputeA(mx[3], A = "1a0", sex = "Female") +
+                      (1-pr.fem) * imputeA(mx[3], A = "1a0", sex = "Male"),
+                      pr.fem * imputeA(mx[3], A = "4a1", sex = "Female") +
+                      (1-pr.fem) * imputeA(mx[3], A = "4a1", sex = "Male"))
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(2, 2),
+                                 dimnames = list(age = c("0", "1-4"),
+                                                 region = c("a", "b"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## two sexes, one age
+    mx <- Values(array(c(0.005, 0.006),
+                       dim = c(2, 1),
+                       dimnames = list(sex = c("m", "f"),
+                                       age = "0")),
+                 dimscales = c(age = "Intervals"))
+    ans.obtained <- makeAxStart(mx)
+    ans.expected <- c(imputeA(mx[1], A = "1a0", sex = "Male"),
+                      imputeA(mx[2], A = "1a0", sex = "Female"))
+    ans.expected <- Values(array(ans.expected,
+                                 dim = 1:2,
+                                 dimnames = list(age = "0",
+                                                 sex = c("m", "f"))),
+                           dimscales = c(age = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)    
+    ## one sex, one age
+    mx <- Values(array(0.005, 
+                       dim = c(1, 1),
+                       dimnames = list(sex = "m",
+                                       age = "0")),
+                 dimscales = c(age = "Intervals"))
+    ans.obtained <- makeAxStart(mx)
+    ans.expected <- imputeA(mx[1], A = "1a0", sex = "Male")
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(1,1),
+                                 dimnames = list(age = "0",
+                                                 sex = "m")),
+                           dimscales = c(age = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)    
+    ## one sex, one older age
+    mx <- Values(array(0.005, 
+                       dim = c(1, 1),
+                       dimnames = list(sex = "m",
+                                       age = "5-9")),
+                 dimscales = c(age = "Intervals"))
+    ans.obtained <- makeAxStart(mx)
+    ans.expected <- 2.5
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(1,1),
+                                 dimnames = list(age = "5-9",
+                                                 sex = "m")),
+                           dimscales = c(age = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)    
+    ## no sexes, one older age
+    mx <- Values(array(0.005, 
+                       dim = c(1, 1),
+                       dimnames = list(region = "m",
+                                       age = "5-9")),
+                 dimscales = c(age = "Intervals"))
+    ans.obtained <- makeAxStart(mx)
+    ans.expected <- 2.5
+    ans.expected <- Values(array(ans.expected,
+                                 dim = c(1,1),
+                                 dimnames = list(age = "5-9",
+                                                 region = "m")),
+                           dimscales = c(age = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)    
 })
+
+test_that("makeAxStart throws appropriate errors", {
+    expect_error(makeAxStart("wrong"),
+                 "'mx' has class \"character\"")
+    mx <- Values(array(0,
+                       dim = c(2, 0),
+                       dimnames = list(age = c("0", "1-4"),
+                                       sex = character())))
+    expect_error(makeAxStart(mx),
+                 "'mx' has length 0")
+    mx <- Values(array(0,
+                       dim = c(2, 2),
+                       dimnames = list(region = c("a", "b"),
+                                       sex = c("m", "f"))))
+    expect_error(makeAxStart(mx),
+                 "'mx' does not have dimension with dimtype \"age\"")
+    mx <- Values(array(0,
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0", "5"),
+                                       sex = c("m", "f"))))
+    expect_error(makeAxStart(mx),
+                 "dimension of 'mx' with dimtype \"age\" does not have dimscale \"Intervals\"")
+})
+
 
 
 

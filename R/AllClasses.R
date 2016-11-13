@@ -45,6 +45,8 @@
 #' @param labels A character vector with labels for a dimension.
 #' @param name Character. A dimension name.
 #' @param iterations  Integer.  The iteractions to extract.
+#' @param mx Mortality rates.
+#' @param ax Separation factors.
 #' @param value Replacement value.
 #' 
 #' @name exported-not-api
