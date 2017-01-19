@@ -26,7 +26,6 @@ SEXP indices_sym,
      iTriangle_sym,
      dUpper_sym;
 
-#endif
 
 /* array transformations */
 
@@ -63,3 +62,5 @@ SEXP getIShared(int i, SEXP transform_R);
 
 /* mapping stuff */
 void doStuff(SEXP mapObject_R, SEXP componentCoords_R);    
+
+#endif
