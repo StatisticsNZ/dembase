@@ -2121,3 +2121,110 @@ setMethod("redistributeCategory",
 
 
     
+setMethod("redistributeToEndAges",
+          signature(object = "Counts",
+                    weights = "missing"),
+          function(object, min = 15, max = 50, weights, ...) {
+              for (name in c("min", "max")) {
+                  value <- get(name)
+                  if(!is.numeric(value))
+                      stop(gettextf("'%s' is non-numeric",
+                                    name))
+                  if (!identical(length(value), 1L))
+                      stop(gettextf("'%s' does not have length %d",
+                                    name, 1L))
+                  if (is.na(value))
+                      stop(gettextf("'%s' is missing",
+                                    name))
+              }
+              if (min >= max)
+                  stop(gettextf("'%s' greater than or equal to '%s'",
+                                "min", "max"))
+              dim <- dim(object)
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              DimScales <- DimScales(object, use.names = FALSE)
+              if (any(dim == 0L))
+                  stop(gettextf("'%s' has dimension with length %d",
+                                "object", 0L))
+              i.age <- match("age", dimtypes, nomatch = 0L)
+              has.age <- i.age > 0L
+              if (!has.age)
+                  stop(gettextf("'%s' does not have dimension with dimtype \"%s\"",
+                                "object", "age"))
+              n.age <- dim[i.age]
+              DimScale.age <- DimScales[[i.age]]
+              if (!is(DimScale.age, "Intervals"))
+                  stop(gettextf("dimension with dimtype \"%s\" does not have %s \"%s\"",
+                                "age", "dimscale", "Intervals"))
+              dv.age <- dimvalues(DimScale.age)
+              min.dv.age <- dv.age[1L]
+              max.dv.age <- dv.age[length(dv.age)]
+              if (min > min.dv.age) {
+                  i.min <- match(min, dv.age, nomatch = 0L)
+                  if ((i.min == 0L) || (i.min == length(dv.age)))
+                      stop(gettextf("value for '%s' not equal to lower limit for age group in '%s'",
+                                    "min", "object"))
+                  s.below <- seq_len(i.min - 1L)
+                  s.other <- seq.int(from = i.min,
+                                     to = n.age)
+                  counts.below <- slab(object,
+                                       dimension = i.age,
+                                       elements = s.below,
+                                       drop = FALSE)
+                  object <- slab(object,
+                                 dimension = i.age,
+                                 elements = s.other,
+                                 drop = FALSE)
+                  counts.below <- collapseDimension(counts.below,
+                                                    dimension = i.age)
+                  slab(object,
+                       dimension = i.age,
+                       elements = 1L) <- slab(object,
+                                              dimension = i.age,
+                                              elements = 1L) + counts.below
+                  dim <- dim(object)
+                  DimScales <- DimScales(object, use.names = FALSE)
+                  DimScale.age <- DimScales[[i.age]]
+                  n.age <- dim[i.age]
+                  dv.age <- dimvalues(DimScale.age)
+                  max.dv.age <- dv.age[length(dv.age)]
+              }
+              if (max < max.dv.age) {
+                  i.max <- match(max, dv.age, nomatch = 0L)
+                  if ((i.max == 0L) || (i.max == 1L))
+                      stop(gettextf("value for '%s' not equal to upper limit for age group in '%s'",
+                                    "max", "object"))
+                  s.above <- seq.int(from = i.max,
+                                     to = n.age)
+                  s.other <- seq_len(i.max - 1L)
+                  counts.above <- slab(object,
+                                       dimension = i.age,
+                                       elements = s.above,
+                                       drop = FALSE)
+                  object <- slab(object,
+                                 dimension = i.age,
+                                 elements = s.other,
+                                 drop = FALSE)
+                  counts.above <- collapseDimension(counts.above,
+                                                    dimension = i.age)
+                  slab(object,
+                       dimension = i.age,
+                       elements = i.max - 1L) <- slab(object,
+                                                      dimension = i.age,
+                                                      elements = i.max - 1L) + counts.above
+              }
+              object
+          })
+
+
+#' @rdname redistributeToEndAges
+#' @export
+setMethod("redistributeToEndAges",
+          signature(object = "Counts",
+                    weights = "ANY"),
+          function(object, min = 15, max = 50, weights, ...) {
+              stop(gettextf("weights cannot be used when '%s' has class \"%s\"",
+                            "object", class(object)))
+          })
+
+ 

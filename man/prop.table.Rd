@@ -20,7 +20,7 @@ prop.table(x, margin = NULL)
 be calculated.}
 }
 \value{
-Object of class \code{"\linkS4class{Values}"}.
+Object of class \code{\linkS4class{Values}}.
 }
 \description{
 The is a method for function \code{\link[base]{prop.table}} from package

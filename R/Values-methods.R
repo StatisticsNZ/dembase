@@ -1489,6 +1489,40 @@ setMethod("redistribute",
           })
 
 ## HAS_TESTS
+#' @rdname redistributeToEndAges
+#' @export
+setMethod("redistributeToEndAges",
+          signature(object = "Values",
+                    weights = "missing"),
+          function(object, min = 15, max = 50, weights, ...) {
+              stop(gettextf("'%s' is missing",
+                            "weights"))
+          })
+
+## HAS_TESTS
+#' @rdname redistributeToEndAges
+#' @export
+setMethod("redistributeToEndAges",
+          signature(object = "Values",
+                    weights = "Counts"),
+          function(object, min = 15, max = 50, weights, ...) {
+              weights <- checkAndTidyWeights(weights = weights,
+                                             target = object,
+                                             nameWeights = "weights",
+                                             nameTarget = "object",
+                                             allowNA = TRUE)
+              counts <- redistributeToEndAges(object = weights * object,
+                                              min = min,
+                                              max = max,
+                                              ...)
+              weights <- makeCompatible(x = weights,
+                                        y = counts,
+                                        subset = TRUE,
+                                        check = TRUE)
+              counts / weights
+          })
+
+## HAS_TESTS
 #' @rdname tfr
 #' @export
 setMethod("tfr",

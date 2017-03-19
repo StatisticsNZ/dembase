@@ -48,10 +48,10 @@ of one or more dimensions.}
 of one or more dimensions.}
 }
 \value{
-An object of class \code{"\linkS4class{Counts}"} or \code{"\linkS4class{Values}"}.
+An object of class \code{\linkS4class{Counts}} or \code{\linkS4class{Values}}.
 }
 \description{
-Create objects of class \code{"\linkS4class{Counts}"} or \code{"\linkS4class{Values}"}
+Create objects of class \code{\linkS4class{Counts}} or \code{\linkS4class{Values}}
 from an array-like object with a full set of dimnames.
 }
 \details{
@@ -152,7 +152,7 @@ xt <- xtabs(count ~ age + sex, data = d)
 x <- Counts(xt)
 }
 \seealso{
-\code{"\linkS4class{Counts}"}, \code{"\linkS4class{Values}"},
+\code{\linkS4class{Counts}}, \code{\linkS4class{Values}},
 \code{\link{dimtypes}}, \code{\link{dimscales}}
 }
 

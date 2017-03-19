@@ -45,7 +45,7 @@ vector.}
 
 \item{overlay}{A list describing and overlay.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"}.}
+\item{weights}{Object of class \code{\linkS4class{Counts}}.}
 
 \item{\dots}{Other arguments, which are passed to the underlying plotting
 function, \code{\link[lattice]{xyplot}}.}
@@ -60,7 +60,7 @@ Construct a lattice plot from an object of class
 summarizing, and slightly different defaults.
 }
 \details{
-If \code{object} has class \code{"\linkS4class{Counts}"}, then the choices
+If \code{object} has class \code{\linkS4class{Counts}}, then the choices
 for the response on the left of the \code{~} are as follows:
 \describe{
   \item{\code{count}}{Cell counts are plotted, possibly after aggregation.}
@@ -99,7 +99,7 @@ Any dimensions of \code{overlay} (if \code{overlay} has the same class as
 \code{object}) or the \code{values} component of \code{overlay} (if
 (\code{overlay}) is a list) that are not shared by \code{object} will be
 collapsed away.  When \code{overlay} or the \code{values} component has
-class \code{"\linkS4class{Values}"}, the collapsing uses the \code{weights}
+class \code{\linkS4class{Values}}, the collapsing uses the \code{weights}
 argument.  The interface for \code{overlay} is likely to change in future.
 }
 \section{Warning}{

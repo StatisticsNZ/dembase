@@ -19,7 +19,7 @@ redistribute(counts, weights, means = FALSE, n = NULL)
   means = FALSE, n = NULL)
 }
 \arguments{
-\item{counts}{Object of class \code{"\linkS4class{Counts}"} consisting of
+\item{counts}{Object of class \code{\linkS4class{Counts}} consisting of
 non-negative integers, or a single non-negative integer.}
 
 \item{weights}{Object of class \code{\linkS4class{DemographicArray}} with no
@@ -33,7 +33,7 @@ if \code{TRUE}, values are set equal to their means.}
 \code{"iteration"}.}
 }
 \value{
-An \code{"\linkS4class{Counts}"} object with the same dimensions and
+An \code{\linkS4class{Counts}} object with the same dimensions and
 metadata as \code{weights}.
 }
 \description{

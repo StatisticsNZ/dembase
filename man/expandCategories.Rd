@@ -34,7 +34,7 @@ category to be expanded.}
 
 \item{concordance}{Object of class \code{"\linkS4class{ManyToOne}"}.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"}.}
+\item{weights}{Object of class \code{\linkS4class{Counts}}.}
 
 \item{means}{If \code{FALSE} (the default) the allocation is done randomly;
 if \code{TRUE}, values are set equal to their means.}

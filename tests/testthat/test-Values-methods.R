@@ -2130,6 +2130,30 @@ test_that("makeTransform method for Values works when y has class numeric", {
                  "'x' has length 0")    
 })
 
+test_that("redistributeToEndAges works", {
+    ## one dimension, both ends outside min, max
+    counts <- Counts(array(1:7,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    exposure <- Counts(array(7:1,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    rates <- counts / exposure
+    ans.obtained <- redistributeToEndAges(rates, min = 15, max = 40, weights = exposure)
+    ans.expected <- (redistributeToEndAges(counts, min = 15, max = 40) /
+                     subarray(exposure, age > 15 & age < 40))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("redistributeToEndAges throws appropriate error", {
+    ## one dimension, both ends outside min, max
+    rates <- Values(array(1:7,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    expect_error(redistributeToEndAges(rates, min = 15, max = 40),
+                 "'weights' is missing")                 
+})
+
 test_that("tfr works", {
     tfr <- dembase:::tfr
     x <- Values(array(runif(n = 3 * 2 * 2 * 3 * 3),

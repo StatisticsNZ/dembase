@@ -47,7 +47,7 @@ formed from the old categories.}
 
 \item{concordance}{Object of class \code{"\linkS4class{Concordance}"}.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"}.}
+\item{weights}{Object of class \code{\linkS4class{Counts}}.}
 
 \item{\dots}{Not currently used.}
 }
@@ -65,8 +65,8 @@ and \code{child} can be selected by their base name: see the example below.
 If no dimension is supplied, \code{collapseCategories} attempts to modify all dimensions.
 
 \code{weights} are required if \code{object} has class
-\code{"\linkS4class{Values}"} and are prohibited if
-\code{object} has class \code{"\linkS4class{Counts}"}.
+\code{\linkS4class{Values}} and are prohibited if
+\code{object} has class \code{\linkS4class{Counts}}.
 }
 \examples{
 titanic <- Counts(Titanic, dimtypes = c(Age = "state"))

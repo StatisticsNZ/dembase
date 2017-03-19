@@ -66,10 +66,10 @@ merging has occurred.}
 
 \item{old}{The labels of the intervals to be merged.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"} or the number
+\item{weights}{Object of class \code{\linkS4class{Counts}} or the number
 \code{1}.  Required when \code{object} has class
-\code{"\linkS4class{Values}"} and prohibited when it has class
-\code{"\linkS4class{Counts}"}.}
+\code{\linkS4class{Values}} and prohibited when it has class
+\code{\linkS4class{Counts}}.}
 
 \item{\dots}{Not currently used.}
 }

@@ -110,8 +110,8 @@ setGeneric("as.array")
 #' ordinary arrays does.  If \code{direction} is \code{"long"}, then
 #' \code{object} is put into "long" format, with a column to represent each
 #' dimension, plus a final column holding the data.  The final column is called
-#' \code{"count"} if \code{object} has class \code{"\linkS4class{Counts}"} and
-#' \code{"value"} if \code{object} has class \code{"\linkS4class{Counts}"}.
+#' \code{"count"} if \code{object} has class \code{\linkS4class{Counts}} and
+#' \code{"value"} if \code{object} has class \code{\linkS4class{Counts}}.
 #'
 #' If \code{midpoints} is \code{FALSE}, interval labels are converted into
 #' factors.  If \code{midpoints} is \code{TRUE}, interval labels are replaced
@@ -241,7 +241,7 @@ setGeneric("plot")
 #' @param x Object of class \code{\linkS4class{DemographicArray}}.
 #' @param margin Indices or names of dimensions within which proportions are to
 #' be calculated.
-#' @return Object of class \code{"\linkS4class{Values}"}.
+#' @return Object of class \code{\linkS4class{Values}}.
 #' @examples
 #' library(demdata)
 #' x <- Counts(VAPopn)
@@ -261,7 +261,7 @@ setGeneric("unname")
 
 #' Create objects of class "Counts" or "Values".
 #'
-#' Create objects of class \code{"\linkS4class{Counts}"} or \code{"\linkS4class{Values}"}
+#' Create objects of class \code{\linkS4class{Counts}} or \code{\linkS4class{Values}}
 #' from an array-like object with a full set of dimnames.
 #'
 #' A full set of dimnames means that \code{dimnames(object)} is a named list with
@@ -319,9 +319,9 @@ setGeneric("unname")
 #' @param dimscales A named character vector describing the \code{\link{dimscales}}
 #' of one or more dimensions.
 #'
-#' @return An object of class \code{"\linkS4class{Counts}"} or \code{"\linkS4class{Values}"}.
+#' @return An object of class \code{\linkS4class{Counts}} or \code{\linkS4class{Values}}.
 #'
-#' @seealso \code{"\linkS4class{Counts}"}, \code{"\linkS4class{Values}"},
+#' @seealso \code{\linkS4class{Counts}}, \code{\linkS4class{Values}},
 #' \code{\link{dimtypes}}, \code{\link{dimscales}}
 #'
 #' @aliases Counts Values
@@ -569,7 +569,7 @@ setGeneric("ageTimeStep",
 #' or \code{"child"} are used.
 #' @param omitted Value to be used for omitted origin-destination or parent-child
 #' combinations.  Defaults to \code{0} when \code{object} has class
-#' \code{"\linkS4class{Counts}"} and \code{NA} otherwise.
+#' \code{\linkS4class{Counts}} and \code{NA} otherwise.
 #'
 #' @return An object with the same class as \code{object}.
 #'
@@ -715,8 +715,8 @@ setGeneric("collapse",
 #' If no dimension is supplied, \code{collapseCategories} attempts to modify all dimensions.
 #'
 #' \code{weights} are required if \code{object} has class
-#' \code{"\linkS4class{Values}"} and are prohibited if
-#' \code{object} has class \code{"\linkS4class{Counts}"}.
+#' \code{\linkS4class{Values}} and are prohibited if
+#' \code{object} has class \code{\linkS4class{Counts}}.
 #'
 #' @param object Object of class \code{\linkS4class{DemographicArray}}.
 #' @param dimension Character or numeric vector giving the name or index of the
@@ -726,7 +726,7 @@ setGeneric("collapse",
 #' collapsed.
 #' @param new Character vector of length 1 giving the name of the new category
 #' formed from the old categories.
-#' @param weights Object of class \code{"\linkS4class{Counts}"}.
+#' @param weights Object of class \code{\linkS4class{Counts}}.
 #' @param concordance Object of class \code{"\linkS4class{Concordance}"}.
 #' @param \dots Not currently used.
 #'
@@ -780,8 +780,8 @@ setGeneric("collapseCategories",
 #' Either \code{dimension} or \code{margin} must be supplied, but not both.
 #'
 #' \code{weights} are required if \code{object} has class
-#' \code{"\linkS4class{Values}"}, and prohibited if \code{object} has class
-#' \code{"\linkS4class{Counts}"}.
+#' \code{\linkS4class{Values}}, and prohibited if \code{object} has class
+#' \code{\linkS4class{Counts}}.
 #'
 #' If all dimensions are collapsed, the result is equivalent to
 #' \code{sum(object)}.
@@ -799,9 +799,9 @@ setGeneric("collapseCategories",
 #' @param dimension Names or indices of the dimensions to be collapsed.
 #' @param margin Names or indices of the dimensions that will remain after the
 #' collapsing.
-#' @param weights Object of class \code{"\linkS4class{Counts}"}.
+#' @param weights Object of class \code{\linkS4class{Counts}}.
 #' \code{weights} can only be used if \code{object} has class
-#' \code{"\linkS4class{Values}"}.  It must have at least as much detail as
+#' \code{\linkS4class{Values}}.  It must have at least as much detail as
 #' \code{object}.
 #' @param \dots Not currently used.
 #' @return An object of the same class as \code{object}, but with fewer
@@ -874,10 +874,10 @@ setGeneric("collapseDimScale",
 #' merging has occurred.
 #' @param width The length of the intervals after the merging has occurred.
 #' @param old The labels of the intervals to be merged.
-#' @param weights Object of class \code{"\linkS4class{Counts}"} or the number
+#' @param weights Object of class \code{\linkS4class{Counts}} or the number
 #' \code{1}.  Required when \code{object} has class
-#' \code{"\linkS4class{Values}"} and prohibited when it has class
-#' \code{"\linkS4class{Counts}"}.
+#' \code{\linkS4class{Values}} and prohibited when it has class
+#' \code{\linkS4class{Counts}}.
 #' @param \dots Not currently used.
 #' @seealso \code{\link{collapseCategories}}, \code{\link{collapseIterations}},
 #' \code{\link{collapseOrigDest}}, \code{\link{collapseDimension}},
@@ -988,13 +988,13 @@ setGeneric("collapseIterations",
 #' \code{"destination"} are used.
 #' @param to The new format(s): \code{"net"} (the default), \code{"out"},
 #' and \code{"in"}.
-#' @param weights Object of class \code{"\linkS4class{Counts}"} providing the
+#' @param weights Object of class \code{\linkS4class{Counts}} providing the
 #' weights to be used.  Required if \code{object} has class
-#' \code{"\linkS4class{Values}"}, and prohibited if it has class
-#' \code{"\linkS4class{Counts}"}.
+#' \code{\linkS4class{Values}}, and prohibited if it has class
+#' \code{\linkS4class{Counts}}.
 #' @param omitted Value to be used for omitted origin-destination or
 #' parent-child combinations.  Defaults to \code{0} when \code{object} has
-#' class \code{"\linkS4class{Counts}"} and \code{NA} otherwise.
+#' class \code{\linkS4class{Counts}} and \code{NA} otherwise.
 #' @param \dots Not currently used.
 #' @return If \code{object} has class \code{linkS4class{Counts}} and
 #' \code{to} is \code{"net"}, then the return value has class
@@ -1270,7 +1270,7 @@ setGeneric("dimvalues<-",
 #' \code{\link[lattice]{xyplot}}, but with extra facilities for aggregating and
 #' summarizing, and slightly different defaults.
 #'
-#' If \code{object} has class \code{"\linkS4class{Counts}"}, then the choices
+#' If \code{object} has class \code{\linkS4class{Counts}}, then the choices
 #' for the response on the left of the \code{~} are as follows:
 #' \describe{
 #'   \item{\code{count}}{Cell counts are plotted, possibly after aggregation.}
@@ -1309,7 +1309,7 @@ setGeneric("dimvalues<-",
 #' \code{object}) or the \code{values} component of \code{overlay} (if
 #' (\code{overlay}) is a list) that are not shared by \code{object} will be
 #' collapsed away.  When \code{overlay} or the \code{values} component has
-#' class \code{"\linkS4class{Values}"}, the collapsing uses the \code{weights}
+#' class \code{\linkS4class{Values}}, the collapsing uses the \code{weights}
 #' argument.  The interface for \code{overlay} is likely to change in future.
 #'
 #' @param formula \code{formula} object.  The symbols to the right of the
@@ -1320,7 +1320,7 @@ setGeneric("dimvalues<-",
 #' @param type Character vector describing the type or types of plot to be
 #' drawn, as described in \code{\link[lattice]{panel.xyplot}}.
 #' @param panel Panel function.  See \code{\link{xyplot}}.
-#' @param weights Object of class \code{"\linkS4class{Counts}"}.
+#' @param weights Object of class \code{\linkS4class{Counts}}.
 #' @param groups A dimension of \code{data}.  Levels for this dimension are
 #' overplotted within each panel.
 #' @param subarray Expression used to select a subarray from within
@@ -1477,7 +1477,7 @@ setGeneric("extend",
 #' category to be expanded.
 #' @param new Character vector giving the names of the new categories.
 #' @param concordance Object of class \code{"\linkS4class{ManyToOne}"}.
-#' @param weights Object of class \code{"\linkS4class{Counts}"}.
+#' @param weights Object of class \code{\linkS4class{Counts}}.
 #' @param means If \code{FALSE} (the default) the allocation is done randomly;
 #' if \code{TRUE}, values are set equal to their means.
 #' @param n Number of iterations to generate.  Ignored if \code{counts} or
@@ -1601,9 +1601,9 @@ setGeneric("extrapolate",
 #' calculated.
 #'
 #' If a \code{weights} argument is supplied when \code{object} has class
-#' \code{"\linkS4class{Counts}"}, the argument is ignored.  If a \code{weights}
+#' \code{\linkS4class{Counts}}, the argument is ignored.  If a \code{weights}
 #' argument is not supplied when \code{object} has class
-#' \code{"\linkS4class{Values}"}, all elements are given equal weight.
+#' \code{\linkS4class{Values}}, all elements are given equal weight.
 #'
 #' If \code{method} is \code{"endpoints"}, then growth rates or increments are
 #' calculated from the first and last points only.  If \code{method} is
@@ -1620,7 +1620,7 @@ setGeneric("extrapolate",
 #' Value \code{"."} can be used as shorthand for "all dimensions other than
 #' \code{along}".  Origin-destination or parent-child pairs can be referred to
 #' using their base name.  See below for examples.
-#' @param weights Object of class \code{"\linkS4class{Counts}"}, supplying
+#' @param weights Object of class \code{\linkS4class{Counts}}, supplying
 #' weights to be used when aggregating dimensions not included in \code{along}
 #' or \code{within}.
 #' @param type One of \code{"exponential"} or \code{"linear"}.  If
@@ -2049,12 +2049,12 @@ setGeneric("plotSingleDimension",
 #' could also be a sample from a posterior distribution.
 #'
 #' @inheritParams expandCategories
-#' @param counts Object of class \code{"\linkS4class{Counts}"} consisting of
+#' @param counts Object of class \code{\linkS4class{Counts}} consisting of
 #' non-negative integers, or a single non-negative integer.
 #' @param weights Object of class \code{\linkS4class{DemographicArray}} with no
 #' negative values.
 #'
-#' @return An \code{"\linkS4class{Counts}"} object with the same dimensions and
+#' @return An \code{\linkS4class{Counts}} object with the same dimensions and
 #' metadata as \code{weights}.
 #' @seealso \code{\link{rmultinom}}
 #' @examples
@@ -2111,12 +2111,71 @@ setGeneric("redistribute",
 #' @param category Names or indices of the categories to be reallocated.
 #' @param epsilon Small quantity added to counts for remaining categories.
 #'
-#' @return A \code{"\linkS4class{Counts}"} object without the categories
+#' @return A \code{\linkS4class{Counts}} object without the categories
 #' specified by \code{categories}.
 #' @export
 setGeneric("redistributeCategory",
            function(counts, dimension, category, means = FALSE, epsilon = 0, n = NULL)
                standardGeneric("redistributeCategory"))
+
+
+
+#' Redistribute counts or values into youngest and oldest age groups.
+#'
+#' With fertility data, it is common to confine age-specific fertility rates
+#' to a limited range, eg ages 12-49, or 15-19 to 45-49.  Births outside these
+#' ages are conventionally reassigned to the bottom and top ages.  The procedure
+#' preserves the total number of birth and total fertility, and has only a minor effect
+#' on the age profile for fertility, provided that the number of births that are
+#' reassigned is small.
+#'
+#' \code{redistributeToEndAges} reassigns counts or rates.  There is no requirement
+#' that the counts or rates relate to fertility, though this is by far the
+#' most common scenario.
+#'
+#' A \code{weights} argument is prohibited if \code{object} has class
+#' \code{\linkS4class{Counts}}, and required if it has class
+#' \code{\linkS4class{Values}}.
+#' 
+#' @param object An object of class \code{\linkS4class{Counts}} or (less commonly)
+#' \code{\linkS4class{Values}}.
+#' @param min The lower limit of the youngest age group, after reassignment.
+#' @param max The upper limit of the oldest age group, after reassignment.
+#' @param weights An object of class \code{\linkS4class{Counts}}.
+#'
+#' @return A \code{\linkS4class{Counts}} object without the categories
+#' specified by \code{categories}.
+#'
+#' @seealso \code{\link{collapseIntervals}} collapses age intervals
+#' without reassigning values upwards or downwards.
+#' 
+#' @examples
+#' ## make some fake data on births
+#' births <- Counts(array(10,
+#'                        dim = c(45, 2),
+#'                        dimnames = list(age = 10:54, region = c("A", "B"))),
+#'                  dimscales = c(age = "Intervals"))
+#'
+#' ## default ages
+#' redistributeToEndAges(births)
+#' ## non-default ages
+#' redistributeToEndAges(births, min = 12, max = 45)
+#'
+#' ## make some fake data on birth rates
+#' birth.rates <- Values(array(0.1,
+#'                       dim = c(45, 2),
+#'                       dimnames = list(age = 10:54, region = c("A", "B"))),
+#'                       dimscales = c(age = "Intervals"))
+#' women <- Counts(array(100,
+#'                       dim = c(45, 2),
+#'                       dimnames = list(age = 10:54, region = c("A", "B"))),
+#'                 dimscales = c(age = "Intervals"))
+#' ## with rates, need to supply weights
+#' redistributeToEndAges(birth.rates, weights = women)                       
+#' @export
+setGeneric("redistributeToEndAges",
+           function(object, min = 15, max = 50, weights, ...)
+               standardGeneric("redistributeToEndAges"))
 
 setGeneric("reorderCategories",
            function(object, dimension, subset, weights, ...)

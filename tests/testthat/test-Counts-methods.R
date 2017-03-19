@@ -3136,7 +3136,6 @@ test_that("redistributeCategory works", {
         set.seed(seed)
         ans.expected <- x[-5,,] + redistribute(x[5, , ], weights = x[-5, , ])
         expect_identical(ans.obtained, ans.expected)
-        
         ## orig-dest, 3 iterations, 1 category
         x <- Counts(array(rpois(48, lambda = 10),
                           dim = c(4, 4, 3),
@@ -3217,3 +3216,97 @@ test_that("redistributeCategory works", {
     }
 })
 
+test_that("redistributeToEndAges works", {
+    ## one dimension, both ends outside min, max
+    x <- Counts(array(1:7,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    ans.obtained <- redistributeToEndAges(x, min = 15, max = 40)
+    ans.expected <- Counts(array(c(3L, 3:5, 13L),
+                                 dim = 5,
+                                 dimnames = list(age = c("15-19", "20-24", "25-29", "30-34", "35-39"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## one dimension, bottom end outside min
+    x <- Counts(array(1:7,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    ans.obtained <- redistributeToEndAges(x, min = 20, max = 50)
+    ans.expected <- Counts(array(c(6L, 4:7),
+                                 dim = 5,
+                                 dimnames = list(age = c("20-24", "25-29", "30-34", "35-39", "40-44"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## one dimension, neither end outside
+    x <- Counts(array(1:7,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    ans.obtained <- redistributeToEndAges(x, min = 10, max = 50)
+    ans.expected <- x
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions, both ends outside min, max
+    x <- Counts(array(1:14,
+                      dim = c(7, 2),
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"),
+                                      sex = c("Female", "Male"))))
+    ans.obtained <- redistributeToEndAges(x, min = 15, max = 40)
+    ans.expected <- Counts(array(c(3L, 3:5, 13L, 17L, 10:12, 27L),
+                                 dim = c(5, 2),
+                                 dimnames = list(age = c("15-19", "20-24", "25-29", "30-34", "35-39"),
+                                                 sex = c("Female", "Male"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions, only one age group left
+    x <- Counts(array(1:14,
+                      dim = c(7, 2),
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"),
+                                      sex = c("Female", "Male"))))
+    ans.obtained <- redistributeToEndAges(x, min = 30, max = 35)
+    ans.expected <- Counts(array(c(28L, 77L),
+                                 dim = c(1, 2),
+                                 dimnames = list(age = "30-34",
+                                                 sex = c("Female", "Male"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("redistributeToEndAges throws appropriate errors", {
+    x <- Counts(array(1:7,
+                      dim = 7,
+                      dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
+    expect_error(redistributeToEndAges(x, min = "15", max = 40),
+                 "'min' is non-numeric")
+    expect_error(redistributeToEndAges(x, min = 15, max = c(40, 45)),
+                 "'max' does not have length 1")
+    expect_error(redistributeToEndAges(x, min = as.integer(NA), max = 40),
+                 "'min' is missing")
+    expect_error(redistributeToEndAges(x, min = 50, max = 40),
+                 "'min' greater than or equal to 'max'")
+    x.wrong <- Counts(array(0,
+                            dim = 0,
+                            dimnames = list(age = character())),
+                      dimscales = c(age = "Intervals"))
+    expect_error(redistributeToEndAges(x.wrong, min = 15, max = 40),
+                 "'object' has dimension with length 0")
+    x.wrong <- Counts(array(1:2,
+                            dim = 2,
+                            dimnames = list(sex = c("Female", "Male"))))
+    expect_error(redistributeToEndAges(x.wrong, min = 15, max = 40),
+                 "'object' does not have dimension with dimtype \"age\"")
+    x.wrong <- Counts(array(1:2,
+                            dim = 2,
+                            dimnames = list(age = c("15", "20"))))
+    expect_error(redistributeToEndAges(x.wrong, min = 15, max = 40),
+                 "dimension with dimtype \"age\" does not have dimscale \"Intervals\"")
+    expect_error(redistributeToEndAges(x, min = 17, max = 50),
+                 "value for 'min' not equal to lower limit for age group in 'object'")
+    expect_error(redistributeToEndAges(x, min = 45, max = 50),
+                 "value for 'min' not equal to lower limit for age group in 'object'")
+    expect_error(redistributeToEndAges(x, min = 15, max = 38),
+                 "value for 'max' not equal to upper limit for age group in 'object'")
+    expect_error(redistributeToEndAges(x, min = 15, max = 38, weights = x),
+                 "weights cannot be used when 'object' has class \"Counts\"")
+})
+
+    
+    
+    
+    
+                

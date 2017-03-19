@@ -52,8 +52,8 @@ matrix before conversion to a data frame, which is what the method for
 ordinary arrays does.  If \code{direction} is \code{"long"}, then
 \code{object} is put into "long" format, with a column to represent each
 dimension, plus a final column holding the data.  The final column is called
-\code{"count"} if \code{object} has class \code{"\linkS4class{Counts}"} and
-\code{"value"} if \code{object} has class \code{"\linkS4class{Counts}"}.
+\code{"count"} if \code{object} has class \code{\linkS4class{Counts}} and
+\code{"value"} if \code{object} has class \code{\linkS4class{Counts}}.
 
 If \code{midpoints} is \code{FALSE}, interval labels are converted into
 factors.  If \code{midpoints} is \code{TRUE}, interval labels are replaced

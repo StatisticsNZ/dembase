@@ -29,7 +29,7 @@ Value \code{"."} can be used as shorthand for "all dimensions other than
 \code{along}".  Origin-destination or parent-child pairs can be referred to
 using their base name.  See below for examples.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"}, supplying
+\item{weights}{Object of class \code{\linkS4class{Counts}}, supplying
 weights to be used when aggregating dimensions not included in \code{along}
 or \code{within}.}
 
@@ -64,9 +64,9 @@ All dimensions of \code{object} not included in \code{along} or
 calculated.
 
 If a \code{weights} argument is supplied when \code{object} has class
-\code{"\linkS4class{Counts}"}, the argument is ignored.  If a \code{weights}
+\code{\linkS4class{Counts}}, the argument is ignored.  If a \code{weights}
 argument is not supplied when \code{object} has class
-\code{"\linkS4class{Values}"}, all elements are given equal weight.
+\code{\linkS4class{Values}}, all elements are given equal weight.
 
 If \code{method} is \code{"endpoints"}, then growth rates or increments are
 calculated from the first and last points only.  If \code{method} is

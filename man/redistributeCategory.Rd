@@ -13,7 +13,7 @@ redistributeCategory(counts, dimension, category, means = FALSE,
   means = FALSE, epsilon = 0, n = NULL)
 }
 \arguments{
-\item{counts}{Object of class \code{"\linkS4class{Counts}"} consisting of
+\item{counts}{Object of class \code{\linkS4class{Counts}} consisting of
 non-negative integers, or a single non-negative integer.}
 
 \item{dimension}{Names or indices for dimensions whose categories are to be
@@ -33,7 +33,7 @@ if \code{TRUE}, values are set equal to their means.}
 \code{"iteration"}.}
 }
 \value{
-A \code{"\linkS4class{Counts}"} object without the categories
+A \code{\linkS4class{Counts}} object without the categories
 specified by \code{categories}.
 }
 \description{

@@ -35,9 +35,9 @@ collapseDimension(object, dimension = NULL, margin = NULL, weights, ...)
 \item{margin}{Names or indices of the dimensions that will remain after the
 collapsing.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"}.
+\item{weights}{Object of class \code{\linkS4class{Counts}}.
 \code{weights} can only be used if \code{object} has class
-\code{"\linkS4class{Values}"}.  It must have at least as much detail as
+\code{\linkS4class{Values}}.  It must have at least as much detail as
 \code{object}.}
 
 \item{\dots}{Not currently used.}
@@ -55,8 +55,8 @@ dimensions are dropped.
 Either \code{dimension} or \code{margin} must be supplied, but not both.
 
 \code{weights} are required if \code{object} has class
-\code{"\linkS4class{Values}"}, and prohibited if \code{object} has class
-\code{"\linkS4class{Counts}"}.
+\code{\linkS4class{Values}}, and prohibited if \code{object} has class
+\code{\linkS4class{Counts}}.
 
 If all dimensions are collapsed, the result is equivalent to
 \code{sum(object)}.

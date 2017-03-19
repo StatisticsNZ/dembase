@@ -22,7 +22,7 @@ or \code{"child"} are used.}
 
 \item{omitted}{Value to be used for omitted origin-destination or parent-child
 combinations.  Defaults to \code{0} when \code{object} has class
-\code{"\linkS4class{Counts}"} and \code{NA} otherwise.}
+\code{\linkS4class{Counts}} and \code{NA} otherwise.}
 }
 \value{
 An object with the same class as \code{object}.

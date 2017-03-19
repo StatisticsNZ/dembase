@@ -30,14 +30,14 @@ all dimensions with \code{\link{dimtype}} \code{"origin"} and
 \item{to}{The new format(s): \code{"net"} (the default), \code{"out"},
 and \code{"in"}.}
 
-\item{weights}{Object of class \code{"\linkS4class{Counts}"} providing the
+\item{weights}{Object of class \code{\linkS4class{Counts}} providing the
 weights to be used.  Required if \code{object} has class
-\code{"\linkS4class{Values}"}, and prohibited if it has class
-\code{"\linkS4class{Counts}"}.}
+\code{\linkS4class{Values}}, and prohibited if it has class
+\code{\linkS4class{Counts}}.}
 
 \item{omitted}{Value to be used for omitted origin-destination or
 parent-child combinations.  Defaults to \code{0} when \code{object} has
-class \code{"\linkS4class{Counts}"} and \code{NA} otherwise.}
+class \code{\linkS4class{Counts}} and \code{NA} otherwise.}
 
 \item{\dots}{Not currently used.}
 }
