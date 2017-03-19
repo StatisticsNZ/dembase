@@ -22,7 +22,8 @@ The main functions are:
 
 Install `dembase` from github with:
 ```{r, echo = FALSE}
-devtools::install_github("StatisticsNZ/dembase")
+library(devtools)
+install_github("statisticsnz/dembase")
 ```
 
 ---
