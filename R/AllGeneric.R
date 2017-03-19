@@ -2142,6 +2142,7 @@ setGeneric("redistributeCategory",
 #' @param min The lower limit of the youngest age group, after reassignment.
 #' @param max The upper limit of the oldest age group, after reassignment.
 #' @param weights An object of class \code{\linkS4class{Counts}}.
+#' @param \dots Not currently used.
 #'
 #' @return A \code{\linkS4class{Counts}} object without the categories
 #' specified by \code{categories}.

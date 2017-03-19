@@ -2135,13 +2135,13 @@ test_that("redistributeToEndAges works", {
     counts <- Counts(array(1:7,
                       dim = 7,
                       dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
-    exposure <- Counts(array(7:1,
+    expose <- Counts(array(7:1,
                       dim = 7,
                       dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
-    rates <- counts / exposure
-    ans.obtained <- redistributeToEndAges(rates, min = 15, max = 40, weights = exposure)
+    rates <- counts / expose
+    ans.obtained <- redistributeToEndAges(rates, min = 15, max = 40, weights = expose)
     ans.expected <- (redistributeToEndAges(counts, min = 15, max = 40) /
-                     subarray(exposure, age > 15 & age < 40))
+                     subarray(expose, age > 15 & age < 40, drop = FALSE))
     expect_identical(ans.obtained, ans.expected)
 })
 

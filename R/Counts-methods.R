@@ -2119,8 +2119,8 @@ setMethod("redistributeCategory",
               }
           })
 
-
-    
+#' @rdname redistributeToEndAges
+#' @export
 setMethod("redistributeToEndAges",
           signature(object = "Counts",
                     weights = "missing"),
@@ -2215,7 +2215,6 @@ setMethod("redistributeToEndAges",
               }
               object
           })
-
 
 #' @rdname redistributeToEndAges
 #' @export

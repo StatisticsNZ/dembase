@@ -4776,7 +4776,7 @@ test_that("redistributeInnerDistn works with cases encountered when counts is nu
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################
 
 test_that("expandAx works", {
-    expandAx <- demlife:::expandAx
+    expandAx <- dembase:::expandAx
     ## one dimension no adjustment needed
     object <- ValuesOne(c(0.2, 0.5, 0.3),
                         labels = c("0-4", "5-9", "10+"),
@@ -4860,7 +4860,7 @@ test_that("expandAx works", {
 })
 
 test_that("expandAx throws appropriate errors", {
-    expandAx <- demlife:::expandAx
+    expandAx <- dembase:::expandAx
     ## "'ax' does not have a dimension with dimtype "age"
     object <- ValuesOne(c(0.2, 0.5, 0.3),
                         labels = c("0-4", "5-9", "10+"),
