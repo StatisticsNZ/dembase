@@ -2997,7 +2997,7 @@ addOverlayToData <- function(data, overlay, weights, probs, midpoints) {
 
 panel.dplot <- function(x, y, groups = NULL, subscripts, type = NULL,
                         col = NULL, lwd = NULL, pch = NULL, alpha = NULL,
-                        quantile, is.data, overlay, ...) {
+                        quantile, horizontal, is.data, overlay, ...) {
     has.overlay <- !is.null(is.data)
     if (has.overlay) {
         is.data.panel <- is.data[subscripts]
@@ -3027,12 +3027,14 @@ panel.dplot <- function(x, y, groups = NULL, subscripts, type = NULL,
                                   subscripts = subscripts.data,
                                   type = type, col = col, lwd = lwd,
                                   pch = pch, alpha = alpha,
+                                  horizontal = horizontal,
                                   quantile = quantile.data, ...)
             panel.data.or.overlay(x = x.overlay, y = y.overlay, groups = groups,
                                   subscripts = subscripts.overlay,
                                   type = overlay$type, col = overlay$col,
                                   lwd = overlay$lwd, pch = overlay$pch,
                                   alpha = overlay$alpha,
+                                  horizontal = horizontal,
                                   quantile = quantile.overlay, ...)
         }
         else {
@@ -3041,11 +3043,13 @@ panel.dplot <- function(x, y, groups = NULL, subscripts, type = NULL,
                                   type = overlay$type, col = overlay$col,
                                   lwd = overlay$lwd, pch = overlay$pch,
                                   alpha = overlay$alpha,
+                                  horizontal = horizontal,
                                   quantile = quantile.overlay, ...)
             panel.data.or.overlay(x = x.data, y = y.data, groups = groups,
                                   subscripts = subscripts.data, type = type,
                                   col = col, lwd = lwd, pch = pch,
                                   alpha = alpha,
+                                  horizontal = horizontal,
                                   quantile = quantile.data, ...)
         }
     }
@@ -3053,17 +3057,22 @@ panel.dplot <- function(x, y, groups = NULL, subscripts, type = NULL,
         panel.data.or.overlay(x = x, y = y, groups = groups,
                               subscripts = subscripts, type = type,
                               col = col, lwd = lwd, pch = pch,
-                              alpha = alpha, quantile = quantile, ...)
+                              alpha = alpha, horizontal = horizontal,
+                              quantile = quantile, ...)
 }
 
 panel.data.or.overlay <- function(x, y, groups = NULL, subscripts,
                                   type = NULL, col = NULL, lwd = NULL,
                                   pch = NULL, alpha = NULL,
+                                  horizontal = FALSE,
                                   quantile = NULL, ...) {
     kShowSymbols <- 10L
     has.groups <- !is.null(groups)
     has.quantile <- !is.null(quantile)
-    x.numeric <- is.numeric(x)
+    if (horizontal)
+        predictor.numeric <- is.numeric(y)
+    else
+        predictor.numeric <- is.numeric(x)
     if (has.groups)
         line.pars <- lattice::trellis.par.get("superpose.line")
     else
@@ -3081,79 +3090,130 @@ panel.data.or.overlay <- function(x, y, groups = NULL, subscripts,
     if (has.quantile)
         panel.quantiles(x = x, y = y, groups = groups, subscripts = subscripts,
                         type = type, col = col, lwd = lwd, alpha = alpha,
-                        x.numeric = x.numeric, quantile = quantile, ...)
+                        predictor.numeric = predictor.numeric, horizontal = horizontal,
+                        quantile = quantile, ...)
     else
         panel.point.estimate(x = x, y = y, groups = groups, subscripts = subscripts,
                              type = type, col = col, lwd = lwd, pch = pch,
-                             alpha = alpha, x.numeric = x.numeric, ...)
+                             alpha = alpha, horizontal = horizontal,
+                             predictor.numeric = predictor.numeric, ...)
 }
 
 panel.point.estimate <- function(x, y, groups = NULL, subscripts, type, col,
-                                 lwd, pch, alpha, x.numeric, ...) {
+                                 lwd, pch, alpha, horizontal, predictor.numeric, ...) {
     has.groups <- !is.null(groups)
     if (has.groups)
         lattice::panel.superpose(x = x, y = y, groups = groups, subscripts = subscripts,
-                        type = type, col = col, lwd = lwd, pch = pch, alpha = alpha,
-                        x.numeric = x.numeric, panel.groups = panel.point.estimate, ...)
+                                 type = type, col = col, lwd = lwd, pch = pch, alpha = alpha,
+                                 predictor.numeric = predictor.numeric, horizontal = horizontal,
+                                 panel.groups = panel.point.estimate, ...)
     else {
-        if (x.numeric)
-            lattice::panel.xyplot(x = x, y = y, groups = groups, subscripts = subscripts,
-                         type = type, col = col, lwd = lwd, pch = pch, alpha = alpha, ...)
+        if (predictor.numeric) {
+            lattice::panel.xyplot(x = x, y = y,
+                                  groups = groups, subscripts = subscripts,
+                                  type = type, col = col, lwd = lwd, pch = pch,
+                                  alpha = alpha, ...)
+        }
         else {
-            x <- as.integer(x)
-            lattice::panel.segments(x0 = x - 0.4, x1 = x + 0.4, y0 = y, y1 = y,
-                           groups = groups, subscripts = subscripts,
-                           col = col, lwd = lwd, pch = pch, alpha = alpha,
-                           identifier = "dplot.point.estimate", ...)
+            if (horizontal) {
+                y <- as.integer(y)
+                x0 <- x; x1 <- x; y0 <- y - 0.4; y1 <- y + 0.4
+            }
+            else {
+                x <- as.integer(x)
+                x0 <- x - 0.4; x1 <- x + 0.4; y0 <- y; y1 <- y
+            }
+            lattice::panel.segments(x0 = x0, x1 = x1, y0 = y0, y1 = y1,
+                                    groups = groups, subscripts = subscripts,
+                                    col = col, lwd = lwd, pch = pch, alpha = alpha,
+                                    identifier = "dplot.point.estimate", ...)
         }
     }
 }
 
 panel.quantiles <- function(x, y, groups = NULL, subscripts, type, col, lwd, alpha,
-                            x.numeric, quantile, ...) {
+                            horizontal, predictor.numeric, quantile, ...) {
     if (is.null(groups)) {
         panel.quantile.polygon(x = x, y = y, groups = groups, subscripts = subscripts, col = col,
-                               alpha = alpha, x.numeric = x.numeric, quantile = quantile, ...)
+                               alpha = alpha, predictor.numeric = predictor.numeric,
+                               horizontal = horizontal, quantile = quantile, ...)
         panel.median(x = x, y = y, groups = groups, subscripts = subscripts, type = type,
-                     col = col, lwd = lwd, x.numeric = x.numeric, quantile = quantile, ...)
+                     col = col, lwd = lwd, predictor.numeric = predictor.numeric,
+                     horizontal = horizontal, quantile = quantile, ...)
     }
     else {
         lattice::panel.superpose(x = x, y = y, groups = groups, subscripts = subscripts, col = col,
-                        alpha = alpha, x.numeric = x.numeric, quantile = quantile,
-                        panel.groups = panel.quantile.polygon, ...)
+                                 alpha = alpha, predictor.numeric = predictor.numeric,
+                                 horizontal = horizontal, quantile = quantile,
+                                 panel.groups = panel.quantile.polygon, ...)
         lattice::panel.superpose(x = x, y = y, groups = groups, subscripts = subscripts, type = type,
-                        col = col, lwd = lwd, x.numeric = x.numeric, quantile = quantile,
-                        panel.groups = panel.median, ...)
+                                 col = col, lwd = lwd, predictor.numeric = predictor.numeric,
+                                 horizontal = horizontal, quantile = quantile,
+                                 panel.groups = panel.median, ...)
     }
 }
 
 panel.quantile.polygon <- function(x, y, groups = NULL, subscripts, col, alpha,
-                                   x.numeric, quantile, ...) {
+                                   predictor.numeric, horizontal, quantile, ...) {
     levels <- intersect(levels(quantile), quantile)
     n.levels <- length(levels)
     n.polygons <- floor(n.levels / 2)
     colfun <- grDevices::colorRampPalette(colors = c("white", col, "black"))
     col.polygons <- colfun(n.polygons + 2L)[seq(from = 2L, to = n.polygons + 1L)]
-    if (!x.numeric)
-        x <- as.integer(x)
-    for (i in seq_len(n.polygons)) {
-        xboth <- x[quantile[subscripts] == levels[1L]]
-        ybottom <- y[quantile[subscripts] == levels[i]]
-        ytop <- y[quantile[subscripts] == levels[n.levels - i + 1L]]
-        if (x.numeric)
-            lattice::panel.polygon(x = c(xboth, rev(xboth)), y = c(ybottom, rev(ytop)),
-                          col = col.polygons[i], border = FALSE,
-                          alpha = alpha, identifier = "dplot.quantile.polygon", ...)
+    if (!predictor.numeric) {
+        if (horizontal)
+            y <- as.integer(y)
         else
-            lattice::panel.rect(xleft = xboth - 0.4, xright = xboth + 0.4,
-                       ybottom = ybottom, ytop = ytop,
-                       col = col.polygons[i], border = FALSE, alpha = alpha,
-                       identifier = "dplot.quantile.polygon")
+            x <- as.integer(x)
+    }
+    for (i in seq_len(n.polygons)) {
+        if (horizontal) {
+            x0 <- x[quantile[subscripts] == levels[i]]
+            x1 <- x[quantile[subscripts] == levels[n.levels - i + 1L]]
+            y0 <- y[quantile[subscripts] == levels[1L]]
+            y1 <- y[quantile[subscripts] == levels[1L]]
+            if (predictor.numeric) {
+                x <- c(x0, rev(x1))
+                y <- c(y0, rev(y1))
+            }
+            else {
+                xleft <- x0
+                xright <- x1
+                ybottom <- y0 - 0.4
+                ytop <- y0 + 0.4
+            }
+        }
+        else {
+            x0 <- x[quantile[subscripts] == levels[1L]]
+            x1 <- x[quantile[subscripts] == levels[1L]]
+            y0 <- y[quantile[subscripts] == levels[i]]
+            y1 <- y[quantile[subscripts] == levels[n.levels - i + 1L]]
+            if (predictor.numeric) {
+                x <- c(x0, rev(x1))
+                y <- c(y0, rev(y1))
+            }
+            else {
+                xleft <- x0 - 0.4
+                xright <- x0 + 0.4
+                ybottom <- y0
+                ytop <- y1
+            }
+        }
+        if (predictor.numeric)
+            lattice::panel.polygon(x = x, y = y,
+                                   col = col.polygons[i], border = FALSE,
+                                   alpha = alpha, identifier = "dplot.quantile.polygon", ...)
+        else
+            lattice::panel.rect(xleft = xleft, xright = xright,
+                                ybottom = ybottom, ytop = ytop,
+                                col = col.polygons[i], border = FALSE, alpha = alpha,
+                                identifier = "dplot.quantile.polygon")
     }
 }
 
 panel.median <- function(x, y, groups = NULL, subscripts, type, col, lwd,
-                         x.numeric, quantile, col.line = col, col.symbol = col,
+                         predictor.numeric, horizontal, quantile,
+                         col.line = col, col.symbol = col,
                          ...) {
     n.levels <- nlevels(quantile)
     colfun <- grDevices::colorRampPalette(colors = c("white", col, "black"))
@@ -3163,13 +3223,26 @@ panel.median <- function(x, y, groups = NULL, subscripts, type, col, lwd,
     if (any(is.median)) {
         x <- x[is.median]
         y <- y[is.median]
-        if (x.numeric)
+        if (predictor.numeric)
             lattice::panel.xyplot(x = x, y = y, col = col, type = type, lwd = lwd,
-                         identifier = "dplot.median", ...)
+                                  identifier = "dplot.median", ...)
         else {
-            x <- as.integer(x)
-            lattice::panel.segments(x0 = x - 0.4, x1 = x + 0.4, y0 = y, y1 = y, col = col,
-                           lwd = lwd, identifier = "dplot.median", ...)
+            if (horizontal) {
+                y <- as.integer(y)
+                x0 <- x
+                x1 <- x
+                y0 <- y - 0.4
+                y1 <- y + 0.4
+            }
+            else {
+                x <- as.integer(x)
+                x0 <- x - 0.4
+                x1 <- x + 0.4
+                y0 <- y
+                y1 <- y
+            }                
+            lattice::panel.segments(x0 = x0, x1 = x1, y0 = y0, y1 = y1, col = col,
+                                    lwd = lwd, identifier = "dplot.median", ...)
         }
     }
 }

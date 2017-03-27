@@ -11,11 +11,13 @@ dplot(formula, data, ...)
 
 \S4method{dplot}{formula,Counts}(formula, data, type = NULL,
   panel = panel.dplot, groups, midpoints = FALSE, subarray,
-  probs = c(0.025, 0.25, 0.5, 0.75, 0.975), overlay = NULL, ...)
+  probs = c(0.025, 0.25, 0.5, 0.75, 0.975), horizontal = FALSE,
+  overlay = NULL, ...)
 
 \S4method{dplot}{formula,Values}(formula, data, type = NULL,
   panel = panel.dplot, weights, midpoints = FALSE, subarray,
-  probs = c(0.025, 0.25, 0.5, 0.75, 0.975), overlay = NULL, ...)
+  probs = c(0.025, 0.25, 0.5, 0.75, 0.975), horizontal = FALSE,
+  overlay = NULL, ...)
 }
 \arguments{
 \item{formula}{\code{formula} object.  The symbols to the right of the
@@ -42,6 +44,9 @@ vector.}
 \item{probs}{Numeric vector used by \code{\link{collapseIterations}} when
 \code{object} has a dimension with \code{\link{dimtype}}
 \code{"iteration"}.}
+
+\item{horizontal}{Logical, defaulting to \code{FALSE}. If \code{TRUE},
+the roles of the 'x' and 'y' axes are reversed.}
 
 \item{overlay}{A list describing and overlay.}
 
@@ -120,6 +125,10 @@ dplot(~ age | residence * color, data = popn, groups = sex)
 ## with simple key
 dplot(~ age | residence * color, data = popn,
       groups = sex, auto.key = list(points = FALSE, lines = TRUE))
+
+## horizontal = TRUE
+dplot(~ residence | age * color, data = popn,
+      groups = sex, horizontal = TRUE)
 
 ## percent distribution by sex
 dplot(percent ~ age | residence * color, data = popn,

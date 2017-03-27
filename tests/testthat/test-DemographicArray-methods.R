@@ -790,6 +790,13 @@ test_that("extrapolate works", {
                               labels = c("5-9", "10-14", "15-19", "20-24"),
                               name = "age")
     expect_identical(ans.obtained, ans.expected)
+    x <- Values(array(1, dim = c(1, 1), dimnames = list(age = "0", sex = "f")),
+                dimscales = c(age = "Intervals"))
+    ans.obtained <- extrapolate(x, along = 1L, labels = c("1", "2", "3"), type = "missing")
+    ans.expected <- Values(array(c(1, NA, NA, NA),
+                                 dim = c(4, 1), dimnames = list(age = c("0", "1", "2", "3"), sex = "f")),
+                           dimscales = c(age = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("extrapolate throws appropriate errors", {

@@ -2130,7 +2130,7 @@ test_that("makeTransform method for Values works when y has class numeric", {
                  "'x' has length 0")    
 })
 
-test_that("redistributeToEndAges works", {
+test_that("reallocateToEndAges works", {
     ## one dimension, both ends outside min, max
     counts <- Counts(array(1:7,
                       dim = 7,
@@ -2139,18 +2139,18 @@ test_that("redistributeToEndAges works", {
                       dim = 7,
                       dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
     rates <- counts / expose
-    ans.obtained <- redistributeToEndAges(rates, min = 15, max = 40, weights = expose)
-    ans.expected <- (redistributeToEndAges(counts, min = 15, max = 40) /
+    ans.obtained <- reallocateToEndAges(rates, min = 15, max = 40, weights = expose)
+    ans.expected <- (reallocateToEndAges(counts, min = 15, max = 40) /
                      subarray(expose, age > 15 & age < 40, drop = FALSE))
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("redistributeToEndAges throws appropriate error", {
+test_that("reallocateToEndAges throws appropriate error", {
     ## one dimension, both ends outside min, max
     rates <- Values(array(1:7,
                       dim = 7,
                       dimnames = list(age = c("10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44"))))
-    expect_error(redistributeToEndAges(rates, min = 15, max = 40),
+    expect_error(reallocateToEndAges(rates, min = 15, max = 40),
                  "'weights' is missing")                 
 })
 

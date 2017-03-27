@@ -1330,6 +1330,8 @@ setGeneric("dimvalues<-",
 #' @param probs Numeric vector used by \code{\link{collapseIterations}} when
 #' \code{object} has a dimension with \code{\link{dimtype}}
 #' \code{"iteration"}.
+#' @param horizontal Logical, defaulting to \code{FALSE}. If \code{TRUE},
+#' the roles of the 'x' and 'y' axes are reversed.
 #' @param overlay A list describing and overlay.
 #' @param \dots Other arguments, which are passed to the underlying plotting
 #' function, \code{\link[lattice]{xyplot}}.
@@ -1371,6 +1373,10 @@ setGeneric("dimvalues<-",
 #' dplot(~ age | residence * color, data = popn,
 #'       groups = sex, auto.key = list(points = FALSE, lines = TRUE))
 #'
+#' ## horizontal = TRUE
+#' dplot(~ residence | age * color, data = popn,
+#'       groups = sex, horizontal = TRUE)
+#' 
 #' ## percent distribution by sex
 #' dplot(percent ~ age | residence * color, data = popn,
 #'       groups = sex, auto.key = list(points = FALSE, lines = TRUE))
@@ -2034,6 +2040,86 @@ setGeneric("plotSingleDimension",
            standardGeneric("plotSingleDimension"))
 
 
+
+#' Reallocate counts or values to youngest and oldest age groups.
+#'
+#' With fertility data, it is common to confine age-specific fertility rates
+#' to a limited range of age-gropus, eg ages 12 to 49, or ages 15-19 to 45-49.
+#' Births outside these age groups are reallocated to the bottom' and top
+#' age groups.  The procedure preserves the total number of birth and total
+#' fertility, and has only a minor effect
+#' on the age profile for fertility, provided that the number of births that are
+#' reallocated is small.
+#'
+#' \code{reallocateToEndAges} reallocates counts or rates.  There is no
+#' requirement' that the counts or rates relate to fertility,
+#' though this is by far the
+#' most common scenario.
+#'
+#' If \code{min} is set to a value that is less than the lower limit
+#' of the youngest age group in \code{object}, then the return value
+#' from \code{reallocateToEndAges} has the same youngest age group as
+#' \code{code}.  Similarly, if \code{max} is set to a value higher
+#' than the upper limit of the oldest age group,
+#' then \code{reallocateToEndAges} leaves the oldest age group untouched.
+#' 
+#' A \code{weights} argument is prohibited if \code{object} has class
+#' \code{\linkS4class{Counts}}, and required if it has class
+#' \code{\linkS4class{Values}}.
+#' 
+#' @param object An object of class \code{\linkS4class{Counts}} or (less commonly)
+#' \code{\linkS4class{Values}}.
+#' @param min The lower limit of the youngest age group, after restriction of
+#' the age range.
+#' @param max The upper limit of the oldest age group, after restriction
+#' of the age range.
+#' @param weights An object of class \code{\linkS4class{Counts}}.
+#' @param \dots Not currently used.
+#'
+#' @return A \code{\linkS4class{Counts}} object in which all
+#' age groups lie within the range (\code{min}, \code{max}).
+#'
+#' @seealso \code{\link{collapseIntervals}} collapses age intervals
+#' without reallocating values upwards or downwards.
+#' 
+#' @examples
+#' ## make some fake data on births
+#' births <- Counts(array(10,
+#'                        dim = c(45, 2),
+#'                        dimnames = list(age = 10:54, region = c("A", "B"))),
+#'                  dimscales = c(age = "Intervals"))
+#'
+#' ## default ages
+#' reallocateToEndAges(births)
+#' ## non-default ages
+#' reallocateToEndAges(births, min = 12, max = 45)
+#'
+#' ## make some fake data on birth rates
+#' birth.rates <- Values(array(0.1,
+#'                       dim = c(45, 2),
+#'                       dimnames = list(age = 10:54, region = c("A", "B"))),
+#'                       dimscales = c(age = "Intervals"))
+#' women <- Counts(array(100,
+#'                       dim = c(45, 2),
+#'                       dimnames = list(age = 10:54, region = c("A", "B"))),
+#'                 dimscales = c(age = "Intervals"))
+#' ## with rates, need to supply weights
+#' reallocateToEndAges(birth.rates, weights = women)                       
+#' @export
+setGeneric("reallocateToEndAges",
+           function(object, min = 15, max = 50, weights, ...)
+               standardGeneric("reallocateToEndAges"))
+
+setGeneric("reorderCategories",
+           function(object, dimension, subset, weights, ...)
+           standardGeneric("reorderCategories"))
+
+setGeneric("removeBreaks",
+           function(object, dimension, breaks, weights, ...)
+               standardGeneric("removeBreaks"))
+
+
+
 #' Randomly allocate counts in proportion to weights.
 #'
 #' \code{weights} should have one or more dimensions that \code{counts} does
@@ -2120,71 +2206,6 @@ setGeneric("redistributeCategory",
 
 
 
-#' Redistribute counts or values into youngest and oldest age groups.
-#'
-#' With fertility data, it is common to confine age-specific fertility rates
-#' to a limited range, eg ages 12-49, or 15-19 to 45-49.  Births outside these
-#' ages are conventionally reassigned to the bottom and top ages.  The procedure
-#' preserves the total number of birth and total fertility, and has only a minor effect
-#' on the age profile for fertility, provided that the number of births that are
-#' reassigned is small.
-#'
-#' \code{redistributeToEndAges} reassigns counts or rates.  There is no requirement
-#' that the counts or rates relate to fertility, though this is by far the
-#' most common scenario.
-#'
-#' A \code{weights} argument is prohibited if \code{object} has class
-#' \code{\linkS4class{Counts}}, and required if it has class
-#' \code{\linkS4class{Values}}.
-#' 
-#' @param object An object of class \code{\linkS4class{Counts}} or (less commonly)
-#' \code{\linkS4class{Values}}.
-#' @param min The lower limit of the youngest age group, after reassignment.
-#' @param max The upper limit of the oldest age group, after reassignment.
-#' @param weights An object of class \code{\linkS4class{Counts}}.
-#' @param \dots Not currently used.
-#'
-#' @return A \code{\linkS4class{Counts}} object without the categories
-#' specified by \code{categories}.
-#'
-#' @seealso \code{\link{collapseIntervals}} collapses age intervals
-#' without reassigning values upwards or downwards.
-#' 
-#' @examples
-#' ## make some fake data on births
-#' births <- Counts(array(10,
-#'                        dim = c(45, 2),
-#'                        dimnames = list(age = 10:54, region = c("A", "B"))),
-#'                  dimscales = c(age = "Intervals"))
-#'
-#' ## default ages
-#' redistributeToEndAges(births)
-#' ## non-default ages
-#' redistributeToEndAges(births, min = 12, max = 45)
-#'
-#' ## make some fake data on birth rates
-#' birth.rates <- Values(array(0.1,
-#'                       dim = c(45, 2),
-#'                       dimnames = list(age = 10:54, region = c("A", "B"))),
-#'                       dimscales = c(age = "Intervals"))
-#' women <- Counts(array(100,
-#'                       dim = c(45, 2),
-#'                       dimnames = list(age = 10:54, region = c("A", "B"))),
-#'                 dimscales = c(age = "Intervals"))
-#' ## with rates, need to supply weights
-#' redistributeToEndAges(birth.rates, weights = women)                       
-#' @export
-setGeneric("redistributeToEndAges",
-           function(object, min = 15, max = 50, weights, ...)
-               standardGeneric("redistributeToEndAges"))
-
-setGeneric("reorderCategories",
-           function(object, dimension, subset, weights, ...)
-           standardGeneric("reorderCategories"))
-
-setGeneric("removeBreaks",
-           function(object, dimension, breaks, weights, ...)
-               standardGeneric("removeBreaks"))
 
 #' Reset iteration labels.
 #'

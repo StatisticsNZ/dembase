@@ -652,10 +652,15 @@ setMethod("extrapolate",
                   if (!identical(length(growth), 1L))
                       stop(gettextf("'%s' does not have length %d", "growth", 1L))
                   if (!has.single.dim) {
-                      metadata <- metadata(object)[-along]
-                      .Data <- rep(growth, times = prod(dim[-along]))
-                      .Data <- array(.Data, dim = dim(metadata), dimnames = dimnames(metadata))
-                      growth <- methods::new("Values", .Data = .Data, metadata = metadata)
+                      metadata.growth <- metadata[-along]
+                      .Data.growth <- rep(growth,
+                                          times = prod(dim[-along]))
+                      .Data.growth <- array(.Data.growth,
+                                            dim = dim(metadata.growth),
+                                            dimnames = dimnames(metadata.growth))
+                      growth <- methods::new("Values",
+                                             .Data = .Data.growth,
+                                             metadata = metadata.growth)
                   }
               }
               else
@@ -706,8 +711,15 @@ setMethod("extrapolate",
               distance <- methods::new("Values", .Data = .Data.distance, metadata = metadata.distance)
               i.jumpoff <- if (existing.first) length(DimScale.existing) else 1L
               jumpoff <- slab(object, dimension = along, elements = i.jumpoff, drop = TRUE)
-              if (!has.single.dim)
-                  jumpoff <- methods::as(jumpoff, "Values")
+              if (!has.single.dim) {
+                  metadata.jumpoff <- metadata[-along]
+                  .Data.jumpoff <- array(jumpoff@.Data,
+                                         dim = dim(metadata.jumpoff),
+                                         dimnames = dimnames(metadata.jumpoff))
+                  jumpoff <- new("Values",
+                                 .Data = .Data.jumpoff,
+                                 metadata = metadata.jumpoff)
+              }
               if (identical(type, "exponential"))
                   extra <- jumpoff * ((1 + growth) ^ distance)
               else if (identical(type, "linear"))

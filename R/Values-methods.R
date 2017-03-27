@@ -696,6 +696,7 @@ setMethod("dplot",
           function(formula, data, type = NULL, panel = panel.dplot,
                    weights, midpoints = FALSE, subarray,
                    probs = c(0.025, 0.25, 0.5, 0.75, 0.975),
+                   horizontal = FALSE,
                    overlay = NULL, ...) {
               ## extract info about call
               original.call <- match.call(call = sys.call(sys.parent()))
@@ -763,18 +764,34 @@ setMethod("dplot",
                                            probs = probs,
                                            midpoints = midpoints)
               }
+              ## horizontal
+              if (horizontal) {
+                  y.orig <- formula[[2L]]
+                  rhs <- formula[[3]]
+                  rhs.one.term <- length(rhs) == 1L
+                  if (rhs.one.term)
+                      x.orig <- rhs[[1L]]
+                  else
+                      x.orig <- rhs[[2L]]
+                  formula[[2L]] <- x.orig
+                  if (rhs.one.term)
+                      formula[[3L]][[1L]] <- y.orig
+                  else
+                      formula[[3L]][[2L]] <- y.orig
+              }
+              ## call 'xyplot' with panel = panel.dplot,
+              ## then fix "call" attribute of result 
               is.data <- attr(data, "is.data")
               quantile <- attr(data, "quantile")
-              ## call 'xyplot' with panel = panel.dplot,
-              ## then fix "call" attribute of result
               ans <- lattice::xyplot(x = formula,
-                            data = data,
-                            type = type,
-                            panel = panel,
-                            quantile = quantile,
-                            is.data = is.data,
-                            overlay = overlay,
-                            ...)
+                                     data = data,
+                                     type = type,
+                                     panel = panel,
+                                     quantile = quantile,
+                                     horizontal = horizontal,
+                                     is.data = is.data,
+                                     overlay = overlay,
+                                     ...)
               ans$call <- original.call
               ans
           })
@@ -1477,6 +1494,40 @@ plotSingleDimensionValues <- function(data, margin, threshold, las, ...) {
     }
 }
 
+## HAS_TESTS
+#' @rdname reallocateToEndAges
+#' @export
+setMethod("reallocateToEndAges",
+          signature(object = "Values",
+                    weights = "missing"),
+          function(object, min = 15, max = 50, weights, ...) {
+              stop(gettextf("'%s' is missing",
+                            "weights"))
+          })
+
+## HAS_TESTS
+#' @rdname reallocateToEndAges
+#' @export
+setMethod("reallocateToEndAges",
+          signature(object = "Values",
+                    weights = "Counts"),
+          function(object, min = 15, max = 50, weights, ...) {
+              weights <- checkAndTidyWeights(weights = weights,
+                                             target = object,
+                                             nameWeights = "weights",
+                                             nameTarget = "object",
+                                             allowNA = TRUE)
+              counts <- reallocateToEndAges(object = weights * object,
+                                              min = min,
+                                              max = max,
+                                              ...)
+              weights <- makeCompatible(x = weights,
+                                        y = counts,
+                                        subset = TRUE,
+                                        check = TRUE)
+              counts / weights
+          })
+
 ## NO_TESTS
 #' @rdname redistribute
 #' @export
@@ -1486,40 +1537,6 @@ setMethod("redistribute",
           function(counts, weights, n = NULL) {
               stop(gettextf("function '%s' cannot be used when '%s' has class \"%s\"",
                             "redistribute", "counts", class(counts)))
-          })
-
-## HAS_TESTS
-#' @rdname redistributeToEndAges
-#' @export
-setMethod("redistributeToEndAges",
-          signature(object = "Values",
-                    weights = "missing"),
-          function(object, min = 15, max = 50, weights, ...) {
-              stop(gettextf("'%s' is missing",
-                            "weights"))
-          })
-
-## HAS_TESTS
-#' @rdname redistributeToEndAges
-#' @export
-setMethod("redistributeToEndAges",
-          signature(object = "Values",
-                    weights = "Counts"),
-          function(object, min = 15, max = 50, weights, ...) {
-              weights <- checkAndTidyWeights(weights = weights,
-                                             target = object,
-                                             nameWeights = "weights",
-                                             nameTarget = "object",
-                                             allowNA = TRUE)
-              counts <- redistributeToEndAges(object = weights * object,
-                                              min = min,
-                                              max = max,
-                                              ...)
-              weights <- makeCompatible(x = weights,
-                                        y = counts,
-                                        subset = TRUE,
-                                        check = TRUE)
-              counts / weights
           })
 
 ## HAS_TESTS
