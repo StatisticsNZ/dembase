@@ -3189,8 +3189,8 @@ panel.quantile.polygon <- function(x, y, groups = NULL, subscripts, col, alpha,
             y0 <- y[quantile[subscripts] == levels[i]]
             y1 <- y[quantile[subscripts] == levels[n.levels - i + 1L]]
             if (predictor.numeric) {
-                x <- c(x0, rev(x1))
-                y <- c(y0, rev(y1))
+                x.poly <- c(x0, rev(x1))
+                y.poly <- c(y0, rev(y1))
             }
             else {
                 xleft <- x0 - 0.4
@@ -3200,7 +3200,7 @@ panel.quantile.polygon <- function(x, y, groups = NULL, subscripts, col, alpha,
             }
         }
         if (predictor.numeric)
-            lattice::panel.polygon(x = x, y = y,
+            lattice::panel.polygon(x = x.poly, y = y.poly,
                                    col = col.polygons[i], border = FALSE,
                                    alpha = alpha, identifier = "dplot.quantile.polygon", ...)
         else
