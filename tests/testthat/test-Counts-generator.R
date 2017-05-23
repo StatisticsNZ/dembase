@@ -53,6 +53,9 @@ test_that("Counts creates valid object from valid arguments", {
                dimnames = list(age = c("0-9", "10+"), time = c(2001, 2005)))
     expect_identical(Counts(a),
                      Counts(b))
+    x <- ValuesOne(c(1, 2), labels = c("0", "1"), name = "age", dimscale = "Intervals")
+    expect_identical(Counts(x),
+                     CountsOne(c(1, 2), labels = c("0", "1"), name = "age", dimscale = "Intervals"))
 })
 
 

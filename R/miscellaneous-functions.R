@@ -137,6 +137,88 @@ getValidDimtypes <- function()
 
 
 
+
+## FUNCTIONS TO PREPARE DATA ########################################################
+
+## HAS_TESTS
+#' Calculate ages from dates.
+#'
+#' Calculates ages in completed years from (i) a vector of dates, and (ii)
+#' a vector of dates of birth.
+#'
+#' If \code{date} and \code{dob} are different lengths, the shorter
+#' vector is recycled.
+#'
+#' @param date A vector of class \code{\link[base]{Date}}.  All elements of
+#' \code{date} must be equal to or greater than the corresponding elements
+#' of \code{dob}.
+#' @param dob A vector of class \code{\link[base]{Date}}.
+#'
+#' @return An vector of integers.
+#'
+#' @seealso Vectors of class \code{\link{Date}} can be created with
+#' function \code{\link{as.Date}}.
+#' @examples
+#' dates <- as.Date(c("2005-07-05", "2010-07-05"))
+#' dobs <- as.Date(c("2005-06-30", "2006-07-01"))
+#' datesToAge(date = dates, dob = dobs)
+#' 
+#' ## 'date' must be later than 'dob'
+#' \dontrun{
+#' datesToAge(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
+#' }
+#' @export
+
+datesToAge <- function(date, dob) {
+    for (name in c("date", "dob")) {
+        value <- get(name)
+        if (!is(value, "Date"))
+            stop(gettextf("'%s' does not have class \"%s\"",
+                          name, "Date"))
+        if (identical(length(value), 0L))
+            stop(gettextf("'%s' has length %d",
+                          name, 0L))
+    }
+    n.date <- length(date)
+    n.dob <- length(dob)
+    if (n.date > n.dob) {
+        if ((n.date %% n.dob) != 0L)
+            warning(gettextf("length of '%s' [%d] not a multiple of length of '%s' [%d]",
+                             "date", n.date, "dob", n.dob))
+        dob <- rep(dob,
+                   length.out = n.date)
+    }
+    if (n.dob > n.date) {
+        if ((n.dob %% n.date) != 0L)
+            warning(gettextf("length of '%s' [%d] not a multiple of length of '%s' [%d]",
+                             "dob", n.dob, "date", n.date))
+        date <- rep(date,
+                    length.out = n.dob)
+    }
+    both.obs <- !is.na(date) & !is.na(dob)
+    if (any(date[both.obs] < dob[both.obs]))
+        stop(gettextf("some elements of '%s' are less than the corresponding elements of '%s'",
+                      "date", "dob"))
+    day.date <- format(date, "%d")
+    day.dob <- format(dob, "%d")
+    month.date <- format(date, "%m")
+    month.dob <- format(dob, "%m")
+    year.date <- format(date, "%Y")
+    year.dob <- format(dob, "%Y")
+    day.date <- as.integer(day.date)
+    day.dob <- as.integer(day.dob)
+    month.date <- as.integer(month.date)
+    month.dob <- as.integer(month.dob)
+    year.date <- as.integer(year.date)
+    year.dob <- as.integer(year.dob)
+    year.diff <- year.date - year.dob
+    has.had.birthday.this.year <- ((month.date > month.dob)
+        | ((month.date == month.dob) & (day.date >= day.dob)))
+    year.diff - 1L + has.had.birthday.this.year
+}
+        
+
+
 ## FUNCTIONS FOR PROCESSING DIMENSIONS NAME AND INDICES #############################
 
 ## HAS_TESTS

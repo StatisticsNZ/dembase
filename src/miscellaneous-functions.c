@@ -520,7 +520,7 @@ redistributeInnerMeans_Internal(double *ans, int n,
             if(sumProb > 0) {
                 
                 /*  ans is from prob / sumProb * sizeCount */
-                double mult = sizeCount / sumProb;  
+                double mult = sizeCount / sumProb;
                 for (int w = 0; w < nWeight; ++w) {
                     ans[ iWeight[w] - 1 ] = prob[w] * mult;
                 }
@@ -584,7 +584,7 @@ redistributeInnerDistn_Internal(int *ans, int n,
             
             if(sumProb > 0) {
                 
-                /* c version of rmultinom gives rubbish if weights not 
+                /* c version of rmultinom gives rubbish if weights not
                  * normalised */
                 for (int w = 0; w < nWeight; ++w) {
                     prob[w] /= sumProb;

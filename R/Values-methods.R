@@ -770,12 +770,12 @@ setMethod("dplot",
                   rhs <- formula[[3]]
                   rhs.one.term <- length(rhs) == 1L
                   if (rhs.one.term)
-                      x.orig <- rhs[[1L]]
+                      x.orig <- rhs
                   else
                       x.orig <- rhs[[2L]]
                   formula[[2L]] <- x.orig
                   if (rhs.one.term)
-                      formula[[3L]][[1L]] <- y.orig
+                      formula[[3L]] <- y.orig
                   else
                       formula[[3L]][[2L]] <- y.orig
               }

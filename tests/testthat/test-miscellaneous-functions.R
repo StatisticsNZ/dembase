@@ -122,6 +122,36 @@ test_that("getValidDimtypes works", {
   expect_false("class" %in% getValidDimtypes())
   expect_false("pool" %in% getValidDimtypes())
 })
+## FUNCTIONS TO PREPARE DATA ########################################################
+
+test_that("dateToAge works", {
+    dob <- as.Date("2000-06-30")
+    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
+                      "2001-07-01", "2005-01-01", "2005-12-01"))
+    ans.obtained <- datesToAge(date = date, dob = dob)
+    ans.expected <- c(0L, 0L, 0L, 1L, 1L, 4L, 5L)
+    expect_identical(ans.obtained, ans.expected)
+    dob <- as.Date(c("2000-06-30", "2000-08-30", "2001-01-01", "2001-12-31"))
+    date <- as.Date(c("2002-06-30", "2003-07-01"))
+    ans.obtained <- datesToAge(date = date, dob = dob)
+    ans.expected <- c(2L, 2L, 1L, 1L)
+    expect_identical(ans.obtained, ans.expected)
+    dob <- as.Date(c(NA, "2000-08-30", "2001-01-01", "2001-12-31"))
+    date <- as.Date(c("2002-06-30", "2003-07-01"))
+    ans.obtained <- datesToAge(date = date, dob = dob)
+    ans.expected <- c(NA, 2L, 1L, 1L)
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(rep("2001-06-30", 7))
+    dob <- as.Date(rep("2000-06-30", 4))
+    expect_warning(datesToAge(date = date, dob = dob),
+                   "length of 'date' \\[7\\] not a multiple of length of 'dob' \\[4\\]")
+    date <- as.Date(rep("2001-06-30", 4))
+    dob <- as.Date(rep("2000-06-30", 7))
+    expect_warning(datesToAge(date = date, dob = dob),
+                   "length of 'dob' \\[7\\] not a multiple of length of 'date' \\[4\\]")
+    expect_error(datesToAge(date = as.Date("2000-01-01"), dob = as.Date("2000-01-02")),
+                 "some elements of 'date' are less than the corresponding elements of 'dob'")
+})
 
 
 

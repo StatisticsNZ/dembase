@@ -41,14 +41,15 @@ setMethod("Values",
               methods::callGeneric()
           })
 
-## NO_TESTS
+## HAS_TESTS
 #' @rdname counts-values-generator
 #' @export
 setMethod("Values",
           signature(object = "DemographicArray"),
           function(object, dimtypes = NULL, dimscales = NULL) {
-              object <- methods::as(object, "array")
-              methods::callGeneric()
+              .Data <- object@.Data
+              metadata <- object@metadata
+              new("Values", .Data = .Data, metadata = metadata)
           })
 
 ## HAS_TESTS

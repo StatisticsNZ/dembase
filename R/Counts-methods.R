@@ -1154,12 +1154,12 @@ setMethod("dplot",
                   rhs <- formula[[3]]
                   rhs.one.term <- length(rhs) == 1L
                   if (rhs.one.term)
-                      x.orig <- rhs[[1L]]
+                      x.orig <- rhs
                   else
                       x.orig <- rhs[[2L]]
                   formula[[2L]] <- x.orig
                   if (rhs.one.term)
-                      formula[[3L]][[1L]] <- y.orig
+                      formula[[3L]] <- y.orig
                   else
                       formula[[3L]][[2L]] <- y.orig
               }
@@ -2035,7 +2035,7 @@ setMethod("reallocateToEndAges",
                             "object", class(object)))
           })
 
- ## NO_TESTS - has some, needs more
+## NO_TESTS - has some, needs more
 #' @rdname redistribute
 #' @export
 setMethod("redistribute",
@@ -2079,8 +2079,8 @@ setMethod("redistribute",
                                          dim = dim(metadata.weights),
                                          dimnames = dimnames(metadata.weights))
                   weights <- methods::new("Counts",
-                                 .Data = .Data.weights,
-                                 metadata = metadata.weights)
+                                          .Data = .Data.weights,
+                                          metadata = metadata.weights)
               }
               else if (!has.iter.counts && has.iter.weights) {
                   DimScale.iter <- DimScales(weights)[[i.iter.weights]]
@@ -2092,8 +2092,8 @@ setMethod("redistribute",
                                         dim = dim(metadata.counts),
                                         dimnames = dimnames(metadata.counts))
                   counts <- methods::new("Counts",
-                                .Data = .Data.counts,
-                                metadata = metadata.counts)
+                                         .Data = .Data.counts,
+                                         metadata = metadata.counts)
               }
               else if (!has.iter.counts && !has.iter.weights) {
                   n <- checkAndTidyN(n)                  
@@ -2112,11 +2112,11 @@ setMethod("redistribute",
                                              dim = dim(metadata.weights),
                                              dimnames = dimnames(metadata.weights))
                       counts <- methods::new("Counts",
-                                    .Data = .Data.counts,
-                                    metadata = metadata.counts)
+                                             .Data = .Data.counts,
+                                             metadata = metadata.counts)
                       weights <- methods::new("Counts",
-                                     .Data = .Data.weights,
-                                     metadata = metadata.weights)
+                                              .Data = .Data.weights,
+                                              metadata = metadata.weights)
                   }
               }
               transform <- tryCatch(makeTransform(x = weights,

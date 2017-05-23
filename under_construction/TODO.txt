@@ -1,4 +1,22 @@
 
+***
+
+Add more informative error message:
+
+That’s probably a feature, not a bug. Does the time scale for ‘ch.xt’ have gaps? Intervals dimscales are not allows to have gaps. If it does have gaps, you’ll need to treat time as a “state” variable,  as in, 
+ch.c <- Counts(ch.xt, dimtypes = c(year = "state"))
+
+The same issue arises with life tables, where we have data for 2005-2007 and 2012-2014, but nothing for the in-between years.
+
+Subject: RE: Has anyone noticed weird things in R? like code that was working doesnt anymore?
+
+Yup – In particular, 
+> ch.c <- Counts(ch.xt, dimscales = c(year = "Intervals"))
+Error in inferDimScale(dimtype = dimtype, dimscale = dimscale, labels = labels,  : 
+  unable to infer dimscale for dimension "year" with dimtype "time"
+
+****
+
 functions for manipulating 'Net' and 'Pool' objects
 
 rotating age-time plan
@@ -6,7 +24,6 @@ rotating age-time plan
 $ operator works with concordances
 
 'translate' can return factor, with levels in same order as classification - depending on stringsAsFactors
-
 
 panel functions for drawing lexis diagram
 

@@ -42,14 +42,15 @@ setMethod("Counts",
               methods::callGeneric()
           })
 
-## NO_TESTS
+## HAS_TESTS
 #' @rdname counts-values-generator
 #' @export
 setMethod("Counts",
           signature(object = "DemographicArray"),
           function(object, dimtypes = NULL, dimscales = NULL) {
-              object <- methods::as(object, "array")
-              methods::callGeneric()
+              .Data <- object@.Data
+              metadata <- object@metadata
+              new("Counts", .Data = .Data, metadata = metadata)
           })
 
 #' Create one-dimensional object of class "Counts" or "Values"
