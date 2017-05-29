@@ -1,8 +1,8 @@
 Package: dembase
 Type: Package
 Title: Analysing Cross-Classified Data about Populations
-Version: 0.0.0.9201
-Date: 2017-05-23
+Version: 0.0.0.9202
+Date: 2017-05-30
 Authors@R: c(
     person(given = "John",
            family = "Bryant",

@@ -438,13 +438,47 @@ setGeneric("Values",
            function(object, dimtypes = NULL, dimscales = NULL)
            standardGeneric("Values"))
 
+#' Calculate accession from a movements account.
+#'
+#' Calculations accession from a movements account with an age dimension.
+#' Accession is the number of people reaching a given age during a given
+#' period.  For instance, accession to age 65 during 2019 is the number of
+#' people turning 65 during 2019.
+#'
+#' Births can be considered as accession to age 0.  By default,
+#' the return value to \code{accession} includess age 0.
+#' If the account does not in fact include births, then accession
+#' to age 0 is set to 0.
+#' 
+#' @param object A \code{\linkS4class{Movements}} account.
+#' @param births If \code{TRUE} (the default), births are included in the
+#' answer; if \code{FALSE}, they are not.
+#'
+#' @return An object of class \code{\linkS4class{Counts}}.
+#'
+#' @examples
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(13,
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' account <- Movements(population = population,
+#'                      births = births,
+#'                      exits = list(deaths = deaths))
+#' 
+#' accession(account)
+#' accession(account, births = FALSE)
+#' @export
 setGeneric("accession",
-           function(object)
+           function(object, births = TRUE)
                standardGeneric("accession"))
-
-setGeneric("accessionComponent",
-           function(component, population)
-               standardGeneric("accessionComponent"))
 
 setGeneric("addBreaks",
            function(object, dimension, breaks, weights, ...)
@@ -1782,15 +1816,27 @@ setGeneric("impute",
            function(object, mult = NULL, max = NULL)
                standardGeneric("impute"))
 
-setGeneric("increments",
-           function(object)
-               standardGeneric("increments"))
-
 #' @rdname exported-not-api
 #' @export
 setGeneric("incrementDimScale",
            function(object, n)
                standardGeneric("incrementDimScale"))
+
+setGeneric("incrementLowerTri",
+           function(component, population)
+               standardGeneric("incrementLowerTri"))
+
+setGeneric("incrementOpen",
+           function(component, population)
+               standardGeneric("incrementOpen"))
+
+setGeneric("incrementSquare",
+           function(component, population)
+               standardGeneric("incrementSquare"))
+
+setGeneric("incrementUpperTri",
+           function(component, population)
+               standardGeneric("incrementUpperTri"))
 
 setGeneric("inferDimvalues",
            function(DimScale, labels, ...)
@@ -1800,9 +1846,76 @@ setGeneric("InternalMovements",
            function(internal, template)
                standardGeneric("InternalMovements"))
 
-setGeneric("isConsistent",
-           function(object, cohort = NULL)
-               standardGeneric("isConsistent"))
+
+#' Test whether a demographic account is internally consistent.
+#'
+#' Test whether the components and population counts counts of a 
+#' \code{\linkS4class{DemographicAccount}} conform to the accounting identity
+#' that population at the end of a period equals population at the beginning
+#' of a period plus entries minus exits.  Entries include events such as
+#' births and in-migration, and exits include events such as deaths
+#' and out-migration. The accounting identities are applied cell by cell.
+#'
+#' The return value is an array of logical values.  The array has the
+#' same dimensions as the population series in the demographic account,
+#' except that the first period is not included.  The value of a cell
+#' in an array is \code{TRUE} if the corresponding population count
+#' equals the count that would be expected from population counts
+#' at the start of the period, adjusting for ageing (if the account
+#' includes age) and events such as births and deaths, and \code{FALSE}
+#' otherwise.
+#'
+#' To simply test whether an account is consistent, without identifying the
+#' inconsistent cells, use function \code{all}, as in
+#'
+#' \code{account.is.consistent <- all(isInternallyConsistent(myaccount))}
+#'
+#' @param object A \code{\linkS4class{DemographicAccount}}.
+#'
+#' @return An array of logical values.
+#'
+#' @examples
+#' ## A consistent account
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(13,
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' account <- Movements(population = population,
+#'                      births = births,
+#'                      exits = list(deaths = deaths))
+#' isInternallyConsistent(account)
+#' all(isInternallyConsistent(account))
+#'
+#' ## An inconsistent account
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(14, # changed from 13
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' account <- Movements(population = population,
+#'                      births = births,
+#'                      exits = list(deaths = deaths))
+#' isInternallyConsistent(account)
+#' all(isInternallyConsistent(account))
+#' @export
+setGeneric("isInternallyConsistent",
+           function(object)
+               standardGeneric("isInternallyConsistent"))
 
 setGeneric("length")
 

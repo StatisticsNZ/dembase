@@ -3093,24 +3093,6 @@ test_that("mergeMetadata works", {
 
 ## HELPER FUNCTIONS FOR DEMOGRAPHIC ACCOUNTS ######################################
 
-test_that("accessionHelper works", {
-    accessionHelper <- dembase:::accessionHelper
-    component <- Counts(array(1:12,
-                              dim = c(3, 2, 2),
-                              dimnames = list(age = c("0-4", "5-9", "10+"),
-                                  triangle = c("TL", "TU"),
-                                  time = c("2001-2005", "2006-2010"))))
-    component <- new("EntriesMovements",
-                     .Data = component@.Data,
-                     metadata = component@metadata)
-    ans.obtained <- accessionHelper(component)
-    ans.expected <- Counts(array(c(0L, 4L, 5L, 0L, 10L, 11L),
-                              dim = c(3, 2),
-                              dimnames = list(age = c("0-4", "5-9", "10+"),
-                                  time = c("2001-2005", "2006-2010"))))
-    expect_identical(ans.obtained, ans.expected)
-})    
-
 test_that("ageDimBirthsCompatibleWithPopn works", {
     ageDimBirthsCompatibleWithPopn <- dembase:::ageDimBirthsCompatibleWithPopn
     name <- "age"
@@ -3185,6 +3167,25 @@ test_that("ageDimBirthsCompatibleWithPopn works", {
                                                     DimScalesPopn = DimScalesPopn,
                                                     nameComponent = nameComponent),
                      "\"age\" dimensions have incompatible dimscales")    
+})
+
+test_that("default version of agePopnForwardUpperTri works", {
+    agePopnForwardUpperTri <- dembase:::agePopnForwardUpperTri
+    Population <- dembase:::Population
+    population <- Counts(array(1:42,
+                               dim = c(2, 7, 3),
+                               dimnames = list(reg = c("a", "b"),
+                                               age = c("0-4", "5-9", "10-14", "15-19",
+                                                       "20-24", "25-29", "30+"),
+                                               time = c("2000", "2005", "2010"))))
+    population <- Population(population)
+    ans.obtained <- agePopnForwardUpperTri(population)
+    ans.expected <- Counts(array(c(1:12, 15:26),
+                                 dim = c(2, 6, 2),
+                                 dimnames = list(reg = c("a", "b"),
+                                                 age = c(5, 10, 15, 20, 25, 30),
+                                                 time = c("2001-2005", "2006-2010"))))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("checkAndTidyMovementsComponent works", {
@@ -3691,6 +3692,82 @@ test_that("iMinAge works", {
                  "minimum age of 'current' not found in ages of 'target'")
 })
 
+test_that("incrementLowerTriHelper works", {
+    incrementLowerTriHelper <- dembase:::incrementLowerTriHelper
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                  triangle = c("TL", "TU"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(component,
+                                  template = component,
+                                  name = "immigration")
+    ans.obtained <- incrementLowerTriHelper(component)
+    ans.expected <- Counts(array(c(1:3, 7:9),
+                              dim = c(3, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                  time = c("2005", "2010"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("incrementOpenHelper works", {
+    incrementOpenHelper <- dembase:::incrementOpenHelper
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                  triangle = c("TL", "TU"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(component,
+                                  template = component,
+                                  name = "immigration")
+    ans.obtained <- incrementOpenHelper(component)
+    ans.expected <- Counts(array(c(rep(0L, 2), 6L, rep(0L, 2L), 12L),
+                                 dim = c(3, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 time = c("2005", "2010"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("incrementSquareHelper works", {
+    incrementSquareHelper <- dembase:::incrementSquareHelper
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(region = c("a", "b", "c"),
+                                              sex = c("F", "M"),
+                                              time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(component,
+                                  template = component,
+                                  name = "immigration")
+    ans.obtained <- incrementSquareHelper(component)
+    ans.expected <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(region = c("a", "b", "c"),
+                                              sex = c("F", "M"),
+                                              time = c("2005", "2010"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("incrementUpperTriHelper works", {
+    incrementUpperTriHelper <- dembase:::incrementUpperTriHelper
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                  triangle = c("TL", "TU"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(component,
+                                  template = component,
+                                  name = "immigration")
+    ans.obtained <- incrementUpperTriHelper(component)
+    ans.expected <- Counts(array(c(4:5, 10:11),
+                              dim = c(2, 2),
+                              dimnames = list(age = c("5", "10"),
+                                  time = c("2001-2005", "2006-2010"))))
+    expect_identical(ans.obtained, ans.expected)
+})
 
 test_that("default version of isCompatibleWithPopn works", {
     isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
@@ -3718,29 +3795,6 @@ test_that("default version of isCompatibleWithPopn works", {
     expect_true(isCompatibleWithPopn(component = component,
                                      population = population,
                                      nameComponent = nameComponent))
-    accession <- Counts(array(1L,
-                              dim = c(2, 7, 2, 2),
-                              dimnames = list(reg = c("a", "b"),
-                                  age = c("0-4", "5-9", "10-14", "15-19",
-                                      "20-24", "25-29", "30+"),
-                                  time = c("2001-2005", "2006-2010"),
-                                  sex = c("f", "m"))))
-    accession <- new("Accession",
-                     .Data = accession@.Data,
-                     metadata = accession@metadata)
-    population <- Counts(array(1L,
-                               dim = c(2, 7, 2, 3),
-                               dimnames = list(reg = c("a", "b"),
-                                   age = c("0-4", "5-9", "10-14", "15-19",
-                                       "20-24", "25-29", "30+"),
-                                   sex = c("f", "m"),
-                                   time = c("2000", "2005", "2010"))))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    expect_true(isCompatibleWithPopn(component = accession,
-                                     population = population,
-                                     nameComponent = "accession"))
     internal <- Counts(array(1L,
                              dim = c(3, 3, 1),
                              dimnames = list(reg_orig = c("a", "b", "c"),
@@ -3784,30 +3838,6 @@ test_that("default version of isCompatibleWithPopn works", {
                                           population = population,
                                           nameComponent = nameComponent),
                      "'births' and 'population' not compatible : \"time\" dimensions have incompatible dimscales")
-    accession <- Counts(array(1L,
-                              dim = c(2, 7, 2, 2),
-                              dimnames = list(reg = c("a", "b"),
-                                  age = c("0-4", "5-9", "10-14", "15-19",
-                                      "20-24", "25-29", "30+"),
-                                  time = c("2002-2006", "2007-2011"),
-                                  sex = c("f", "m"))))
-    accession <- new("Accession",
-                     .Data = accession@.Data,
-                     metadata = accession@metadata)
-    population <- Counts(array(1L,
-                               dim = c(2, 7, 2, 3),
-                               dimnames = list(reg = c("a", "b"),
-                                   age = c("0-4", "5-9", "10-14", "15-19",
-                                       "20-24", "25-29", "30+"),
-                                   sex = c("f", "m"),
-                                   time = c("2000", "2005", "2010"))))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    expect_identical(isCompatibleWithPopn(component = accession,
-                                          population = population,
-                                          nameComponent = "accession"),
-                     "'accession' and 'population' not compatible : \"time\" dimensions have incompatible dimscales")
     ## population has extra dimension
     component <- Counts(array(1L,
                               dim = c(2, 2, 2, 2),
@@ -4065,6 +4095,73 @@ test_that("pairDimCompCompatibleWithPopn works", {
                                                    nameComponent = nameComponent),
                      "\"reg_orig\" dimension of 'internal' and \"reg\" dimension of 'population' have incompatible dimscales")
 })
+
+test_that("popnEndNoAge works", {
+    popnEndNoAge <- dembase:::popnEndNoAge
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = 15,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = 5,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    x <- Movements(population = population,
+                   births = births,
+                   exits = list(deaths = deaths))
+    ans.obtained <- popnEndNoAge(x)
+    ans.expected <- Counts(x@population)[-1]
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("popnEndWithAge works", {
+    popnEndWithAge <- dembase:::popnEndWithAge
+    population <- Counts(array(rpois(n = 90, lambda = 100),
+                               dim = c(3, 2, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               sex = c("f", "m"),
+                                               reg = 1:4,
+                                               time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 10),
+                             dim = c(3, 2, 5, 5, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"))))
+    x <- Movements(population = population,
+                   births = births,
+                   internal = internal)
+    ans <- popnEndWithAge(x)
+    expect_identical(ans@metadata, population[,,,-1]@metadata)
+})
+
+test_that("popnOpen works", {
+    popnOpen <- dembase:::popnOpen
+    population <- Counts(array(1:90,
+                               dim = c(3, 2, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               sex = c("f", "m"),
+                                               reg = 1:4,
+                                               time = c(2000, 2005, 2010))))
+    ans.obtained <- popnOpen(population)
+    ans.expected <- Counts(array(0L,
+                                 dim = c(3, 2, 4, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 sex = c("f", "m"),
+                                                 reg = 1:4,
+                                                 time = c(2005, 2010))))
+    ans.expected[3,,,] <- population[3,,,1:2]
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("splitTriangles works", {
     splitTriangles <- dembase:::splitTriangles

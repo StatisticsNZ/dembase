@@ -67,6 +67,7 @@ Movements <- function(population, births = NULL, internal = NULL,
         components <- c(components, net)
         namesComponents <- c(namesComponents, names.net)
     }
+    components <- unname(components)
     if (any(duplicated(namesComponents)))
         stop(gettext("names for components have duplicates"))
     methods::new("Movements",

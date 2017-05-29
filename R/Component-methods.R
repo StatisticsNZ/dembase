@@ -1,116 +1,316 @@
 
+## incrementLowerTri ################################################################
+
 ## HAS_TESTS
 ## default method
-setMethod("accessionComponent",
-          signature(component = "Movements", population = "Population"),
+## assume has age dimension
+setMethod("incrementLowerTri",
+          signature(component = "Component",
+                    population = "Population"),
           function(component, population) {
-              dimtypes <- dimtypes(component, use.names = FALSE)
-              has.age <- "age" %in% dimtypes
-              if (has.age) {
-                  ans <- accessionHelper(component)
-                  perm <- names(population)
-                  aperm(ans, perm = perm)
-              }
-              else
-                  NULL
+              ans <- incrementLowerTriHelper(component)
+              perm <- names(population)
+              aperm(ans, perm = perm)
           })
 
 ## HAS_TESTS
-setMethod("accessionComponent",
+setMethod("incrementLowerTri",
           signature(component = "BirthsMovements",
                     population = "Population"),
           function(component, population) {
-              dimtypes.comp <- dimtypes(component, use.names = FALSE)
-              i.age.comp <- match("age", dimtypes.comp, nomatch = 0L)
-              has.age <- i.age.comp > 0L
-              if (has.age) {
-                  DimScales.comp <- DimScales(component, use.names = FALSE)
-                  i.triangle.comp <- match("triangle", dimtypes.comp, nomatch = 0L)
-                  i.parent.comp <- match("parent", dimtypes.comp, nomatch = 0L)
-                  i.time.comp <- match("time", dimtypes.comp, nomatch = 0L)
-                  DS.time.comp <- DimScales.comp[[i.time.comp]]
-                  names.popn <- names(population)
-                  dimtypes.popn <- dimtypes(population, use.names = FALSE)
-                  DimScales.popn <- DimScales(population, use.names = FALSE)
-                  i.age.popn <- match("age", dimtypes.popn)
-                  i.time.popn <- match("time", dimtypes.popn)
-                  DimScales.ans <- replace(DimScales.popn,
-                                           list = i.time.popn,
-                                           values = DS.time.comp)
-                  metadata.ans <- methods::new("MetaData",
-                                      nms = names.popn,
-                                      dimtypes = dimtypes.popn,
-                                      DimScales = DimScales.ans)
-                  dim.ans <- dim(metadata.ans)
-                  dimnames.ans <- dimnames(metadata.ans)
-                  .Data.ans <- array(0L, dim = dim.ans, dimnames = dimnames.ans)
-                  dimension <- c(i.age.comp, i.triangle.comp, i.parent.comp)
-                  dimension <- dimension[dimension > 0L]
-                  ans.no.age <- collapseDimension(component, dimension = dimension)
-                  perm <- names.popn[-i.age.popn]
-                  ans.no.age <- aperm(ans.no.age, perm = perm)
-                  is.first.age <- slice.index(.Data.ans, MARGIN = i.age.popn) == 1L
-                  .Data.ans[is.first.age] <- as.integer(ans.no.age)
-                  methods::new("Counts", .Data = .Data.ans, metadata = metadata.ans)
-              }
-              else
-                  NULL
+              0L
           })
 
 ## HAS_TESTS
-setMethod("accessionComponent",
+## assume has age dimension
+setMethod("incrementLowerTri",
           signature(component = "InternalMovementsPool",
                     population = "Population"),
           function(component, population) {
-              dimtypes.comp <- dimtypes(component, use.names = FALSE)
-              i.age.comp <- match("age", dimtypes.comp, nomatch = 0L)
-              has.age <- i.age.comp > 0L
-              if (has.age) {
-                  i.direction <- component@iDirection
-                  ins <- slab(component, dimension = i.direction, elements = 1L)
-                  outs <- slab(component, dimension = i.direction, elements = 2L)
-                  ins <- accessionHelper(ins)
-                  outs <- accessionHelper(outs)
-                  ans <- ins - outs
-                  perm <- names(population)
-                  aperm(ans, perm = perm)
-              }
-              else
-                  NULL
+              i.direction <- component@iDirection
+              ins <- slab(component,
+                          dimension = i.direction,
+                          elements = "In")
+              outs <- slab(component,
+                           dimension = i.direction,
+                           elements = "Out")
+              ins <- incrementLowerTriHelper(ins)
+              outs <- incrementLowerTriHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
           })
 
 ## HAS_TESTS
-setMethod("accessionComponent",
+setMethod("incrementLowerTri",
           signature(component = "InternalMovementsOrigDest",
                     population = "Population"),
           function(component, population) {
-              dimtypes.comp <- dimtypes(component, use.names = FALSE)
-              i.age.comp <- match("age", dimtypes.comp, nomatch = 0L)
-              has.age <- i.age.comp > 0L
-              if (has.age) {
-                  ins <- collapseOrigDest(component, to = "in")
-                  outs <- collapseOrigDest(component, to = "out")
-                  ins <- accessionHelper(ins)
-                  outs <- accessionHelper(outs)
-                  ans <- ins - outs
-                  perm <- names(population)
-                  aperm(ans, perm = perm)
-              }
-              else
-                  NULL
+              ins <- collapseOrigDest(component,
+                                      to = "in")
+              outs <- collapseOrigDest(component,
+                                       to = "out")
+              ins <- incrementLowerTriHelper(ins)
+              outs <- incrementLowerTriHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
           })
 
-## NO_TESTS
-setMethod("accessionComponent",
+## HAS_TESTS
+setMethod("incrementLowerTri",
           signature(component = "ExitsMovements",
                     population = "Population"),
           function(component, population) {
               ans <- methods::callNextMethod()
-              if (is.null(ans))
-                  ans
-              else
-                  -1L * ans
+              -1L * ans
           })
+
+
+## incrementOpen ###################################################################
+
+## HAS_TESTS
+## default method
+## assume has age dimension
+setMethod("incrementOpen",
+          signature(component = "Component",
+                    population = "Population"),
+          function(component, population) {
+              ans <- incrementOpenHelper(component)
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementOpen",
+          signature(component = "BirthsMovements",
+                    population = "Population"),
+          function(component, population) {
+              0L
+          })
+
+## HAS_TESTS
+## assume has age dimension
+setMethod("incrementOpen",
+          signature(component = "InternalMovementsPool",
+                    population = "Population"),
+          function(component, population) {
+              i.direction <- component@iDirection
+              ins <- slab(component,
+                          dimension = i.direction,
+                          elements = "In")
+              outs <- slab(component,
+                           dimension = i.direction,
+                           elements = "Out")
+              ins <- incrementOpenHelper(ins)
+              outs <- incrementOpenHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementOpen",
+          signature(component = "InternalMovementsOrigDest",
+                    population = "Population"),
+          function(component, population) {
+              ins <- collapseOrigDest(component,
+                                      to = "in")
+              outs <- collapseOrigDest(component,
+                                       to = "out")
+              ins <- incrementOpenHelper(ins)
+              outs <- incrementOpenHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementOpen",
+          signature(component = "ExitsMovements",
+                    population = "Population"),
+          function(component, population) {
+              ans <- methods::callNextMethod()
+              -1L * ans
+          })
+
+
+
+## incrementSquare ################################################################
+
+## HAS_TESTS
+## default method
+## assume no age dimension
+setMethod("incrementSquare",
+          signature(component = "Component",
+                    population = "Population"),
+          function(component, population) {
+              ans <- incrementSquareHelper(component)
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+
+## HAS_TESTS
+setMethod("incrementSquare",
+          signature(component = "BirthsMovements",
+                    population = "Population"),
+          function(component, population) {
+              names.popn <- names(population)
+              dimtypes <- dimtypes(component,
+                                       use.names = FALSE)
+              i.parent <- match("parent", dimtypes, nomatch = 0L)
+              has.parent <- i.parent > 0L
+              if (has.parent)
+                  component <- collapseDimension(component,
+                                                 dimension = i.parent)
+              ans <- incrementSquareHelper(component)
+              aperm(ans,
+                    perm = names.popn)
+          })
+
+
+## HAS_TESTS
+## assume has age dimension
+setMethod("incrementSquare",
+          signature(component = "InternalMovementsPool",
+                    population = "Population"),
+          function(component, population) {
+              i.direction <- component@iDirection
+              ins <- slab(component,
+                          dimension = i.direction,
+                          elements = "In")
+              outs <- slab(component,
+                           dimension = i.direction,
+                           elements = "Out")
+              ins <- incrementSquareHelper(ins)
+              outs <- incrementSquareHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementSquare",
+          signature(component = "InternalMovementsOrigDest",
+                    population = "Population"),
+          function(component, population) {
+              ins <- collapseOrigDest(component,
+                                      to = "in")
+              outs <- collapseOrigDest(component,
+                                       to = "out")
+              ins <- incrementSquareHelper(ins)
+              outs <- incrementSquareHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementSquare",
+          signature(component = "ExitsMovements",
+                    population = "Population"),
+          function(component, population) {
+              ans <- methods::callNextMethod()
+              -1L * ans
+          })
+
+
+## incrementUpperTri ###################################################################
+
+## HAS_TESTS
+## default method
+## assume has age dimension
+setMethod("incrementUpperTri",
+          signature(component = "Component",
+                    population = "Population"),
+          function(component, population) {
+              ans <- incrementUpperTriHelper(component)
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementUpperTri",
+          signature(component = "BirthsMovements",
+                    population = "Population"),
+          function(component, population) {
+              names.popn <- names(population)
+              dimtypes.comp <- dimtypes(component,
+                                        use.names = FALSE)
+              dimtypes.popn <- dimtypes(population,
+                                        use.names = FALSE)
+              i.age.comp <- match("age", dimtypes.comp, nomatch = 0L)
+              i.triangle.comp <- match("triangle", dimtypes.comp, nomatch = 0L)
+              i.parent.comp <- match("parent", dimtypes.comp, nomatch = 0L)
+              has.age.comp <- i.age.comp > 0L
+              has.triangle.comp <- i.triangle.comp > 0L
+              has.parent.comp <- i.parent.comp > 0L
+              if (has.age.comp || has.triangle.comp || has.parent.comp) {
+                  dimension <- c(i.age.comp, i.triangle.comp, i.parent.comp)
+                  dimension <- dimension[dimension != 0L]
+                  component <- collapseDimension(component,
+                                           dimension = dimension)
+              }
+              i.age.popn <- match("age", dimtypes.popn)
+              name.age <- names.popn[i.age.popn]
+              component <- addDimension(component,
+                                        name = name.age,
+                                        labels = "0",
+                                        dimtype = "age",
+                                        dimscale = "Points")
+              aperm(component,
+                    perm = names.popn)
+          })
+
+## HAS_TESTS
+## assume has age dimension
+setMethod("incrementUpperTri",
+          signature(component = "InternalMovementsPool",
+                    population = "Population"),
+          function(component, population) {
+              i.direction <- component@iDirection
+              ins <- slab(component,
+                          dimension = i.direction,
+                          elements = "In")
+              outs <- slab(component,
+                           dimension = i.direction,
+                           elements = "Out")
+              ins <- incrementUpperTriHelper(ins)
+              outs <- incrementUpperTriHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementUpperTri",
+          signature(component = "InternalMovementsOrigDest",
+                    population = "Population"),
+          function(component, population) {
+              ins <- collapseOrigDest(component,
+                                      to = "in")
+              outs <- collapseOrigDest(component,
+                                       to = "out")
+              ins <- incrementUpperTriHelper(ins)
+              outs <- incrementUpperTriHelper(outs)
+              ans <- ins - outs
+              perm <- names(population)
+              aperm(ans, perm = perm)
+          })
+
+## HAS_TESTS
+setMethod("incrementUpperTri",
+          signature(component = "ExitsMovements",
+                    population = "Population"),
+          function(component, population) {
+              ans <- methods::callNextMethod()
+              -1L * ans
+          })
+
+
+
+
 
 #' @rdname collapseDimension
 ## NO_TESTS

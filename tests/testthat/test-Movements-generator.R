@@ -1,6 +1,5 @@
 
-
-context("DemographicAccount-generator")
+context("Movements-generator")
 
 test_that("Movements creates valid object from valid arguments", {
     ## no age, single dimension

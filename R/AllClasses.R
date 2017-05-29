@@ -944,6 +944,22 @@ setClass("AgeIsIntervals",
          })
 
 ## HAS_TESTS
+setClass("AgeIsPoints",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dimtypes <- dimtypes(object, use.names = FALSE)
+             DimScales <- DimScales(object, use.names = FALSE)
+             i.age <- match("age", dimtypes, nomatch = 0L)
+             if (i.age > 0L) {
+                 DimScale.age <- DimScales[[i.age]]
+                 if (!methods::is(DimScale.age, "Points"))
+                     return(gettextf("dimension with dimtype \"%s\" has dimscale \"%s\"",
+                                     "age", class(DimScale.age)))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
 setClass("AtLeastTwoAge",
          contains = "VIRTUAL",
          validity = function(object) {
@@ -1343,18 +1359,23 @@ setClass("Population",
 #' @export
 setClass("Component",
          contains = c("VIRTUAL",
-             "Counts",
-             "HasTime",
-             "IsInteger",
-             "AgeIsIntervals", "FirstAgeIntervalClosed",
-             "IsRegular", "NoCohort"))
+                      "Counts",
+                      "HasTime",
+                      "IsInteger",
+                      "AgeIsIntervals",
+                      "FirstAgeIntervalClosed",
+                      "IsRegular",
+                      "NoCohort"))
 
 setClass("MovementsComponent",
-         contains = c("VIRTUAL", "HasTriangle"))
+         contains = c("VIRTUAL",
+                      "HasTriangle"))
 
 ## HAS_TESTS
 setClass("TransitionsComponent",
-         contains = c("VIRTUAL", "NonNegative", "NoTriangle"),
+         contains = c("VIRTUAL",
+                      "NonNegative",
+                      "NoTriangle"),
          validity = function(object) {
              dimtypes <- dimtypes(object, use.names = FALSE)
              DimScales <- DimScales(object, use.names = FALSE)
@@ -1373,19 +1394,25 @@ setClass("TransitionsComponent",
 #' @export
 ## HAS_TESTS
 setClass("Births",
-         contains = c("VIRTUAL", "Component", "IMinAge"))
+         contains = c("VIRTUAL",
+                      "Component",
+                      "IMinAge"))
 
 #' @rdname internal-account
 #' @export
 setClass("BirthsMovements",
-         contains = c("VIRTUAL", "Births", "MovementsComponent",
-             "NonNegative", "NoOrigDest"))
+         contains = c("VIRTUAL",
+                      "Births",
+                      "MovementsComponent",
+                      "NonNegative",
+                      "NoOrigDest"))
 
 ## HAS_TESTS
 #' @rdname internal-account
 #' @export
 setClass("BirthsMovementsHasParentChild",
-         contains = c("BirthsMovements", "HasParentChild"))
+         contains = c("BirthsMovements",
+                      "HasParentChild"))
 
 ## HAS_TESTS
 #' @rdname internal-account
@@ -1490,24 +1517,32 @@ setClass("NetMovements",
 #' @export
 ## HAS_TESTS
 setClass("Accession",
-         contains = c("Component",
-             "NonNegative", "NoOrigDest", "NoParentChild", "NoTriangle"))
+         contains = c("Counts",
+                      "HasTime",
+                      "IsInteger",
+                      "AgeIsPoints",
+                      "IsRegular",
+                      "NoCohort",
+                      "NonNegative",
+                      "NoOrigDest",
+                      "NoParentChild",
+                      "NoTriangle"))
 
 ## HAS_TESTS
 #' @rdname internal-account
 #' @export
 setClass("Exposure",
          contains = c("Counts",
-             "HasTime",
-             "IsDouble",
-             "AgeIsIntervals",
-             "FirstAgeIntervalClosed",
-             "IsRegular",
-             "NoCohort",
-             "NonNegative",
-             "NoOrigDest",
-             "NoParentChild",
-             "HasTriangle"))
+                      "HasTime",
+                      "IsDouble",
+                      "AgeIsIntervals",
+                      "FirstAgeIntervalClosed",
+                      "IsRegular",
+                      "NoCohort",
+                      "NonNegative",
+                      "NoOrigDest",
+                      "NoParentChild",
+                      "HasTriangle"))
 
 
 ## HAS_TESTS
@@ -1521,8 +1556,8 @@ setClass("Exposure",
 #' @export
 setClass("DemographicAccount",
          slots = c(population = "Population",
-             components = "list",
-             namesComponents = "character"),
+                   components = "list",
+                   namesComponents = "character"),
          contains = "VIRTUAL",
          validity = function(object) {
              population <- object@population

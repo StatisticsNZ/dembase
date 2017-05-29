@@ -2052,29 +2052,6 @@ messageAboutPairSubsetting <- function(pair) {
 
 ## HELPER FUNCTIONS FOR DEMOGRAPHIC ACCOUNTS ######################################
 
-## HAS_TESTS
-accessionHelper <- function(component) {
-    .Data.old <- component@.Data
-    metadata.old <- metadata(component)
-    dimtypes.old <- dimtypes(metadata.old, use.names = FALSE)
-    i.age.old <- match("age", dimtypes.old)
-    i.triangle.old <- match("triangle", dimtypes.old)
-    metadata.new <- metadata.old[-i.triangle.old]
-    dim.new <- dim(metadata.new)
-    dimnames.new <- dimnames(metadata.new)
-    .Data.new <- array(0L,
-                       dim = dim.new,
-                       dimnames = dimnames.new)
-    dimtypes.new <- dimtypes(metadata.new, use.names = FALSE)
-    i.age.new <- match("age", dimtypes.new)
-    n.age <- dim.new[i.age.new]
-    ind.new <- slice.index(.Data.new, MARGIN = i.age.new) != 1L
-    ind.old <- ((slice.index(.Data.old, MARGIN = i.triangle.old) == 2L)
-                & (slice.index(.Data.old, MARGIN = i.age.old) != n.age))
-    .Data.new[ind.new] <- .Data.old[ind.old]
-    methods::new("Counts", .Data = .Data.new, metadata = metadata.new)
-}
-
 
 ## HAS_TESTS
 ageDimBirthsCompatibleWithPopn <- function(name, DimScale, namesPopn,
@@ -2104,6 +2081,49 @@ ageDimBirthsCompatibleWithPopn <- function(name, DimScale, namesPopn,
     else
         gettextf("\"%s\" dimensions have incompatible dimscales",
                  name)
+}
+
+## HAS_TESTS
+agePopnForwardUpperTri <- function(population) {
+    .Data <- population@.Data
+    dim <- dim(population)
+    names <- names(population)
+    dimtypes <- dimtypes(population,
+                         use.names = FALSE)
+    DimScales <- DimScales(population,
+                           use.names = FALSE)
+    i.time <- match("time", dimtypes)
+    i.age <- match("age", dimtypes)
+    n.time <- dim[i.time]
+    n.age <- dim[i.age]
+    DS.time <- DimScales[[i.time]]
+    DS.age <- DimScales[[i.age]]
+    dv.time <- dimvalues(DS.time)
+    dv.age <- dimvalues(DS.age)
+    DS.time.ans <- methods::new("Intervals",
+                                dimvalues = dv.time)
+    DimScales.ans <- replace(DimScales,
+                             list = i.time,
+                             values = list(DS.time.ans))
+    dv.age.ans <- dv.age[-c(1L, n.age + 1L)]
+    DS.age.ans <- methods::new("Points",
+                               dimvalues = dv.age.ans)
+    DimScales.ans <- replace(DimScales.ans,
+                             list = i.age,
+                             values = list(DS.age.ans))
+    metadata.ans <- methods::new("MetaData",
+                                 nms = names,
+                                 dimtypes = dimtypes,
+                                 DimScales = DimScales.ans)
+    ind <- ((slice.index(.Data, MARGIN = i.time) != n.time)
+        & (slice.index(.Data, MARGIN = i.age) != n.age))
+    .Data.ans <- .Data[ind]
+    .Data.ans <- array(.Data.ans,
+                       dim = dim(metadata.ans),
+                       dimnames = dimnames(metadata.ans))
+    methods::new("Counts",
+                 .Data = .Data.ans,
+                 metadata = metadata.ans)
 }
 
 ## HAS_TESTS
@@ -2364,6 +2384,158 @@ iMinAge <- function(current, target) {
 }
 
 ## HAS_TESTS
+incrementLowerTriHelper <- function(component) {
+    .Data.old <- component@.Data
+    dim.old <- dim(component)
+    names.old <- names(component)
+    dimtypes.old <- dimtypes(component,
+                             use.names = FALSE)
+    DimScales.old <- DimScales(component,
+                               use.names = FALSE)
+    i.triangle.old <- match("triangle", dimtypes.old)
+    i.time.old <- match("time", dimtypes.old)
+    DS.time.old <- DimScales.old[[i.time.old]]
+    dv.time.old <- dimvalues(DS.time.old)
+    dv.time.new <- dv.time.old[-1L]
+    DS.time.new <- methods::new("Points", dimvalues = dv.time.new)
+    names.new <- names.old[-i.triangle.old]
+    dimtypes.new <- dimtypes.old[-i.triangle.old]
+    DimScales.new <- DimScales.old[-i.triangle.old]
+    i.time.new <- match("time", dimtypes.new)
+    DimScales.new <- replace(DimScales.new,
+                             list = i.time.new,
+                             values = list(DS.time.new))
+    metadata.new <- methods::new("MetaData",
+                                 nms = names.new,
+                                 dimtypes = dimtypes.new,
+                                 DimScales = DimScales.new)
+    dim.new <- dim(metadata.new)
+    dimnames.new <- dimnames(metadata.new)
+    ind.old <- slice.index(.Data.old, MARGIN = i.triangle.old) == 1L
+    .Data.new <- .Data.old[ind.old]
+    .Data.new <- array(.Data.new,
+                       dim = dim.new,
+                       dimnames = dimnames.new)
+    methods::new("Counts",
+                 .Data = .Data.new,
+                 metadata = metadata.new)
+}
+
+## HAS_TESTS
+incrementOpenHelper <- function(component) {
+    .Data.old <- component@.Data
+    dim.old <- dim(component)
+    names.old <- names(component)
+    dimtypes.old <- dimtypes(component,
+                             use.names = FALSE)
+    DimScales.old <- DimScales(component,
+                               use.names = FALSE)
+    i.age.old <- match("age", dimtypes.old)
+    i.triangle <- match("triangle", dimtypes.old)
+    i.time.old <- match("time", dimtypes.old)
+    n.age <- dim.old[i.age.old]
+    n.time.old <- dim.old[i.time.old]
+    names.new <- names.old[-i.triangle]
+    dimtypes.new <- dimtypes.old[-i.triangle]
+    DS.time.old <- DimScales.old[[i.time.old]]
+    dv.time.old <- dimvalues(DS.time.old)
+    dv.time.new <- dv.time.old[-1L]
+    DS.time.new <- methods::new("Points",
+                                dimvalues = dv.time.new)
+    DimScales.new <- replace(DimScales.old,
+                             list = i.time.old,
+                             values = list(DS.time.new))
+    DimScales.new <- DimScales.new[-i.triangle]
+    metadata.new <- methods::new("MetaData",
+                                 nms = names.new,
+                                 dimtypes = dimtypes.new,
+                                 DimScales = DimScales.new)
+    dim.new <- dim(metadata.new)
+    dimnames.new <- dimnames(metadata.new)
+    .Data.new <- array(0L,
+                       dim = dim.new,
+                       dimnames = dimnames.new)
+    ind.old <- ((slice.index(.Data.old, MARGIN = i.triangle) == 2L)
+        & (slice.index(.Data.old, MARGIN = i.age.old) == n.age))
+    i.age.new <- match("age", dimtypes.new)
+    ind.new <- slice.index(.Data.new, MARGIN = i.age.new) == n.age
+    .Data.new[ind.new] <- .Data.old[ind.old]
+    methods::new("Counts",
+                 .Data = .Data.new,
+                 metadata = metadata.new)
+}
+
+## HAS_TESTS
+incrementSquareHelper <- function(component) {
+    .Data <- component@.Data
+    dim <- dim(component)
+    names <- names(component)
+    dimtypes <- dimtypes(component,
+                         use.names = FALSE)
+    DimScales.old <- DimScales(component,
+                               use.names = FALSE)
+    i.time <- match("time", dimtypes)
+    DS.time.old <- DimScales.old[[i.time]]
+    dv.time.old <- dimvalues(DS.time.old)
+    dv.time.new <- dv.time.old[-1L]
+    DS.time.new <- methods::new("Points", dimvalues = dv.time.new)
+    DimScales.new <- replace(DimScales.old,
+                             list = i.time,
+                             values = list(DS.time.new))
+    metadata.new <- methods::new("MetaData",
+                                 nms = names,
+                                 dimtypes = dimtypes,
+                                 DimScales = DimScales.new)
+    dimnames.new <- dimnames(metadata.new)
+    .Data.new <- array(.Data,
+                       dim = dim,
+                       dimnames = dimnames.new)
+    methods::new("Counts",
+                 .Data = .Data.new,
+                 metadata = metadata.new)
+}
+
+## HAS_TESTS
+incrementUpperTriHelper <- function(component) {
+    .Data.old <- component@.Data
+    dim.old <- dim(component)
+    names.old <- names(component)
+    dimtypes.old <- dimtypes(component,
+                             use.names = FALSE)
+    DimScales.old <- DimScales(component,
+                               use.names = FALSE)
+    i.age.old <- match("age", dimtypes.old)
+    i.triangle.old <- match("triangle", dimtypes.old)
+    DS.age.old <- DimScales.old[[i.age.old]]
+    dv.age.old <- dimvalues(DS.age.old)
+    n.age.old <- dim.old[i.age.old]
+    dv.age.new <- dv.age.old[-c(1L, n.age.old + 1L)]
+    DS.age.new <- methods::new("Points", dimvalues = dv.age.new)
+    names.new <- names.old[-i.triangle.old]
+    dimtypes.new <- dimtypes.old[-i.triangle.old]
+    DimScales.new <- DimScales.old[-i.triangle.old]
+    i.age.new <- match("age", dimtypes.new)
+    DimScales.new <- replace(DimScales.new,
+                             list = i.age.new,
+                             values = list(DS.age.new))
+    metadata.new <- methods::new("MetaData",
+                                 nms = names.new,
+                                 dimtypes = dimtypes.new,
+                                 DimScales = DimScales.new)
+    dim.new <- dim(metadata.new)
+    dimnames.new <- dimnames(metadata.new)
+    ind.old <- ((slice.index(.Data.old, MARGIN = i.triangle.old) == 2L)
+        & (slice.index(.Data.old, MARGIN = i.age.old) != n.age.old))
+    .Data.new <- .Data.old[ind.old]
+    .Data.new <- array(.Data.new,
+                       dim = dim.new,
+                       dimnames = dimnames.new)
+    methods::new("Counts",
+                 .Data = .Data.new,
+                 metadata = metadata.new)
+}
+
+## HAS_TESTS
 isCompatibleWithPopn <- function(component, population, nameComponent) {
     names.comp <- names(component)
     names.comp.adj <- removeSuffixes(names.comp)
@@ -2535,6 +2707,120 @@ pairDimCompCompatibleWithPopn <- function(name, dimtype, DimScale,
                         name, nameComponent, name.popn, "population"))
     TRUE
 }
+
+## HAS_TESTS
+popnEndNoAge <- function(object) {
+    stopifnot(methods::is(object, "Movements"))
+    population <- object@population
+    components <- object@components
+    .Data <- population@.Data
+    dim <- dim(population)
+    names <- names(population)
+    dimtypes <- dimtypes(population,
+                         use.names = FALSE)
+    DimScales <- DimScales(population,
+                           use.names = FALSE)
+    i.time <- match("time", dimtypes)
+    n.time <- dim[i.time]
+    DS.time <- DimScales[[i.time]]
+    DS.time.ans <- DS.time[-1L]
+    DimScales.ans <- replace(DimScales,
+                             list = i.time,
+                             values = list(DS.time.ans))
+    metadata.ans <- new("MetaData",
+                        nms = names,
+                        dimtypes = dimtypes,
+                        DimScales = DimScales.ans)
+    .Data.ans <- .Data[slice.index(.Data, MARGIN = i.time) != n.time]
+    .Data.ans <- array(.Data.ans,
+                       dim = dim(metadata.ans),
+                       dimnames = dimnames(metadata.ans))
+    ans <- new("Counts",
+               .Data = .Data.ans,
+               metadata = metadata.ans)
+    for (component in components)
+        ans <- ans + incrementSquare(component = component,
+                                     population = population)
+    ans
+}
+
+## NO_TESTS
+popnEndWithAge <- function(object) {
+    stopifnot(methods::is(object, "Movements"))
+    population <- object@population
+    components <- object@components
+    .Data <- population@.Data
+    dim <- dim(population)
+    names <- names(population)
+    dimtypes <- dimtypes(population,
+                         use.names = FALSE)
+    DimScales <- DimScales(population,
+                           use.names = FALSE)
+    i.time <- match("time", dimtypes)
+    n.time <- dim[i.time]
+    DS.time <- DimScales[[i.time]]
+    DS.time.ans <- DS.time[-1L]
+    DimScales.ans <- replace(DimScales,
+                             list = i.time,
+                             values = list(DS.time.ans))
+    metadata.ans <- new("MetaData",
+                        nms = names,
+                        dimtypes = dimtypes,
+                        DimScales = DimScales.ans)
+    accession <- accession(object,
+                           births = TRUE)
+    .Data.ans <- array(accession@.Data,
+                       dim = dim(metadata.ans),
+                       dimnames = dimnames(metadata.ans))
+    ans <- new("Counts",
+               .Data = .Data.ans,
+               metadata = metadata.ans)
+    ans <- ans + popnOpen(population)
+    for (component in components) {
+        increment <- incrementLowerTri(component = component,
+                                       population = population)
+        ans <- ans + increment
+        increment <- incrementOpen(component = component,
+                                   population = population)
+        ans <- ans + increment
+    }
+    ans
+}
+
+## HAS_TESTS
+popnOpen <- function(population) {
+    .Data <- population@.Data
+    dim <- dim(population)
+    names <- names(population)
+    dimtypes <- dimtypes(population,
+                         use.names = FALSE)
+    DimScales <- DimScales(population,
+                           use.names = FALSE)
+    i.age <- match("age", dimtypes)
+    i.time <- match("time", dimtypes)
+    n.age <- dim[i.age]
+    n.time <- dim[i.time]
+    DS.time <- DimScales[[i.time]]
+    DS.time.ans <- DS.time[-1L]
+    DimScales.ans <- replace(DimScales,
+                             list = i.time,
+                             values = list(DS.time.ans))
+    metadata.ans <- new("MetaData",
+                        nms = names,
+                        dimtypes = dimtypes,
+                        DimScales = DimScales.ans)
+    .Data.ans <- array(0L,
+                       dim = dim(metadata.ans),
+                       dimnames = dimnames(metadata.ans))
+    ind <- ((slice.index(.Data, MARGIN = i.age) == n.age)
+        & slice.index(.Data, MARGIN = i.time) != n.time)
+    ind.ans <- slice.index(.Data.ans, MARGIN = i.age) == n.age
+    .Data.ans[ind.ans] <- .Data[ind]
+    new("Counts",
+        .Data = .Data.ans,
+        metadata = metadata.ans)
+}
+
 
 ## HAS_TESTS
 splitTriangles <- function(object) {

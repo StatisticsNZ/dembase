@@ -1783,11 +1783,22 @@ test_that("can create valid object of class Accession", {
                       dim = c(3, 2, 2, 2),
                       dimnames = list(reg = c("a", "b", "c"),
                           sex = c("f", "m"),
-                          age = c("0-4", "5+"),
+                          age = c("5", "10"),
                           time = c("2001-2005", "2006-2010"))))
     x <- new("Accession", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "Accession")
+})
+
+test_that("tests for Accession inherited from AgeIsPoints work", {
+    x <- Counts(array(rpois(n = 24, lambda = 10),
+                      dim = c(3, 2, 2, 2),
+                      dimnames = list(reg = c("a", "b", "c"),
+                          sex = c("f", "m"),
+                          age = c("0-4", "5-9"),
+                          time = c("2001-2005", "2006-2010"))))
+    expect_error(new("Accession", .Data = x@.Data, metadata = x@metadata),
+                 "dimension with dimtype \"age\" has dimscale \"Intervals\"")
 })
 
 test_that("can create valid object of class Exposure", {

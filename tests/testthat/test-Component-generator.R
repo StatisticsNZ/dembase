@@ -5,7 +5,7 @@ test_that("Accession works with valid inputs", {
     Accession <- dembase:::Accession
     accession <- Counts(array(c(1L, NA),
                             dim = c(3, 3, 2),
-                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                            dimnames = list(age = c("5", "10", "15"),
                                 region = 1:3,
                                 time = c("2001-2005", "2006-2010"))))
     set.seed(1)
