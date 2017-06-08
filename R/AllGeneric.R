@@ -561,6 +561,62 @@ setGeneric("addToPopnEnd",
            function(object, population)
                standardGeneric("addToPopnEnd"))
 
+
+#' Get or set minimum and maximum ages.
+#'
+#' Extract minimum or maximum ages from the \code{\link{dimscales}} of an object.
+#' If the age dimension uses \code{dimscale} \code{"Intervals"}, then the
+#' replacement version of \code{minAge} can be used to change the lower limit
+#' of the first age group, and the replacement version of \code{maxAge} can be
+#' used to change upper limit of the last age group.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicArray}}
+#' or \code{\linkS4class{DemographicAccount}}.
+#' @param value A number. Can be \code{Inf}.
+#'
+#' @return The extraction functions return numbers, and the replacement
+#' functions return a modified version of \code{object}.
+#'
+#' @seealso \code{\link{ageTimeStep}} and \code{\link{hasRegularAgeTime}} also
+#' provide information about age groups.
+#' 
+#' @examples
+#' library(demdata)
+#' popn <- Values(VADeaths2)
+#' popn
+#' ageMin(popn)
+#' ageMax(popn)
+#' ageMin(popn) <- 45
+#' popn
+#' ageMax(popn) <- Inf
+#' popn
+#' @name ageMinMax
+NULL
+
+#' @rdname ageMinMax
+#' @export
+setGeneric("ageMax",
+           function(object)
+               standardGeneric("ageMax"))
+
+#' @rdname ageMinMax
+#' @export
+setGeneric("ageMax<-",
+           function(object, value)
+               standardGeneric("ageMax<-"))
+
+#' @rdname ageMinMax
+#' @export
+setGeneric("ageMin",
+           function(object)
+               standardGeneric("ageMin"))
+
+#' @rdname ageMinMax
+#' @export
+setGeneric("ageMin<-",
+           function(object, value)
+               standardGeneric("ageMin<-"))
+
 #' Get the age-time step used by a demographic array.
 #'
 #' If a \code{object} has a \code{\link[=hasRegularAgeTime]{regular}} age-time plan,

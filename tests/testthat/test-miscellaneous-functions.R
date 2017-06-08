@@ -1789,6 +1789,107 @@ test_that("validNames works", {
 
 ## FUNCTIONS FOR MAKING INTERVAL LABELS ###############################################
 
+test_that("ageMinMax works", {
+    ageMinMax <- dembase:::ageMinMax
+    ## Intervals
+    x <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("f", "m"),
+                                      age = c("0-4", "5-9", "10+"))))
+    expect_identical(ageMinMax(x, min = TRUE), 0)
+    expect_identical(ageMinMax(x, min = FALSE), Inf)
+    ## Points
+    x <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("f", "m"),
+                                      age = c("0", "5", "10"))))
+    expect_identical(ageMinMax(x, min = TRUE), 0)
+    expect_identical(ageMinMax(x, min = FALSE), 10)
+    ## 0-length
+    x <- Counts(array(1,
+                      dim = c(2, 0),
+                      dimnames = list(sex = c("f", "m"),
+                                      age = character())))
+    expect_identical(ageMinMax(x, min = TRUE), integer())
+    expect_identical(ageMinMax(x, min = FALSE), integer())
+    ## no age dimension
+    x <- Counts(array(1,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("f", "m"),
+                                      region = c("a", "b"))))
+    expect_null(ageMinMax(x, min = TRUE),
+                NULL)
+    expect_null(ageMinMax(x, min = FALSE),
+                NULL)
+})
+
+test_that("ageMinMaxRemplace works", {
+    ageMinMaxReplace <- dembase:::ageMinMaxReplace
+    x <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("f", "m"),
+                                      age = c("0-4", "5-9", "10-14"))))
+    x.new <- ageMinMaxReplace(x, value = -5, min = TRUE)
+    expect_identical(ageMinMax(x.new, min = TRUE), -5)
+    x.new <- ageMinMaxReplace(x, value = Inf, min = FALSE)
+    expect_identical(ageMinMax(x.new, min = FALSE), Inf)
+})
+
+test_that("ageMinMaxRemplace throws appropriate errors", {
+    ageMinMaxReplace <- dembase:::ageMinMaxReplace
+    x <- Counts(array(1,
+                      dim = 2:3,
+                      dimnames = list(sex = c("f", "m"),
+                                      age = c("0-4", "5-9", "10-14"))))
+    expect_error(ageMinMaxReplace(x,
+                                  value = "1",
+                                  min = TRUE),
+                 "replacement value is non-numeric")
+    expect_error(ageMinMaxReplace(x,
+                                  value = 1:2,
+                                  min = TRUE),
+                 "replacement value does not have length 1")
+    expect_error(ageMinMaxReplace(x,
+                                  value = as.integer(NA),
+                                  min = TRUE),
+                 "replacement value is missing")
+    x.wrong <- Counts(array(1,
+                            dim = 2:3,
+                            dimnames = list(sex = c("f", "m"),
+                                            region = c("a", "b", "c"))))
+    expect_error(ageMinMaxReplace(x.wrong,
+                                  value = -Inf,
+                                  min = TRUE),
+                 "no dimension with dimtype \"age\"")
+    x.wrong <- Counts(array(1,
+                            dim = 2:3,
+                            dimnames = list(sex = c("f", "m"),
+                                            age = c("0", "5", "10"))))
+    expect_error(ageMinMaxReplace(x.wrong,
+                                  value = -Inf,
+                                  min = TRUE),
+                 "dimension with dimtype \"age\" has dimscale \"Points\"")
+    x.wrong <- Counts(array(1,
+                            dim = c(2, 0),
+                            dimnames = list(sex = c("f", "m"),
+                                            age = character())))
+    expect_error(ageMinMaxReplace(x.wrong,
+                                  value = -Inf,
+                                  min = TRUE),
+                 "dimension with dimtype \"age\" has length 0")
+    expect_error(ageMinMaxReplace(x,
+                                  value = 5,
+                                  min = TRUE),
+                 "replacement value greater than or equal to upper limit of first age group")
+    expect_error(ageMinMaxReplace(x,
+                                  value = 9,
+                                  min = FALSE),
+                 "replacement value less than or equal to lower limit of last age group")
+})
+
+
+
+
 test_that("makeLabelsForClosedIntervals works", {
     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
     expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10)),

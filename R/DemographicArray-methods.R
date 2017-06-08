@@ -276,6 +276,59 @@ setMethod("DimScales",
           })
 
 ## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("ageMax",
+          signature(object = "DemographicArray"),
+          function(object) {
+              object <- metadata(object)
+              ageMinMax(object = object,
+                        min = FALSE)
+          })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setReplaceMethod("ageMax",
+                 signature(object = "DemographicArray"),
+                 function(object, value) {
+                     metadata.old <- metadata(object)
+                     metadata.new <- ageMinMaxReplace(object = metadata.old,
+                                                      value = value,
+                                                      min = FALSE)
+                     object@metadata <- metadata.new
+                     dimnames(object@.Data) <- dimnames(metadata.new)
+                     object
+                 })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("ageMin",
+          signature(object = "DemographicArray"),
+          function(object) {
+              object <- metadata(object)
+              ageMinMax(object = object,
+                        min = TRUE)
+
+          })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setReplaceMethod("ageMin",
+                 signature(object = "DemographicArray"),
+                 function(object, value) {
+                     metadata.old <- metadata(object)
+                     metadata.new <- ageMinMaxReplace(object = metadata.old,
+                                                      value = value,
+                                                      min = TRUE)
+                     object@metadata <- metadata.new
+                     dimnames(object@.Data) <- dimnames(metadata.new)
+                     object
+                 })
+
+## HAS_TESTS
 #' @rdname ageTimeStep
 #' @export
 setMethod("ageTimeStep",

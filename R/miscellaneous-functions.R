@@ -168,7 +168,6 @@ getValidDimtypes <- function()
 #' datesToAge(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
 #' }
 #' @export
-
 datesToAge <- function(date, dob) {
     for (name in c("date", "dob")) {
         value <- get(name)
@@ -1186,6 +1185,81 @@ validNames <- function(names) {
 
 
 ## FUNCTIONS FOR MAKING INTERVAL LABELS ##############################################
+
+## HAS_TESTS
+ageMinMax <- function(object, min = TRUE) {
+    dimtypes <- dimtypes(object,
+                         use.names = FALSE)
+    DimScales <- DimScales(object,
+                           use.names = FALSE)
+    i.age <- match("age", dimtypes, nomatch = 0L)
+    has.age <- i.age > 0L
+    if (has.age) {
+        DimScale.age <- DimScales[[i.age]]
+        dimvalues.age <- dimvalues(DimScale.age)
+        n.dimvalues.age <- length(dimvalues.age)
+        if (n.dimvalues.age > 0L) {
+            if (min)
+                dimvalues.age[1L]
+            else
+                dimvalues.age[n.dimvalues.age]
+        }
+        else
+            integer()
+    }
+    else
+        NULL
+}
+
+## HAS_TESTS
+ageMinMaxReplace <- function(object, value, min = TRUE) {
+    if (!is.numeric(value))
+        stop(gettext("replacement value is non-numeric"))
+    if (!identical(length(value), 1L))
+        stop(gettextf("replacement value does not have length %d",
+                      1L))
+    if (is.na(value))
+        stop(gettext("replacement value is missing"))
+    if (is.finite(value) && (value == round(value)))
+        value <- as.integer(value)
+    names <- names(object)
+    dimtypes <- dimtypes(object,
+                         use.names = FALSE)
+    DimScales <- DimScales(object,
+                           use.names = FALSE)
+    i.age <- match("age", dimtypes, nomatch = 0L)
+    has.age <- i.age > 0L
+    if (!has.age)
+        stop(gettextf("no dimension with %s \"%s\"",
+                      "dimtype", "age"))
+    DimScale.age <- DimScales[[i.age]]
+    if (!methods::is(DimScale.age, "Intervals"))
+        stop(gettextf("dimension with %s \"%s\" has %s \"%s\"",
+                      "dimtype", "age", "dimscale", class(DimScale.age)))
+    dimvalues.age <- dimvalues(DimScale.age)
+    n.dimvalues.age <- length(dimvalues.age)
+    if (n.dimvalues.age == 0L)
+        stop(gettextf("dimension with %s \"%s\" has length %d",
+                      "dimtype", "age", 0L))
+    if (min) {
+        if (value >= dimvalues.age[2L])
+            stop(gettext("replacement value greater than or equal to upper limit of first age group"))
+        dimvalues.age[1L] <- value
+    }
+    else {
+        if (value <= dimvalues.age[n.dimvalues.age - 1L])
+            stop(gettext("replacement value less than or equal to lower limit of last age group"))
+        dimvalues.age[n.dimvalues.age] <- value
+    }
+    DimScale.age@dimvalues <- dimvalues.age
+    DimScales <- replace(DimScales,
+                         list = i.age,
+                         values = list(DimScale.age))
+    methods::new("MetaData",
+                 nms = names,
+                 dimtypes = dimtypes,
+                 DimScales = DimScales)
+}
 
 ## HAS_TESTS
 makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,

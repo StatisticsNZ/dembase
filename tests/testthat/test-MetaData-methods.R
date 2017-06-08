@@ -33,6 +33,50 @@ test_that("Extract methods work", {
     expect_identical(dimtypes(m[2:1]), c(reg_dest = "destination", reg_orig = "origin"))
 })
 
+test_that("ageMax works", {
+    x <- new("MetaData",
+             nms = "age",
+             dimtypes = "age",
+             DimScales = list(new("Points", dimvalues = c(0, 1, 5))))
+    expect_identical(ageMax(x), 5)
+})
+
+test_that("ageMax<- works", {
+    x <- new("MetaData",
+             nms = "age",
+             dimtypes = "age",
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+    x.new <- x
+    ageMax(x.new) <- Inf
+    expect_identical(x.new,
+                     new("MetaData",
+                         nms = "age",
+                         dimtypes = "age",
+                         DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)))))
+})
+
+test_that("ageMin works", {
+    x <- new("MetaData",
+             nms = "age",
+             dimtypes = "age",
+             DimScales = list(new("Points", dimvalues = c(0, 1, 5))))
+    expect_identical(ageMin(x), 0)
+})
+
+test_that("ageMin<- works", {
+    x <- new("MetaData",
+             nms = "age",
+             dimtypes = "age",
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+    x.new <- x
+    ageMin(x.new) <- -Inf
+    expect_identical(x.new,
+                     new("MetaData",
+                         nms = "age",
+                         dimtypes = "age",
+                         DimScales = list(new("Intervals", dimvalues = c(-Inf, 1, 5)))))
+})
+
 test_that("dimtypes<- works", {
     metadata <- dembase:::metadata
     DimScales <- dembase:::DimScales

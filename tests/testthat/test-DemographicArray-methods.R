@@ -401,6 +401,48 @@ test_that("DimScales method works", {
                                    new("Sexes", dimvalues = c("Male", "Female")))))
 })
 
+test_that("ageMax works", {
+    x <- Values(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("Male", "Female"))))
+    expect_identical(ageMax(x), Inf)
+})
+
+test_that("ageMax<- works", {
+    x <- Values(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("Male", "Female"))))
+    ageMax(x) <- 15
+    expect_identical(x,
+                     Values(array(1:6,
+                                  dim = c(3, 2),
+                                  dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                                  sex = c("Male", "Female")))))
+})
+
+test_that("ageMin works", {
+    x <- Values(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("Male", "Female"))))
+    expect_identical(ageMin(x), 0)
+})
+
+test_that("ageMin<- works", {
+    x <- Values(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("Male", "Female"))))
+    ageMin(x) <- -Inf
+    expect_identical(x,
+                     Values(array(1:6,
+                                  dim = c(3, 2),
+                                  dimnames = list(age = c("<5", "5-9", "10+"),
+                                                  sex = c("Male", "Female")))))
+})
+
 test_that("ageTimeStep works", {
   a <- array(1:6,
              dim = c(3, 2),

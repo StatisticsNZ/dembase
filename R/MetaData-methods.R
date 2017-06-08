@@ -53,6 +53,48 @@ setMethod("[",
               methods::callGeneric(x = x, i = i)
           })
 
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("ageMax",
+          signature(object = "MetaData"),
+          function(object) {
+              ageMinMax(object = object,
+                        min = FALSE)
+          })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setReplaceMethod("ageMax",
+                 signature(object = "MetaData"),
+                 function(object, value) {
+                     ageMinMaxReplace(object = object,
+                                      value = value,
+                                      min = FALSE)
+                 })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("ageMin",
+          signature(object = "MetaData"),
+          function(object) {
+              ageMinMax(object = object,
+                        min = TRUE)
+          })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setReplaceMethod("ageMin",
+                 signature(object = "MetaData"),
+                 function(object, value) {
+                     ageMinMaxReplace(object = object,
+                                      value = value,
+                                      min = TRUE)
+                 })
+
 ## HAS_TESTS - via DemographicArray-methods
 #' @rdname ageTimeStep
 #' @export

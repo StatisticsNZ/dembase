@@ -1333,12 +1333,18 @@ NULL
 #' @export
 setClass("Population",
          contains = c("Counts",
-             "IsInteger", "NonNegative",
-             "HasTime",
-             "AgeIsIntervals", "AtLeastTwoAge", "FirstAgeIntervalClosed",
-             "LastAgeIntervalOpen",
-             "NoCohort", "IsRegular",
-             "NoOrigDest", "NoParentChild", "NoTriangle"),
+                      "IsInteger",
+                      "NonNegative",
+                      "HasTime",
+                      "AgeIsIntervals",
+                      "AtLeastTwoAge",
+                      "FirstAgeIntervalClosed",
+                      "LastAgeIntervalOpen",
+                      "NoCohort",
+                      "IsRegular",
+                      "NoOrigDest",
+                      "NoParentChild",
+                      "NoTriangle"),
          validity = function(object) {
              dimtypes <- dimtypes(object, use.names = FALSE)
              DimScales <- DimScales(object, use.names = FALSE)
