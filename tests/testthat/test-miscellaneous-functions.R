@@ -1823,8 +1823,9 @@ test_that("ageMinMax works", {
                 NULL)
 })
 
-test_that("ageMinMaxRemplace works", {
+test_that("ageMinMaxReplace works", {
     ageMinMaxReplace <- dembase:::ageMinMaxReplace
+    ageMinMax <- dembase:::ageMinMax
     x <- Counts(array(1,
                       dim = 2:3,
                       dimnames = list(sex = c("f", "m"),

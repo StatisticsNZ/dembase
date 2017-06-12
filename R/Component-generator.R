@@ -106,8 +106,8 @@ ExitsMovements <- function(exits, template, name) {
         stop(gettextf("'%s' is incompatible with '%s' : %s",
                       name, "population", exits$message))
     methods::new("ExitsMovements",
-        .Data = exits@.Data,
-        metadata = exits@metadata)
+                 .Data = exits@.Data,
+                 metadata = exits@metadata)
 }
 
 ## Do not do validity checking because

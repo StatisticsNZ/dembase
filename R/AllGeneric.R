@@ -570,26 +570,33 @@ setGeneric("addToPopnEnd",
 #' of the first age group, and the replacement version of \code{maxAge} can be
 #' used to change upper limit of the last age group.
 #'
+#' Functions \code{setAgeMin} and \code{sexAgeMax} do the same thing as the
+#' replacement functions, but work with pipes.
+#' 
 #' @param object An object of class \code{\linkS4class{DemographicArray}}
 #' or \code{\linkS4class{DemographicAccount}}.
 #' @param value A number. Can be \code{Inf}.
 #'
-#' @return The extraction functions return numbers, and the replacement
-#' functions return a modified version of \code{object}.
+#' @return The extraction functions return numbers.  The replacement
+#' functions, \code{setAgeMin}, and \code{setAgeMax} return a modified
+#' version of \code{object}.
 #'
 #' @seealso \code{\link{ageTimeStep}} and \code{\link{hasRegularAgeTime}} also
-#' provide information about age groups.
+#' provide information about age groups. Pipes are described in package
+#' \code{magrittr}.
 #' 
 #' @examples
 #' library(demdata)
-#' popn <- Values(VADeaths2)
-#' popn
-#' ageMin(popn)
-#' ageMax(popn)
-#' ageMin(popn) <- 45
-#' popn
-#' ageMax(popn) <- Inf
-#' popn
+#' death.rates <- Values(VADeaths2)
+#' death.rates
+#' ageMin(death.rates)
+#' ageMax(death.rates)
+#' ageMin(death.rates) <- 45
+#' death.rates
+#' ageMax(death.rates) <- Inf
+#' death.rates
+#' setAgeMin(death.rates, value = 50)
+#' setAgeMax(death.rates, value = 75)
 #' @name ageMinMax
 NULL
 
@@ -2389,6 +2396,20 @@ setGeneric("redistributeCategory",
 setGeneric("resetIterations",
            function(object)
                standardGeneric("resetIterations"))
+
+
+
+#' @rdname ageMinMax
+#' @export
+setGeneric("setAgeMax",
+           function(object, value)
+               standardGeneric("setAgeMax"))
+
+#' @rdname ageMinMax
+#' @export
+setGeneric("setAgeMin",
+           function(object, value)
+               standardGeneric("setAgeMin"))
 
 
 #' Extract or replace a slab from a demographic array.

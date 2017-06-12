@@ -486,6 +486,28 @@ setMethod("resetIterations",
               object
           })
 
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("setAgeMax",
+          signature(object = "MetaData"),
+          function(object, value) {
+              ageMinMaxReplace(object = object,
+                               value = value,
+                               min = FALSE)
+          })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("setAgeMin",
+          signature(object = "MetaData"),
+          function(object, value) {
+              ageMinMaxReplace(object = object,
+                               value = value,
+                               min = TRUE)
+          })
+
 #' @rdname internal-methods
 #' @export
 setMethod("show",

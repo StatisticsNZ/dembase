@@ -1303,6 +1303,36 @@ setMethod("resetIterations",
           })
 
 ## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("setAgeMax",
+          signature(object = "DemographicArray"),
+          function(object, value) {
+              metadata.old <- metadata(object)
+              metadata.new <- ageMinMaxReplace(object = metadata.old,
+                                               value = value,
+                                               min = FALSE)
+              object@metadata <- metadata.new
+              dimnames(object@.Data) <- dimnames(metadata.new)
+              object
+          })
+
+## HAS_TESTS
+#' @rdname ageMinMax
+#' @export
+setMethod("setAgeMin",
+          signature(object = "DemographicArray"),
+          function(object, value) {
+              metadata.old <- metadata(object)
+              metadata.new <- ageMinMaxReplace(object = metadata.old,
+                                               value = value,
+                                               min = TRUE)
+              object@metadata <- metadata.new
+              dimnames(object@.Data) <- dimnames(metadata.new)
+              object
+          })
+
+## HAS_TESTS
 #' @rdname internal-methods
 #' @export
 setMethod("show",

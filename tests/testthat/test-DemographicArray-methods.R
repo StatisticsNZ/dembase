@@ -1632,6 +1632,30 @@ test_that("replacement method for slab raises appropriate errors", {
                  "length of replacement value not multiple of length of slab")
 })    
 
+test_that("setAgeMax works", {
+    x <- Values(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("Male", "Female"))))
+    expect_identical(setAgeMax(x, value = 15),
+                     Values(array(1:6,
+                                  dim = c(3, 2),
+                                  dimnames = list(age = c("0-4", "5-9", "10-14"),
+                                                  sex = c("Male", "Female")))))
+})
+
+test_that("setAgeMin works", {
+    x <- Values(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("Male", "Female"))))
+    expect_identical(setAgeMin(x, value = -Inf),
+                     Values(array(1:6,
+                                  dim = c(3, 2),
+                                  dimnames = list(age = c("<5", "5-9", "10+"),
+                                                  sex = c("Male", "Female")))))
+})
+
 test_that("subarray works", {
     a <- array(1:12,
                dim = c(2, 2, 3),

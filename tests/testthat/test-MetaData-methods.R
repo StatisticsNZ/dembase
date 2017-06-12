@@ -207,4 +207,30 @@ test_that("resetIterations works", {
     expect_identical(resetIterations(x0), x1)
 })
 
+test_that("setAgeMax works", {
+    x <- new("MetaData",
+             nms = "age",
+             dimtypes = "age",
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+    expect_identical(setAgeMax(x, value = Inf),
+                     new("MetaData",
+                         nms = "age",
+                         dimtypes = "age",
+                         DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)))))
+})
+
+test_that("setAgeMin works", {
+    x <- new("MetaData",
+             nms = "age",
+             dimtypes = "age",
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+    expect_identical(setAgeMin(x, value = -5),
+                     new("MetaData",
+                         nms = "age",
+                         dimtypes = "age",
+                         DimScales = list(new("Intervals", dimvalues = c(-5, 1, 5)))))
+})
+
+
+
     

@@ -15,6 +15,12 @@
 \alias{ageMin<-,DemographicArray-method}
 \alias{ageMin<-,MetaData-method}
 \alias{ageMinMax}
+\alias{setAgeMax}
+\alias{setAgeMax,DemographicArray-method}
+\alias{setAgeMax,MetaData-method}
+\alias{setAgeMin}
+\alias{setAgeMin,DemographicArray-method}
+\alias{setAgeMin,MetaData-method}
 \title{Get or set minimum and maximum ages.}
 \usage{
 ageMax(object)
@@ -25,6 +31,10 @@ ageMin(object)
 
 ageMin(object) <- value
 
+setAgeMax(object, value)
+
+setAgeMin(object, value)
+
 \S4method{ageMax}{DemographicArray}(object)
 
 \S4method{ageMax}{DemographicArray}(object) <- value
@@ -33,6 +43,10 @@ ageMin(object) <- value
 
 \S4method{ageMin}{DemographicArray}(object) <- value
 
+\S4method{setAgeMax}{DemographicArray}(object, value)
+
+\S4method{setAgeMin}{DemographicArray}(object, value)
+
 \S4method{ageMax}{MetaData}(object)
 
 \S4method{ageMax}{MetaData}(object) <- value
@@ -40,6 +54,10 @@ ageMin(object) <- value
 \S4method{ageMin}{MetaData}(object)
 
 \S4method{ageMin}{MetaData}(object) <- value
+
+\S4method{setAgeMax}{MetaData}(object, value)
+
+\S4method{setAgeMin}{MetaData}(object, value)
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicArray}}
@@ -48,8 +66,9 @@ or \code{\linkS4class{DemographicAccount}}.}
 \item{value}{A number. Can be \code{Inf}.}
 }
 \value{
-The extraction functions return numbers, and the replacement
-functions return a modified version of \code{object}.
+The extraction functions return numbers.  The replacement
+functions, \code{setAgeMin}, and \code{setAgeMax} return a modified
+version of \code{object}.
 }
 \description{
 Extract minimum or maximum ages from the \code{\link{dimscales}} of an object.
@@ -58,19 +77,26 @@ replacement version of \code{minAge} can be used to change the lower limit
 of the first age group, and the replacement version of \code{maxAge} can be
 used to change upper limit of the last age group.
 }
+\details{
+Functions \code{setAgeMin} and \code{sexAgeMax} do the same thing as the
+replacement functions, but work with pipes.
+}
 \examples{
 library(demdata)
-popn <- Values(VADeaths2)
-popn
-ageMin(popn)
-ageMax(popn)
-ageMin(popn) <- 45
-popn
-ageMax(popn) <- Inf
-popn
+death.rates <- Values(VADeaths2)
+death.rates
+ageMin(death.rates)
+ageMax(death.rates)
+ageMin(death.rates) <- 45
+death.rates
+ageMax(death.rates) <- Inf
+death.rates
+setAgeMin(death.rates, value = 50)
+setAgeMax(death.rates, value = 75)
 }
 \seealso{
 \code{\link{ageTimeStep}} and \code{\link{hasRegularAgeTime}} also
-provide information about age groups.
+provide information about age groups. Pipes are described in package
+\code{magrittr}.
 }
 
