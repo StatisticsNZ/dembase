@@ -1866,8 +1866,8 @@ test_that("can create valid object of class Movements", {
     deaths <- Counts(array(c(0L, 1L, 2L),
                            dim = c(3, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
-                               triangle = c("TL", "TU"),
-                               time = c("2001-2005", "2006-2010"))))
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -1883,17 +1883,17 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
     population <- Counts(array(10L,
                                dim = c(3, 2, 3),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
-                                   reg = c("a", "b"),
-                                   time = c("2000", "2005", "2010"))))
+                                               reg = c("a", "b"),
+                                               time = c("2000", "2005", "2010"))))
     population <- new("Population",
                       .Data = population@.Data,
                       metadata = population@metadata)
     births <- Counts(array(1L,
                            dim = c(1, 2, 2, 2),
                            dimnames = list(age = "5-9",
-                               reg = c("a", "b"),
-                               triangle = c("TL", "TU"),
-                               time = c("2001-2005", "2006-2010"))))
+                                           reg = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
     births <- new("BirthsMovementsNoParentChild",
                   .Data = births@.Data,
                   metadata = births@metadata,
@@ -1901,19 +1901,19 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
     internal <- Counts(array(1L,
                              dim = c(3, 2, 2, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
-                                 reg_orig = c("a", "b"),
-                                 reg_dest = c("a", "b"),
-                                 triangle = c("TL", "TU"),
-                                 time = c("2001-2005", "2006-2010"))))
+                                             reg_orig = c("a", "b"),
+                                             reg_dest = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("TL", "TU"))))
     internal <- new("InternalMovementsOrigDest",
                     .Data = internal@.Data,
                     metadata = internal@metadata)
     deaths <- Counts(array(c(0L, 1L, 2L),
                            dim = c(3, 2, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
-                               triangle = c("TL", "TU"),
-                               time = c("2001-2005", "2006-2010"),
-                               reg = c("a", "b"))))
+                                           reg = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("TL", "TU"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -1936,8 +1936,8 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
     wrong.popn <- Counts(array(10L,
                                dim = c(2, 2, 3),
                                dimnames = list(age = c("5-9", "10+"),
-                                   reg = c("a", "b"),
-                                   time = c("2000", "2005", "2010"))))
+                                               reg = c("a", "b"),
+                                               time = c("2000", "2005", "2010"))))
     wrong.popn <- new("Population",
                       .Data = wrong.popn@.Data,
                       metadata = wrong.popn@metadata)
@@ -1973,17 +1973,17 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
     ## all elements of 'components' compatible with 'population'
     x.wrong <- x
     wrong.deaths <- Counts(array(c(0L, 1L, 2L),
-                           dim = c(3, 2, 2, 3),
-                           dimnames = list(age = c("0-4", "5-9", "10+"),
-                               triangle = c("TL", "TU"),
-                               time = c("2001-2005", "2006-2010"),
-                               reg = c("a", "b", "c"))))
+                                 dim = c(3, 2, 2, 3),
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 triangle = c("TL", "TU"),
+                                                 time = c("2001-2005", "2006-2010"),
+                                                 reg = c("a", "b", "c"))))
     wrong.deaths <- new("ExitsMovements",
-                  .Data = wrong.deaths@.Data,
+                        .Data = wrong.deaths@.Data,
                         metadata = wrong.deaths@metadata)
     x.wrong@components[[3]] <- wrong.deaths
     expect_error(validObject(x.wrong),
-                 "'deaths' and 'population' not compatible")
+                 "'deaths' not compatible with 'population'")
 })
 
 test_that("validity tests for Movements inherited from Movements work", {
@@ -2006,6 +2006,7 @@ test_that("validity tests for Movements inherited from Movements work", {
 })
 
 test_that("can create valid object of class Transitions", {
+    ## no age
     population <- CountsOne(values = 20:30, labels = 2000:2010, name = "time",
                             dimscale = "Points")
     population <- new("Population",
@@ -2023,6 +2024,7 @@ test_that("can create valid object of class Transitions", {
              namesComponents = "Births")
     expect_true(validObject(x))
     expect_is(x, "Transitions")
+    ## has age
     population <- Counts(array(10L,
                                dim = c(3, 3, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2042,11 +2044,11 @@ test_that("can create valid object of class Transitions", {
                   metadata = births@metadata,
                   iMinAge = 2L)
     deaths <- Counts(array(c(0L, 1L, 2L),
-                           dim = c(2, 2, 3, 2),
-                           dimnames = list(eth_dest = c("a", "b"),
-                               eth_orig = c("a", "b"),
-                               age = c("0-4", "5-9", "10+"),
-                               time = c("2001-2005", "2006-2010"))))
+                           dim = c(3, 2, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           time = c("2001-2005", "2006-2010"),
+                                           eth_orig = c("a", "b"),
+                                           eth_dest = c("a", "b"))))
     deaths <- new("ExitsTransitions",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)

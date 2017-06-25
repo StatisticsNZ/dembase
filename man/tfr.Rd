@@ -44,7 +44,7 @@ If \code{object} has iterations, to capture uncertainty, so will
 the return value.
 }
 \examples{
-births <- demdata::nz.births
+births <- demdata::nz.births.reg
 popn <- demdata::nz.popn.reg
 births <- Counts(births, dimscales = c(year = "Intervals"))
 ## use mid-year population to approximate person-years lived
@@ -54,4 +54,3 @@ females <- subarray(popn, sex == "Female")
 fert.rates <- births / females
 tfr(fert.rates)
 }
-

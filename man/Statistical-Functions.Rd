@@ -21,6 +21,8 @@
 \arguments{
 \item{x}{Typically an object of class \code{\linkS4class{DemographicArray}}.}
 
+\item{\dots}{Other arguments.}
+
 \item{na.rm}{Logical. Whether to remove missing values before calculating.}
 
 \item{center}{Function used to calculate central value.  Defaults
@@ -31,8 +33,6 @@ to \code{\link[stats]{median}}.}
 \item{low}{See documentation for \code{\link[stats]{mad}}.}
 
 \item{high}{See documentation for \code{\link[stats]{mad}}.}
-
-\item{\dots}{Other arguments.}
 }
 \value{
 Numeric, if \code{x} does not contain an \code{"iteration"}
@@ -85,4 +85,3 @@ documentation for \code{\link{dimtypes}}.  To remove iteration
 dimensions (by summarising across them) use
 \code{\link{collapseIterations}}.
 }
-

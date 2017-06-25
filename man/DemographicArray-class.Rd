@@ -2,9 +2,11 @@
 % Please edit documentation in R/AllClasses.R
 \docType{class}
 \name{DemographicArray-class}
-\alias{Counts-class}
 \alias{DemographicArray-class}
+\alias{DemographicArray-class}
+\alias{Counts-class}
 \alias{Values-class}
+\alias{DemographicArrayOrNumeric-class}
 \title{Classes "DemographicArray", "Counts", and "Values".}
 \description{
 Classes for representing demographic arrays: esssentially, arrays plus metadata.
@@ -117,6 +119,7 @@ align objects is to remove cells.
  with an ordinary array, but returns the names of the dimensions when
  used with a demographic array.
 }
+
 \examples{
 a <- array(stats::rpois(n = 6, lambda = 10),
           dim = c(3, 2),
@@ -146,4 +149,3 @@ collapseDimension(y, dimension = "age", weights = x)
  \code{\link{dimscales}}.  The main new functions for manipulating
 demographic arrays are listed in \code{\link{dembase-package}}.
 }
-

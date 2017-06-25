@@ -1,4 +1,43 @@
 
+
+#' @rdname collapseDimension
+## NO_TESTS
+setMethod("collapseDimension",
+          signature(object = "Pool",
+                    dimension = "ANY",
+                    margin = "ANY",
+                    weights = "missing"),
+          function(object, dimension = NULL, margin = NULL, weights) {
+              i.direction <- object@iDirection
+              i.between <- object@iBetween
+              names <- names(object)
+              n.dim <- length(names)
+              has.dimension <- !is.null(dimension)
+              has.margin <- !is.null(margin)
+              if (has.dimension) {
+                  if (has.margin)
+                      stop(gettextf("has '%s' and '%s' arguments", "dimension", "margin"))
+                  else {
+                      dimension <- tidySubscript(subscript = dimension, nDim = n.dim, names = names)
+                      if (any(dimension == i.between))
+                          stop(gettextf("attempt to collapse \"%s\" dimension of object of class \"%s\" (consider using function '%s' instead)",
+                                        "between", class(object), "collapsePool"))
+                      methods::callGeneric()
+                  }
+              }
+              else {
+                  if (has.margin) {
+                      margin <- tidySubscript(subscript = margin, nDim = n.dim, names = names)
+                      if (!any(margin == i.direction))
+                          margin <- c(margin, i.direction)
+                      methods::callGeneric()
+                  }
+                  else
+                      stop(gettextf("no '%s' or '%s' arguments", "dimension", "margin"))
+              }
+          })
+
+
 ## incrementLowerTri ################################################################
 
 ## HAS_TESTS
@@ -64,6 +103,66 @@ setMethod("incrementLowerTri",
           function(component, population) {
               ans <- methods::callNextMethod()
               -1L * ans
+          })
+
+
+## incrementInteger ################################################################
+
+## HAS_TESTS
+setMethod("incrementInteger",
+          signature(object = "Component"),
+          function(object) {
+              as.integer(object@.Data)
+          })
+
+## HAS_TESTS
+setMethod("incrementInteger",
+          signature(object = "BirthsMovements"),
+          function(object) {
+              dimtypes <- dimtypes(object,
+                                   use.names = FALSE)
+              i.parent <- grep("parent", dimtypes)
+              has.parent <- length(i.parent) > 0L
+              if (has.parent)
+                  object <- collapseDimension(object,
+                                              dimension = i.parent)
+              dimtypes <- dimtypes(object,
+                                   use.names = FALSE)
+              i.age <- match("age", dimtypes, nomatch = 0L)
+              has.age <- i.age > 0L
+              if (has.age) {
+                  i.triangle <- match("triangle", dimtypes)
+                  object <- collapseDimension(object,
+                                              dimension = c(i.age, i.triangle))
+              }
+              as.integer(object@.Data)
+          })
+
+## HAS_TESTS
+setMethod("incrementInteger",
+          signature(object = "InternalMovementsOrigDest"),
+          function(object) {
+              ans <- collapseOrigDest(object)
+              as.integer(ans@.Data)
+          })
+
+## HAS_TESTS
+setMethod("incrementInteger",
+          signature(object = "InternalMovementsPool"),
+          function(object) {
+              i.direction <- object@iDirection              
+              metadata <- object@metadata
+              ins <- slab(object,
+                          dimension = i.direction,
+                          elements = "In",
+                          drop = FALSE)
+              outs <- slab(object,
+                           dimension = i.direction,
+                           elements = "Out",
+                           drop = FALSE)
+              ins <- as.integer(ins@.Data)
+              outs <- as.integer(outs@.Data)
+              ins - outs
           })
 
 
@@ -309,50 +408,231 @@ setMethod("incrementUpperTri",
           })
 
 
+## isCompatibleWithPopn #####################################################3
 
+## HAS_TESTS
+setMethod("isCompatibleWithPopn",
+          signature(component = "MovementsComponent",
+                    metadata = "MetaData",
+                    name = "character"),
+          function(component, metadata, name) {
+              metadata.comp <- metadata(component)
+              if (!isTRUE(all.equal(metadata.comp, metadata)))
+                  gettextf("'%s' not compatible with '%s'",
+                           name, "population")
+              else
+                  TRUE
+          })
 
+## HAS_TESTS
+setMethod("isCompatibleWithPopn",
+          signature(component = "TransitionsComponent",
+                    metadata = "MetaData",
+                    name = "character"),
+          function(component, metadata, name) {
+              metadata.comp <- metadata(component)
+              metadata.comp <- removePairFromMetadata(metadata.comp,
+                                                      origDest = TRUE)
+              if (!isTRUE(all.equal(metadata.comp, metadata)))
+                  gettextf("'%s' not compatible with '%s'",
+                           name, "population")
+              else
+                  TRUE
+          })
 
-#' @rdname collapseDimension
-## NO_TESTS
-setMethod("collapseDimension",
-          signature(object = "Pool",
-                    dimension = "ANY",
-                    margin = "ANY",
-                    weights = "missing"),
-          function(object, dimension = NULL, margin = NULL, weights) {
-              i.direction <- object@iDirection
-              i.between <- object@iBetween
-              names <- names(object)
-              n.dim <- length(names)
-              has.dimension <- !is.null(dimension)
-              has.margin <- !is.null(margin)
-              if (has.dimension) {
-                  if (has.margin)
-                      stop(gettextf("has '%s' and '%s' arguments", "dimension", "margin"))
-                  else {
-                      dimension <- tidySubscript(subscript = dimension, nDim = n.dim, names = names)
-                      if (any(dimension == i.between))
-                          stop(gettextf("attempt to collapse \"%s\" dimension of object of class \"%s\" (consider using function '%s' instead)",
-                                        "between", class(object), "collapsePool"))
-                      methods::callGeneric()
-                  }
-              }
-              else {
-                  if (has.margin) {
-                      margin <- tidySubscript(subscript = margin, nDim = n.dim, names = names)
-                      if (!any(margin == i.direction))
-                          margin <- c(margin, i.direction)
-                      methods::callGeneric()
-                  }
-                  else
-                      stop(gettextf("no '%s' or '%s' arguments", "dimension", "margin"))
-              }
+## HAS_TESTS
+setMethod("isCompatibleWithPopn",
+          signature(component = "BirthsMovements",
+                    metadata = "MetaData",
+                    name = "character"),
+          function(component, metadata, name) {
+              metadata.comp <- metadata(component)
+              metadata.comp <- removePairFromMetadata(metadata.comp,
+                                                      origDest = FALSE)
+              metadata.comp <- removeDimtypesFromMetadata(metadata.comp,
+                                                          dimtypes = c("age", "triangle"))
+              metadata <- removeDimtypesFromMetadata(metadata,
+                                                     dimtypes = c("age", "triangle"))
+              if (!isTRUE(all.equal(metadata.comp, metadata)))
+                  return(gettextf("'%s' not compatible with '%s'",
+                                  name, "population"))
+              else
+                  TRUE
+          })
+
+## HAS_TESTS
+setMethod("isCompatibleWithPopn",
+          signature(component = "BirthsTransitions",
+                    metadata = "MetaData",
+                    name = "character"),
+          function(component, metadata, name) {
+              metadata.comp <- metadata(component)
+              metadata.comp <- removePairFromMetadata(metadata.comp,
+                                                      origDest = TRUE)
+              metadata.comp <- removePairFromMetadata(metadata.comp,
+                                                      origDest = FALSE)
+              metadata.comp <- removeDimtypesFromMetadata(metadata.comp,
+                                                          dimtypes = c("age", "triangle"))
+              metadata <- removeDimtypesFromMetadata(metadata,
+                                                     dimtypes = c("age", "triangle"))
+              if (!isTRUE(all.equal(metadata.comp, metadata)))
+                  return(gettextf("'%s' not compatible with '%s'",
+                                  name, "population"))
+              else
+                  TRUE
+          })
+
+## HAS_TESTS
+setMethod("isCompatibleWithPopn",
+          signature(component = "HasOrigDest",
+                    metadata = "MetaData",
+                    name = "character"),
+          function(component, metadata, name) {
+              metadata.comp <- metadata(component)
+              metadata.comp <- removePairFromMetadata(metadata.comp,
+                                                      origDest = TRUE)
+              if (!isTRUE(all.equal(metadata.comp, metadata)))
+                  return(gettextf("'%s' not compatible with '%s'",
+                                  name, "population"))
+              else
+                  TRUE
+          })
+
+## HAS_TESTS
+setMethod("isCompatibleWithPopn",
+          signature(component = "InternalMovementsPool",
+                    metadata = "MetaData",
+                    name = "character"),
+          function(component, metadata, name) {
+              i.direction <- component@iDirection
+              metadata.comp <- metadata(component)
+              if (!isTRUE(all.equal(metadata.comp[-i.direction], metadata)))
+                  return(gettextf("'%s' not compatible with '%s'",
+                                  name, "population"))
+              else
+                  TRUE
           })
 
 
+## isPositiveIncrement #############################################################
+
+## HAS_TESTS
+setMethod("isPositiveIncrement",
+          signature(object = "Births"),
+          function(object) {
+              TRUE
+          })
+
+## HAS_TESTS
+setMethod("isPositiveIncrement",
+          signature(object = "Internal"),
+          function(object) {
+              TRUE
+          })
+
+## HAS_TESTS
+setMethod("isPositiveIncrement",
+          signature(object = "Entries"),
+          function(object) {
+              TRUE
+          })
+
+## HAS_TESTS
+setMethod("isPositiveIncrement",
+          signature(object = "Exits"),
+          function(object) {
+              FALSE
+          })
+
+## HAS_TESTS
+setMethod("isPositiveIncrement",
+          signature(object = "NetMovements"),
+          function(object) {
+              TRUE
+          })
 
 
+## midpoints ###########################################################
 
+## HAS_TESTS
+#' @rdname midpoints
+#' @export
+setMethod("midpoints",
+          signature(object = "Component", dimension = "ANY"),
+          function(object, dimension) {
+              object <- as(object, "Counts")
+              callGeneric()
+          })
+
+## HAS_TESTS
+#' @rdname midpoints
+#' @export
+setMethod("midpoints",
+          signature(object = "Component", dimension = "missing"),
+          function(object) {
+              object <- as(object, "Counts")
+              callGeneric()
+          })
+
+
+## slab ################################################################
+
+## HAS_TESTS
+#' @rdname slab
+#' @export
+setMethod("slab",
+          signature(object = "Component"),
+          function(object, dimension, elements, drop = TRUE) {
+              ans <- callNextMethod()
+              new(class(object),
+                  .Data = ans@.Data,
+                  metadata = ans@metadata)
+          })
+
+## HAS_TESTS
+#' @rdname slab
+#' @export
+setMethod("slab",
+          signature(object = "Births"),
+          function(object, dimension, elements, drop = TRUE) {
+              class <- class(object)
+              iMinAge <- object@iMinAge
+              object <- new("Counts",
+                            .Data = object@.Data,
+                            metadata = object@metadata)
+              ans <- callGeneric()
+              new(class,
+                  .Data = ans@.Data,
+                  metadata = ans@metadata,
+                  iMinAge = iMinAge)
+          })
+
+## HAS_TESTS
+#' @rdname slab
+#' @export
+setMethod("slab",
+          signature(object = "InternalMovementsPool"),
+          function(object, dimension, elements, drop = TRUE) {
+              names <- names(object)
+              class <- class(object)
+              iBetween <- object@iBetween
+              iDirection <- object@iDirection
+              object <- new("Counts",
+                            .Data = object@.Data,
+                            metadata = object@metadata)
+              dimension <- tidySubscript(subscript = dimension,
+                                         nDim = length(names),
+                                         names = names)
+              ans <- callGeneric()
+              if (identical(dimension, iDirection))
+                  ans
+              else
+                  new(class,
+                      .Data = ans@.Data,
+                      metadata = ans@metadata,
+                      iBetween = iBetween,
+                      iDirection = iDirection)
+          })
 
 
 ## setMethod("addToPopnEnd",
@@ -475,16 +755,6 @@ setMethod("collapseDimension",
 ## ##           function(object) {
 ## ##               collapseOrigDest(object, to = "net")
 ## ##           })
-
-
-
-
-
-
-              
-              
-          
-
 
 
 ## accessionToDecession <- function(object) {

@@ -41,4 +41,3 @@ separately for lower and upper Lexis triangles.  \code{triangles}
 can only by \code{TRUE} if  \code{object} has dimensions with
 \code{\link{dimtype}} \code{"time"} and \code{"age"}.
 }
-

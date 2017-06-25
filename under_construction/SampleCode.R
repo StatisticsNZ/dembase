@@ -1,4 +1,7 @@
 
+
+
+
 rotateAgeTimePlan <- function(object, to, drop) {
     ## most have two of age/time/cohort
     ## is population: time must be points; age and cohort can be points or intervals
@@ -17,6 +20,12 @@ periodCohort <- function(object) {
 
 
 
+makeConsistent <- function(object, adjust = TRUE, mult = 0.1) {
+
+}
+
+
+
     
 
 
@@ -32,13 +41,6 @@ p <- project(population ~ births - deaths + internal + externalIn - externalOut,
 
 a <- Movements(population ~ births - deaths + internal + externalIn - externalOut,
                values = vals)
-
-
-
-project <- function(formula, fixed, between, 
-             
-
-
 
 
 

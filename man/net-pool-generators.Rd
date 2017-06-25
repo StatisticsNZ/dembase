@@ -2,11 +2,13 @@
 % Please edit documentation in R/AllGeneric.R, R/Component-generator.R
 \docType{methods}
 \name{net-pool-generators}
-\alias{Net}
-\alias{Net,Counts-method}
-\alias{Pool}
-\alias{Pool,Counts-method}
 \alias{net-pool-generators}
+\alias{Net}
+\alias{Pool}
+\alias{Net}
+\alias{Pool}
+\alias{Net,Counts-method}
+\alias{Pool,Counts-method}
 \title{Create object of class "Net" and "Pool".}
 \usage{
 Net(object, between)
@@ -41,4 +43,3 @@ have categories \code{"in"} and \code{"out"} or \code{"ins"} and \code{"outs"}
 (case insensitive).  \code{Pool} converts the labels to \code{"In"}
 and \code{"Out"}.
 }
-

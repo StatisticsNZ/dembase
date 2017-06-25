@@ -2,7 +2,9 @@
 % Please edit documentation in R/AllClasses.R
 \docType{class}
 \name{internal-account}
-\alias{Accession-class}
+\alias{internal-account}
+\alias{Population-class}
+\alias{Component-class}
 \alias{Births-class}
 \alias{BirthsMovements-class}
 \alias{BirthsMovementsHasParentChild-class}
@@ -10,23 +12,21 @@
 \alias{BirthsTransitions-class}
 \alias{BirthsTransitionsHasParentChild-class}
 \alias{BirthsTransitionsNoParentChild-class}
-\alias{Component-class}
-\alias{Entries-class}
-\alias{EntriesMovements-class}
-\alias{EntriesTransitions-class}
-\alias{Exits-class}
-\alias{ExitsMovements-class}
-\alias{ExitsTransitions-class}
-\alias{Exposure-class}
 \alias{Internal-class}
 \alias{InternalMovements-class}
 \alias{InternalMovementsNet-class}
 \alias{InternalMovementsOrigDest-class}
 \alias{InternalMovementsPool-class}
 \alias{InternalTransitions-class}
+\alias{Entries-class}
+\alias{EntriesMovements-class}
+\alias{EntriesTransitions-class}
+\alias{Exits-class}
+\alias{ExitsMovements-class}
+\alias{ExitsTransitions-class}
 \alias{NetMovements-class}
-\alias{Population-class}
-\alias{internal-account}
+\alias{Accession-class}
+\alias{Exposure-class}
 \title{Classes used by DemographicAccount.}
 \description{
 These classes are used internally by DemographicAccount.  They should never
@@ -34,4 +34,3 @@ be used directly by end users.  The only reason they are exported is to
 allow other developers to extend classes "Counts" and "Values".
 }
 \keyword{internal}
-

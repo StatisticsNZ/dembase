@@ -23,10 +23,32 @@ net format, an object created by functions \code{\link{collapseOrigDest}},
 
 \item{net}{A named list of \code{\linkS4class{Counts}} objects.}
 }
+\value{
+An object of class \code{\linkS4class{Movements}}
+}
 \description{
 The only compulsory argument is \code{population}.  All demographic series
 must have a time dimension.  In the case of \code{population}, the time
 dimension must have \code{\link{dimscale}} \code{"Points"}; in all other cases
 it must have \code{\link{dimscale}} \code{"Intervals"}.
 }
+\examples{
+population <- Counts(array(c(10, 15, 13, 16),
+                           dim = c(2, 2),
+                           dimnames = list(age = c("0-29", "30+"),
+                                           time = c(1970, 2000))))
+births <- Counts(array(13,
+                       dim = c(1, 1),
+                       dimnames = list(age = "30+",
+                                       time = "1971-2000")))
+deaths <- Counts(array(c(0, 9),
+                       dim = c(2, 1),
+                       dimnames = list(age = c("0-29", "30+"),
+                                       time = c("1971-2000"))))
+account <- Movements(population = population,
+                     births = births,
+                     exits = list(deaths = deaths))
+account
+summary(account)
 
+}

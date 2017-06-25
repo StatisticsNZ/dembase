@@ -2,10 +2,10 @@
 % Please edit documentation in R/AllClasses.R, R/SubArrayIndices-methods.R
 \docType{class}
 \name{SubArrayIndices-class}
-\alias{!,SubArrayIndices-method}
-\alias{&,SubArrayIndices,SubArrayIndices-method}
 \alias{SubArrayIndices-class}
+\alias{&,SubArrayIndices,SubArrayIndices-method}
 \alias{|,SubArrayIndices,SubArrayIndices-method}
+\alias{!,SubArrayIndices-method}
 \title{Class used by function 'subarray'.}
 \usage{
 \S4method{&}{SubArrayIndices,SubArrayIndices}(e1, e2)
@@ -18,4 +18,3 @@
 For internal use only
 }
 \keyword{internal}
-

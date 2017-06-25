@@ -12,4 +12,3 @@ Classes for describing demographic accounts.
 \details{
 There are two subclasses: Movements and Transitions
 }
-

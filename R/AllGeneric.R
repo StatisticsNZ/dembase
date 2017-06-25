@@ -1144,6 +1144,105 @@ setGeneric("collapseOrigDest",
                     ...)
                standardGeneric("collapseOrigDest"))
 
+#' Extract one or more components from a demographic account.
+#'
+#' A \code{\link[=DemographicAccount-class]{demographic account}} contains
+#' counts of population, plus one or more components such as births,
+#' deaths, or internal migration.  \code{components} can be used to
+#' extract one or more of these components, as a named list.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicAccount}}.
+#' @param names Names of the components.  If omitted all components
+#' are returned.
+#'
+#' @return A named list of \code{\linkS4class{Counts}} objects.
+#'
+#' @seealso Population counts can be extracted using function
+#' \code{\link{population}}.
+#' 
+#' @examples
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(13,
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' account <- Movements(population = population,
+#'                      births = births,
+#'                      exits = list(deaths = deaths))
+#'
+#' components(account)
+#' components(account, names = "births")
+#' components(account, names = c("deaths", "births"))
+#' @export
+setGeneric("components",
+           function(object, names = NULL)
+               standardGeneric("components"))
+
+#' Get or set the names of components of a demographic account.
+#'
+#' A \code{\link[=DemographicAccount-class]{demographic account}} contains
+#' counts of population, plus one or more components such as births,
+#' deaths, or internal migration.  \code{componentNames} extracts the
+#' names of the components.  \code{setNamesComponents} and
+#' the replacement form of \code{namesComponents} can be used
+#' to specify the names.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicAccount}}.
+#' @param value Names of the components.
+#'
+#' @return \code{componentNames} returns a vector of names.
+#' \code{setComponentNames} and the replacement form of
+#' \code{componentNames} return a modified version of \code{object}.
+#'
+#' @seealso The names can also be set when creating
+#' the account using functions \code{\link{Movements}} and
+#' \code{Transitions}.
+#'
+#' @examples
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(13,
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' account <- Movements(population = population,
+#'                      births = births,
+#'                      exits = list(deaths = deaths))
+#'
+#' componentNames(account)
+#' componentNames(account) <- c("Births", "Deaths") # capitalized
+#' componentNames(account)
+#' account <- setComponentNames(account, value = c("BIRTHS", "DEATHS"))
+#' account
+#' 
+#' @name componentNames
+NULL
+
+#' @rdname componentNames
+#' @export
+setGeneric("componentNames",
+           function(object)
+               standardGeneric("componentNames"))
+
+#' @rdname componentNames
+#' @export
+setGeneric("componentNames<-",
+           function(object, value)
+               standardGeneric("componentNames<-"))
+
 setGeneric("dbind2",
            function(e1, e2, name1, name2, along, dimtypeAlong)
            standardGeneric("dbind2"))
@@ -1155,8 +1254,6 @@ setGeneric("dbindDimScales",
 setGeneric("decession",
            function(object)
                standardGeneric("decession"))
-
-
 
 ## HAS_TESTS
 #' Get or set the dimscales of a demographic array
@@ -1889,6 +1986,10 @@ setGeneric("incrementLowerTri",
            function(component, population)
                standardGeneric("incrementLowerTri"))
 
+setGeneric("incrementInteger",
+           function(object)
+               standardGeneric("incrementInteger"))
+
 setGeneric("incrementOpen",
            function(component, population)
                standardGeneric("incrementOpen"))
@@ -1909,6 +2010,10 @@ setGeneric("InternalMovements",
            function(internal, template)
                standardGeneric("InternalMovements"))
 
+setGeneric("isCompatibleWithPopn",
+           function(component, metadata, name)
+               standardGeneric("isCompatibleWithPopn"))
+
 
 #' Test whether a demographic account is internally consistent.
 #'
@@ -1919,19 +2024,11 @@ setGeneric("InternalMovements",
 #' births and in-migration, and exits include events such as deaths
 #' and out-migration. The accounting identities are applied cell by cell.
 #'
-#' The return value is an array of logical values.  The array has the
-#' same dimensions as the population series in the demographic account,
-#' except that the first period is not included.  The value of a cell
-#' in an array is \code{TRUE} if the corresponding population count
-#' equals the count that would be expected from population counts
-#' at the start of the period, adjusting for ageing (if the account
-#' includes age) and events such as births and deaths, and \code{FALSE}
-#' otherwise.
-#'
-#' To simply test whether an account is consistent, without identifying the
+#' The return value is an array of logical values. To test whether
+#' every cell in an account is consistent, without identifying the
 #' inconsistent cells, use function \code{all}, as in
 #'
-#' \code{account.is.consistent <- all(isInternallyConsistent(myaccount))}
+#' \code{all(isConsistent(myaccount))}
 #'
 #' @param object A \code{\linkS4class{DemographicAccount}}.
 #'
@@ -1954,8 +2051,8 @@ setGeneric("InternalMovements",
 #' account <- Movements(population = population,
 #'                      births = births,
 #'                      exits = list(deaths = deaths))
-#' isInternallyConsistent(account)
-#' all(isInternallyConsistent(account))
+#' isConsistent(account)
+#' all(isConsistent(account))
 #'
 #' ## An inconsistent account
 #' population <- Counts(array(c(10, 15, 13, 16),
@@ -1973,12 +2070,16 @@ setGeneric("InternalMovements",
 #' account <- Movements(population = population,
 #'                      births = births,
 #'                      exits = list(deaths = deaths))
-#' isInternallyConsistent(account)
-#' all(isInternallyConsistent(account))
+#' isConsistent(account)
+#' all(isConsistent(account))
 #' @export
-setGeneric("isInternallyConsistent",
+setGeneric("isConsistent",
            function(object)
-               standardGeneric("isInternallyConsistent"))
+               standardGeneric("isConsistent"))
+
+setGeneric("isPositiveIncrement",
+           function(object)
+               standardGeneric("isPositiveIncrement"))
 
 setGeneric("length")
 
@@ -2016,6 +2117,67 @@ setGeneric("limits",
 setGeneric("makeCompatible",
            function(x, y, subset = FALSE, check = TRUE)
            standardGeneric("makeCompatible"))
+
+#' Make a demographic account internally consistent.
+#'
+#' Adjust the population counts and components of a demographic
+#' account so that all cells in the account conform to the
+#' basic demographic accounting identity:
+#' \code{poulation at end of period}
+#' \code{= population at beginning of period}
+#' \code{+ entries}
+#' \code{- exits.}
+#' Births and in-migrations are examples of entries, and
+#' deaths and out-migrations are examples of exists.
+#'
+#' \code{makeConsistent} obtains consistency by starting
+#' with the population at the start of the period, and
+#' working forward, adding entries and subtracting
+#' exits.
+#'
+#' Sometimes the original entries and exits
+#' imply negative population counts.  If \code{adjust}
+#' is \code{FALSE}, an error is raised.  If \code{adjust}
+#' is \code{TRUE}, entries are adjusted upwards, and
+#' exits are adjusted downwards, until positive population
+#' counts are obtained.  The size of the steps in this
+#' adjustment process is governed by \code{scale}.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicAccount}}.
+#' @param adjust If \code{TRUE}, components such as births
+#' and deaths are adjusted to avoid negative populations.
+#' @param scale A non-negative number governing the size of
+#' the steps if components are adjusted.
+#'
+#' @return A consistent \code{\linkS4class{DemographicAccount}}.
+#'
+#' @seealso To test whether an account is consistent, use
+#' \code{\link{isConsistent}}.
+#'
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(14, # changed from 13
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' inconsistent.account <- Movements(population = population,
+#'                                   births = births,
+#'                                   exits = list(deaths = deaths))
+#' inconsistent.account
+#' isConsistent(inconsistent.account)
+#' consistent.account <- makeConsistent(inconsistent.account)
+#' consistent.account
+#' isConsistent(consistent.account)
+#' @export
+setGeneric("makeConsistent",
+           function(object, adjust = TRUE, scale = 0.1)
+               standardGeneric("makeConsistent"))
 
 setGeneric("makeIndices",
            function(x, y, collapse, concordance = NULL)
@@ -2063,10 +2225,16 @@ setGeneric("metadata",
 #'
 #' Change \code{"Intervals"} \code{\link{dimscales}} to \code{"Points"},
 #' replacing each interval with its midpoint.  This can be useful for plotting
-#' or calculating mean values, among other things.
-#'
-#' \code{midpoints} is typically called by other functions, but it may
+#' or calculating mean values, among other things. \code{midpoints} is
+#' typically called by other functions, but it may
 #' sometimes be useful to call it directly.
+#'
+#' An object can only have a dimension with \code{\link{dimtype}}
+#' \code{"triangle"} if the object also has age and time dimensions with
+#' dimscale \code{"Intervals"}.  When \code{midpoints} is called
+#' on an object with a triangles dimension, the dimtype for that
+#' dimension is coerced to \code{"state"} and the dimscale is
+#' coerced to \code{"Categories"}.
 #'
 #' @param object Object of class \code{\linkS4class{DemographicArray}}.
 #' @param dimension Names or indices of dimensions to be converted.  If
@@ -2214,6 +2382,46 @@ setGeneric("perturb",
 setGeneric("plotSingleDimension",
            function(object, margin, ...)
            standardGeneric("plotSingleDimension"))
+
+
+#' Extract population counts from a demographic account.
+#'
+#' A \code{\link[=DemographicAccount-class]{demographic account}} contains
+#' counts of population, plus one or more components such as births,
+#' deaths, or internal migration.  \code{population} can be used to
+#' extract the population counts.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicAccount}}.
+#' 
+#' @return A \code{\linkS4class{Counts}} object.
+#'
+#' @seealso Counts for components can be extracted using function
+#' \code{\link{components}}.
+#' 
+#' @examples
+#' population <- Counts(array(c(10, 15, 13, 16),
+#'                            dim = c(2, 2),
+#'                            dimnames = list(age = c("0-29", "30+"),
+#'                                            time = c(1970, 2000))))
+#' births <- Counts(array(13,
+#'                        dim = c(1, 1),
+#'                        dimnames = list(age = "30+",
+#'                                        time = "1971-2000")))
+#' deaths <- Counts(array(c(0, 9),
+#'                        dim = c(2, 1),
+#'                        dimnames = list(age = c("0-29", "30+"),
+#'                                        time = c("1971-2000"))))
+#' account <- Movements(population = population,
+#'                      births = births,
+#'                      exits = list(deaths = deaths))
+#'
+#' population(account)
+#' @export
+setGeneric("population",
+           function(object)
+               standardGeneric("population"))
+
+
 
 
 
@@ -2410,6 +2618,13 @@ setGeneric("setAgeMax",
 setGeneric("setAgeMin",
            function(object, value)
                standardGeneric("setAgeMin"))
+
+
+#' @rdname componentNames
+#' @export
+setGeneric("setComponentNames",
+           function(object, value)
+               standardGeneric("setComponentNames"))
 
 
 #' Extract or replace a slab from a demographic array.
@@ -2613,7 +2828,7 @@ setGeneric("subtractFromPopnEnd",
 #' @return An object of class \code{\linkS4class{Values}}, with no
 #' "age", "sex", or Lexis triangle dimensions, or a numeric vector.
 #' @examples
-#' births <- demdata::nz.births
+#' births <- demdata::nz.births.reg
 #' popn <- demdata::nz.popn.reg
 #' births <- Counts(births, dimscales = c(year = "Intervals"))
 #' ## use mid-year population to approximate person-years lived

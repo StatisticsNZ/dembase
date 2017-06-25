@@ -64,4 +64,3 @@ alignPair(y)
 Function \code{\link{pairAligned}} tests whether a pair of dimensions
 use the same categories in the same order.
 }
-

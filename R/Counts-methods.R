@@ -1227,9 +1227,9 @@ setMethod("expandCategories",
                   indices[[i]] <- i.obj[found.in.obj]
               }
               metadata.ans <- methods::new("MetaData",
-                                  nms = names,
-                                  dimtypes = dimtypes,
-                                  DimScales = DimScales)
+                                           nms = names,
+                                           dimtypes = dimtypes,
+                                           DimScales = DimScales)
               dim.ans <- dim(metadata.ans)
               dimnames.ans <- dimnames(metadata.ans)
               .Data.target <- array(1L, dim = dim.ans, dimnames = dimnames.ans)
@@ -1239,10 +1239,10 @@ setMethod("expandCategories",
                                              allowNA = FALSE)
               weights <- as.double(weights)
               transform <- methods::new("CollapseTransform",
-                               indices = indices,
-                               dims = dims,
-                               dimBefore = dim.ans,
-                               dimAfter = dim.obj)
+                                        indices = indices,
+                                        dims = dims,
+                                        dimBefore = dim.ans,
+                                        dimAfter = dim.obj)
               transform <- makeCollapseTransformExtra(transform)
               if (means)
                   .Data.ans <- redistributeInnerMeans(counts = .Data.obj,
@@ -1847,10 +1847,10 @@ setMethod("makeTransform",
                   }
               }
               methods::new("CollapseTransform",
-                  dims = dims,
-                  indices = indices,
-                  dimBefore = dimBefore,
-                  dimAfter = dimAfter)
+                           dims = dims,
+                           indices = indices,
+                           dimBefore = dimBefore,
+                           dimAfter = dimAfter)
           })
 
 ## HAS_TESTS
@@ -1871,10 +1871,10 @@ setMethod("makeTransform",
               indices <- lapply(dimBefore, function(n) rep(1L, times = n))
               dims <- c(1L, rep(0L, times = length(dimBefore) - 1L))
               methods::new("CollapseTransform",
-                  indices = indices,
-                  dims = dims,
-                  dimBefore = dimBefore,
-                  dimAfter = 1L)
+                           indices = indices,
+                           dims = dims,
+                           dimBefore = dimBefore,
+                           dimAfter = 1L)
           })                  
 
 ## HAS_TESTS

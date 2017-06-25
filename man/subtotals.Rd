@@ -27,4 +27,3 @@ subtotals <- Counts(array(c(65000, 64000),
 popn <- attachSubtotals(popn, subtotals = subtotals)
 subtotals(popn)
 }
-

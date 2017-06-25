@@ -2,10 +2,10 @@
 % Please edit documentation in R/AllGeneric.R, R/MetaData-methods.R
 \docType{methods}
 \name{dimtypes}
-\alias{dimtype}
 \alias{dimtypes}
-\alias{dimtypes,MetaData-method}
+\alias{dimtype}
 \alias{dimtypes<-}
+\alias{dimtypes,MetaData-method}
 \alias{dimtypes<-,MetaData-method}
 \title{Get or set the dimtypes of an object.}
 \usage{
@@ -127,4 +127,3 @@ dimtypes(x)
 \seealso{
 \code{\link{dimscales}}
 }
-

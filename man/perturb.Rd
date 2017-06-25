@@ -58,4 +58,3 @@ perturb(x10, n = 2)  ## iterations selected, rather than generated
 \seealso{
 The log-linear model is fitted using \code{\link{loglm}}.
 }
-

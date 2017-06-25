@@ -2201,12 +2201,36 @@ agePopnForwardUpperTri <- function(population) {
 }
 
 ## HAS_TESTS
-checkAndTidyMovementsComponent <- function(object,
-                                           name,
-                                           requireInteger = TRUE,
-                                           allowNegatives = FALSE,
-                                           allowOrig = FALSE,
-                                           allowParent = FALSE) {
+checkAdjustAndScale <- function(adjust, scale) {
+    if (!is.logical(adjust))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "adjust", "logical"))
+    if (!identical(length(adjust), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "adjust", 1L))
+    if (adjust) {
+        if (!is.numeric(scale))
+            stop(gettextf("'%s' is non-numeric",
+                          "scale"))
+        if (!identical(length(scale), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          "scale", 1L))
+        if (scale <= 0)
+            stop(gettextf("'%s' is non-positive",
+                          "scale"))
+    }
+    NULL
+}
+
+## HAS_TESTS
+checkAndTidyComponent <- function(object,
+                                  name,
+                                  requireInteger = TRUE,
+                                  allowNegatives = FALSE,
+                                  allowOrig = FALSE,
+                                  allowParent = FALSE,
+                                  allowTriangles = TRUE,
+                                  triangles = TRUE) {
     ## extract metadata
     dimtypes <- dimtypes(object, use.names = FALSE)
     DimScales <- DimScales(object, use.names = FALSE)
@@ -2275,9 +2299,13 @@ checkAndTidyMovementsComponent <- function(object,
             stop(gettextf("'%s' has negative values",
                           name))
     }
+    ## allow triangles
+    if (!allowTriangles && has.triangle)
+        stop(gettextf("'%s' has Lexis triangles",
+                      name))
     ## triangles
     if (has.age) {
-        if (!has.triangle)
+        if (!has.triangle && triangles)
             object <- splitTriangles(object)
     }
     object
@@ -2298,6 +2326,332 @@ checkNamesComponents <- function(names, componentType) {
         stop(gettextf("names for '%s' have duplicates",
                       componentType))
     NULL
+}
+
+## HAS_TESTS
+derivePopnMoveNoAge <- function(object, adjust, scale) {
+    population <- object@population
+    components <- object@components
+    names.components <- object@namesComponents
+    n.comp <- length(components)
+    is.internal <- sapply(components, methods::is, "Internal")
+    is.births <- sapply(components, methods::is, "Births")
+    i.internal <- which(is.internal)
+    has.births <- any(is.births)
+    if (has.births) {
+        i.births <- which(is.births)
+        births <- components[[i.births]]
+        mapping.births <- makeMappingBirths(births)
+        scale.extra.dims.births <- length(mapping.births) %/% max(mapping.births)
+    }
+    else
+        i.births <- 0L
+    i.comp.not.internal <- setdiff(seq_len(n.comp), i.internal)
+    dim.popn <- dim(population)
+    i.time.popn <- match("time", dimtypes(population))
+    i.time.comps <- sapply(components, function(x) match("time", dimtypes(x)))
+    n.time.popn <- dim.popn[i.time.popn]
+    index.time.popn <- makeDimtypeIndex(population, dimtype = "time")
+    index.time.comps <- lapply(components, makeDimtypeIndex, dimtype = "time")
+    slices.comp <- vector(mode = "list", length = n.comp)
+    is.pos.increment.comp <- sapply(components, isPositiveIncrement)
+    for (it in seq_len(n.time.popn - 1L)) {
+        slice.popn.start <- slab(population,
+                                 dimension = i.time.popn,
+                                 elements = it,
+                                 drop = FALSE)
+        popn.end <- as.integer(slice.popn.start@.Data)
+        for (ic in seq_len(n.comp)) {
+            component <- components[[ic]]
+            i.time.comp <- i.time.comps[ic]
+            slice.comp <- slab(component,
+                               dimension = i.time.comp,
+                               elements = it,
+                               drop = FALSE)
+            slices.comp[[ic]] <- slice.comp
+            increment <- incrementInteger(slice.comp)
+            is.pos.increment <- is.pos.increment.comp[ic]
+            if (is.pos.increment)
+                popn.end <- popn.end + increment
+            else
+                popn.end <- popn.end - increment
+        }
+        if (any(popn.end < 0L) && !adjust)
+            stop(gettext("population has negative values"))
+        updated.comp <- rep(FALSE, times = n.comp)
+        while (any(popn.end < 0L)) {
+            ic <- safeSample1(i.comp.not.internal)
+            updated.comp[ic] <- TRUE
+            if (ic == i.births) {
+                multiplier <- ifelse(popn.end < 0L, scale, 0)
+                multiplier <- multiplier[mapping.births]
+                lambda <- multiplier * slices.comp[[ic]]@.Data / scale.extra.dims.births
+                diff <- stats::rpois(n = length(lambda), lambda = lambda)
+                diff.ag <- tapply(diff,
+                                  INDEX = mapping.births,
+                                  FUN = sum)
+                diff.ag <- as.integer(diff.ag)
+                slices.comp[[ic]]@.Data[] <- slices.comp[[ic]]@.Data + diff
+                popn.end <- popn.end + diff.ag
+            }
+            else if (ic == i.internal) {
+                multiplier <- stats::runif(n = 1L,
+                                    min = max(0.1, 1 - 2 * scale),
+                                    max = 1)
+                increment.old <- incrementInteger(slices.comp[[ic]])
+                slices.comp[[ic]]@.Data[] <- as.integer(multiplier * slices.comp[[ic]]@.Data)
+                increment.new <- incrementInteger(slices.comp[[ic]])
+                popn.end <- popn.end + increment.new - increment.old
+            }
+            else {
+                multiplier <- ifelse(popn.end < 0L, scale, 0)
+                is.pos.increment <- is.pos.increment.comp[ic]
+                lambda <- multiplier * abs(slices.comp[[ic]]@.Data) # abs to deal with NetMovements
+                diff <- stats::rpois(n = length(lambda), lambda = lambda)
+                if (is.pos.increment) {
+                    slices.comp[[ic]]@.Data[] <- slices.comp[[ic]]@.Data + diff
+                    popn.end <- popn.end + diff
+                }
+                else {                    
+                    diff <- pmin(slices.comp[[ic]]@.Data, diff)
+                    slices.comp[[ic]]@.Data[] <- slices.comp[[ic]]@.Data - diff
+                    popn.end <- popn.end + diff
+                }
+            }
+        }
+        index <- index.time.popn == it + 1L
+        population@.Data[index] <- popn.end
+        for (ic in seq_len(n.comp)) {
+            if (updated.comp[ic]) {
+                index <- index.time.comps[[ic]] == it
+                components[[ic]]@.Data[index] <- slices.comp[[ic]]@.Data
+            }
+        }
+    }
+    new("Movements",
+        population = population,
+        components = components,
+        namesComponents = names.components)
+}
+
+## HAS_TESTS
+derivePopnMoveHasAge <- function(object, adjust, scale) {
+    population <- object@population
+    components <- object@components
+    names.components <- object@namesComponents
+    n.comp <- length(components)
+    is.internal <- sapply(components, methods::is, "Internal")
+    is.births <- sapply(components, methods::is, "Births")
+    i.internal <- which(is.internal)
+    has.births <- any(is.births)
+    if (has.births) {
+        i.births <- which(is.births)
+        births <- components[[i.births]]
+        mapping.births <- makeMappingBirths(births)
+        scale.extra.dims.births <- length(mapping.births) %/% max(mapping.births)
+    }
+    else
+        i.births <- 0L
+    has.internal <- any(is.internal)
+    if (has.internal)
+        i.internal <- which(is.internal)
+    else
+        i.internal <- 0L
+    i.comp <- seq_len(n.comp)
+    i.comp.not.births <- setdiff(i.comp, i.births)
+    dim.popn <- dim(population)
+    i.time.popn <- match("time", dimtypes(population))
+    i.time.comps <- sapply(components, function(x) match("time", dimtypes(x)))
+    n.time.popn <- dim.popn[i.time.popn]
+    i.age.popn <- match("age", dimtypes(population))
+    i.age.comps <- sapply(components, function(x) match("age", dimtypes(x)))
+    n.age <- dim.popn[i.age.popn]
+    i.triangle.comps <- sapply(components, function(x) match("triangle", dimtypes(x)))
+    index.time.popn <- makeDimtypeIndex(population, dimtype = "time")
+    index.time.comps <- lapply(components, makeDimtypeIndex, dimtype = "time")
+    index.age.popn <- makeDimtypeIndex(population, dimtype = "age")
+    index.age.comps <- lapply(components, makeDimtypeIndex, dimtype = "age")
+    index.triangle.comps <- lapply(components, makeDimtypeIndex, dimtype = "triangle")
+    slices.comp <- vector(mode = "list", length = n.comp)
+    slices.comp.a <- vector(mode = "list", length = n.comp)
+    slices.comp.a.low <- vector(mode = "list", length = n.comp)
+    slices.comp.a.up <- vector(mode = "list", length = n.comp)
+    is.pos.increment.comp <- sapply(components, isPositiveIncrement)
+    length.accession <- length(population) %/% (n.time.popn * n.age)
+    for (it in seq_len(n.time.popn - 1L)) {
+        slice.popn.start <- slab(population,
+                                 dimension = i.time.popn,
+                                 elements = it,
+                                 drop = FALSE)
+        accession <- rep(0L, times = length.accession)
+        for (ic in i.comp) {
+            component <- components[[ic]]
+            i.time.comp <- i.time.comps[ic]
+            slices.comp[[ic]] <- slab(component,
+                                      dimension = i.time.comp,
+                                      elements = it,
+                                      drop = FALSE)
+        }
+        for (ia in seq_len(n.age)) {
+            slice.popn.start.a <- slab(slice.popn.start,
+                                       dimension = i.age.popn,
+                                       elements = ia,
+                                       drop = FALSE)
+            for (ic in i.comp) {
+                if (ic != i.births) {
+                    slices.comp.a[[ic]] <- slab(slices.comp[[ic]],
+                                                dimension = i.age.comps[ic],
+                                                elements = ia,
+                                                drop = FALSE)
+                    slices.comp.a.low[[ic]] <- slab(slices.comp.a[[ic]],
+                                                    dimension = i.triangle.comps[ic],
+                                                    elements = 1L,
+                                                    drop = FALSE)
+                    slices.comp.a.up[[ic]] <- slab(slices.comp.a[[ic]],
+                                                   dimension = i.triangle.comps[ic],
+                                                   elements = 2L,
+                                                   drop = FALSE)
+                }
+            }
+            ## lower triangle
+            popn.end <- accession
+            for (ic in i.comp) {
+                if (ic == i.births) {
+                    if (ia == 1L) {
+                        increment <- incrementInteger(slices.comp[[ic]])
+                        popn.end <- popn.end + increment
+                    }
+                }
+                else {
+                    increment <- incrementInteger(slices.comp.a.low[[ic]])
+                    is.pos.increment <- is.pos.increment.comp[ic]
+                    if (is.pos.increment)
+                        popn.end <- popn.end + increment
+                    else
+                        popn.end <- popn.end - increment
+                }
+            }
+            if (any(popn.end < 0L) && !adjust)
+                stop(gettext("population has negative values"))
+            updated.comp <- rep(FALSE, times = n.comp)
+            while (any(popn.end < 0L)) {
+                choices <- if (ia == 1L) i.comp else i.comp.not.births
+                ic <- safeSample1(choices)
+                updated.comp[ic] <- TRUE
+                if (ic == i.births) {
+                    multiplier <- ifelse(popn.end < 0L, scale, 0)
+                    multiplier <- multiplier[mapping.births]
+                    lambda <- multiplier * slices.comp[[ic]]@.Data / scale.extra.dims.births
+                    diff <- stats::rpois(n = length(lambda), lambda = lambda)
+                    diff.ag <- tapply(diff,
+                                      INDEX = mapping.births,
+                                      FUN = sum)
+                    diff.ag <- as.integer(diff.ag)
+                    slices.comp[[ic]]@.Data[] <- slices.comp[[ic]]@.Data + diff
+                    popn.end <- popn.end + diff.ag
+                }
+                else if (ic == i.internal) {
+                    multiplier <- stats::runif(n = 1L,
+                                        min = max(0.1, 1 - scale),
+                                        max = 1)
+                    increment.old <- incrementInteger(slices.comp.a.low[[ic]])
+                    slices.comp.a.low[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.low[[ic]]@.Data)
+                    increment.new <- incrementInteger(slices.comp.a.low[[ic]])
+                    popn.end <- popn.end + increment.new - increment.old
+                }
+                else {
+                    multiplier <- ifelse(popn.end < 0L, scale, 0)
+                    is.pos.increment <- is.pos.increment.comp[ic]
+                    lambda <- multiplier * abs(slices.comp.a.low[[ic]]@.Data) # abs to deal with NetMovements
+                    diff <- (accession < 0L) + stats::rpois(n = length(lambda), lambda = lambda)
+                    if (is.pos.increment) {
+                        slices.comp.a.low[[ic]]@.Data[] <- slices.comp.a.low[[ic]]@.Data + diff
+                        popn.end <- popn.end + diff
+                    }
+                    else {
+                        diff <- pmin(slices.comp.a.low[[ic]]@.Data, diff)
+                        slices.comp.a.low[[ic]]@.Data[] <- slices.comp.a.low[[ic]]@.Data - diff
+                        popn.end <- popn.end + diff
+                    }
+                }
+            }
+            index <- (index.time.popn == it + 1L) & (index.age.popn == ia)
+            population@.Data[index] <- popn.end
+            for (ic in i.comp) {
+                if (updated.comp[ic]) {
+                    if (ic == i.births) {
+                        index <- index.time.comps[[ic]] == it
+                        components[[ic]]@.Data[index] <- slices.comp[[ic]]@.Data
+                    }
+                    else {
+                        index <- ((index.time.comps[[ic]] == it)
+                            & (index.age.comps[[ic]] == ia)
+                            & (index.triangle.comps[[ic]] == 1L))
+                        components[[ic]]@.Data[index] <- slices.comp.a.low[[ic]]@.Data
+                    }
+                }
+            }
+            ## upper triangle
+            accession <- as.integer(slice.popn.start.a@.Data)
+            for (ic in i.comp) {
+                if (ic != i.births) {
+                    increment <- incrementInteger(slices.comp.a.up[[ic]])
+                    is.pos.increment <- is.pos.increment.comp[ic]
+                    if (is.pos.increment)
+                        accession <- accession + increment
+                    else
+                        accession <- accession - increment
+                }
+            }
+            if (any(accession < 0L) && !adjust)
+                stop(gettext("population has negative values"))
+            updated.comp <- rep(FALSE, times = n.comp)
+            while (any(accession < 0L)) {
+                ic <- safeSample1(i.comp.not.births)
+                updated.comp[ic] <- TRUE
+                if (ic == i.internal) {
+                    multiplier <- stats::runif(n = 1L,
+                                        min = max(0.1, 1 - scale),
+                                        max = 1)
+                    increment.old <- incrementInteger(slices.comp.a.up[[ic]])
+                    slices.comp.a.up[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.up[[ic]]@.Data)
+                    increment.new <- incrementInteger(slices.comp.a.up[[ic]])
+                    accession <- accession + increment.new - increment.old
+                }
+                else {
+                    multiplier <- ifelse(accession < 0L, scale, 0)
+                    is.pos.increment <- is.pos.increment.comp[ic]
+                    lambda <- multiplier * abs(slices.comp.a.up[[ic]]@.Data)
+                    diff <- (accession < 0L) + stats::rpois(n = length(lambda), lambda = lambda)
+                    if (is.pos.increment) {
+                        slices.comp.a.up[[ic]]@.Data[] <- slices.comp.a.up[[ic]]@.Data + diff
+                        accession <- accession + diff
+                    }
+                    else {
+                        diff <- pmin(slices.comp.a.up[[ic]]@.Data, diff)
+                        slices.comp.a.up[[ic]]@.Data[] <- slices.comp.a.up[[ic]]@.Data - diff
+                        accession <- accession + diff
+                    }
+                }
+            }
+            for (ic in i.comp) {
+                if (updated.comp[ic]) {
+                    index <- ((index.time.comps[[ic]] == it)
+                        & (index.age.comps[[ic]] == ia)
+                        & (index.triangle.comps[[ic]] == 2L))
+                    components[[ic]]@.Data[index] <- slices.comp.a.up[[ic]]@.Data
+                }
+            }
+            if (ia == n.age) {
+                index <- (index.time.popn == it + 1L) & (index.age.popn == ia)
+                population@.Data[index] <- population@.Data[index] + accession            
+            }
+        }
+    }
+    new("Movements",
+        population = population,
+        components = components,
+        namesComponents = names.components)
 }
 
 ## HAS_TESTS
@@ -2429,6 +2783,29 @@ exposureWithTriangles <- function(object) {
                    dim = dim(metadata),
                    dimnames = dimnames(metadata))
     methods::new("Counts", .Data = .Data, metadata = metadata)
+}
+
+## HAS_TESTS
+getDimScaleTimePopn <- function(object, name) {
+    if (!methods::is(object, "Counts"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      name, class(object)))
+    dimtypes <- dimtypes(object,
+                         use.names = FALSE)
+    DimScales <- DimScales(object,
+                           use.names = FALSE)
+    i.time <- match("time", dimtypes, nomatch = 0L)
+    has.time <- i.time > 0L
+    if (!has.time)
+        stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                      name, "dimtype", "time"))
+    DimScale.comp <- DimScales[[i.time]]
+    if (!methods::is(DimScale.comp, "Intervals"))
+        stop(gettextf("time dimension of '%s' does not have %s \"%s\"",
+                      name, "dimscale", "Intervals"))
+    dimvalues <- dimvalues(DimScale.comp)
+    DimScale.popn <- new("Points", dimvalues = dimvalues)
+    DimScale.popn
 }
 
 ## HAS_TESTS
@@ -2610,52 +2987,42 @@ incrementUpperTriHelper <- function(component) {
 }
 
 ## HAS_TESTS
-isCompatibleWithPopn <- function(component, population, nameComponent) {
-    names.comp <- names(component)
-    names.comp.adj <- removeSuffixes(names.comp)
-    names.popn <- names(population)
-    dimtypes.comp <- dimtypes(component, use.names = FALSE)
-    dimtypes.popn <- dimtypes(population, use.names = FALSE)
-    DimScales.comp <- DimScales(component, use.names = FALSE)
-    DimScales.popn <- DimScales(population, use.names = FALSE)
-    is.births <- methods::is(component, "Births")
-    ## check that dimensions of population contained in component
-    ## (treating pairs of dimensions as a single dimension)
-    in.comp <- names.popn %in% names.comp.adj
-    if (!all(in.comp)) {
-        i.first.not.in.comp <- which(!in.comp)[1L]
-        return(gettextf("'%s' has dimension \"%s\" but '%s' does not",
-                        "population", names.popn[i.first.not.in.comp], nameComponent))
+makeDimtypeIndex <- function(object, dimtype) {
+    .Data <- object@.Data
+    dimtypes <- dimtypes(object,
+                         use.names = FALSE)
+    i.dimtype <- match(dimtype, dimtypes)
+    slice.index(.Data,
+                MARGIN = i.dimtype)
+}
+
+## HAS_TESTS
+makeMappingBirths <- function(births) {
+    dim <- dim(births)
+    dimtypes <- dimtypes(births,
+                         use.names = FALSE)
+    i.time <- match("time", dimtypes)
+    i.collapsed <- grep("parent|age|triangle", dimtypes)
+    n.collapsed <- length(i.collapsed)
+    s <- seq_along(dim)
+    s.included <- setdiff(s, c(i.time, i.collapsed))
+    n.included <- length(s.included)
+    s.no.time <- setdiff(s, i.time)
+    dim.collapsed <- dim[i.collapsed]
+    if (n.included > 0L) {
+        dim.included <- dim[s.included]
+        ans <- array(seq_len(prod(dim.included)),
+                     dim = c(dim.included, dim.collapsed))
+        perm <- match(s.no.time, c(s.included, i.collapsed))
+        ans <- aperm(ans, perm = perm)
+        as.integer(ans)
     }
-    ## check that, apart from triangle, dimensions of component
-    ## contained in population (treating pairs as single dimension)
-    is.triangle <- dimtypes.comp == "triangle"
-    names.comp.no.tri <- names.comp[!is.triangle]
-    names.adj.no.tri <- names.comp.adj[!is.triangle]
-    in.popn <- names.adj.no.tri %in% names.popn
-    if (!all(in.popn)) {
-        i.first.not.in.popn <- which(!in.popn)[1L]
-        return(gettextf("'%s' has dimension \"%s\" but '%s' does not have dimension \"%s\"",
-                        nameComponent, names.comp.no.tri[i.first.not.in.popn],
-                        "population", names.adj.no.tri[i.first.not.in.popn]))
+    else {
+        if (n.collapsed > 0L)
+            rep(1L, times = prod(dim[i.collapsed]))
+        else
+            1L
     }
-    ## check that dimensions of component compatible with population
-    for (i in seq_along(names.comp)) {
-        name <- names.comp[i]
-        dimtype <- dimtypes.comp[i]
-        DimScale <- DimScales.comp[[i]]
-        return.value <- dimCompCompatibleWithPopn(name = name,
-                                                  dimtype = dimtype,
-                                                  DimScale = DimScale,
-                                                  namesPopn = names.popn,
-                                                  dimtypesPopn = dimtypes.popn,
-                                                  DimScalesPopn = DimScales.popn,
-                                                  isBirths = is.births)
-        if (!isTRUE(return.value))
-            return(gettextf("'%s' and '%s' not compatible : %s",
-                            nameComponent, "population", return.value))
-    }
-    TRUE
 }
 
 ## HAS_TESTS
@@ -2730,8 +3097,35 @@ makeMetadataForExposure <- function(population, triangles) {
         DimScales = DimScales)
 }
 
+
+## NOT NEEDED - DELETE?? (2017-06-25)
+## ## NO_TESTS
+## makeMetadataTemplate <- function(population) {
+##     dimtypes <- dimtypes(population, use.names = FALSE)
+##     DimScales <- DimScales(population, use.names = FALSE)
+##     i.time <- match("time", dimtypes)
+##     i.age <- match("age", dimtypes, nomatch = 0L)
+##     DimScale.time <- DimScales[[i.time]]
+##     dimvalues.time <- dimvalues(DimScale.time)
+##     DimScale.time <- new("Intervals", dimvalues = dimvalues.time)
+##     DimScales <- replace(DimScales,
+##                          list = i.time,
+##                          values = list(DimScale.time))
+##     has.age <- i.age > 0L
+##     if (has.age) {
+##         names <- make.unique(c(names, "triangle"))
+##         dimtypes <- c(dimtypes, "triangle")
+##         DimScale.triangle <- methods::new("Triangles", dimvalues = c("TL", "TU"))
+##         DimScales <- append(DimScales, DimScale.triangle)
+##     }
+##     new("MetaData",
+##         nms = names,
+##         dimtypes = dimtypes,
+##         DimScales = DimScales)    
+## }
+
 ## HAS_TESTS
-makeTemplateComponent <- function(population) {
+makeTemplateComponent <- function(population, triangles = TRUE) {
     names <- names(population)
     dimtypes <- dimtypes(population, use.names = FALSE)
     DimScales <- DimScales(population, use.names = FALSE)
@@ -2744,15 +3138,15 @@ makeTemplateComponent <- function(population) {
                          list = i.time,
                          values = list(DimScale.time.new))
     metadata <- methods::new("MetaData",
-                    nms = names,
-                    dimtypes = dimtypes,
-                    DimScales = DimScales)
+                             nms = names,
+                             dimtypes = dimtypes,
+                             DimScales = DimScales)
     .Data <- array(0L,
                    dim = dim(metadata),
                    dimnames = dimnames(metadata))
     ans <- methods::new("Counts", .Data = .Data, metadata = metadata)
     has.age <- i.age > 0L
-    if (has.age)
+    if (has.age && triangles)
         ans <- splitTriangles(ans)
     ans
 }
@@ -2895,6 +3289,61 @@ popnOpen <- function(population) {
         metadata = metadata.ans)
 }
 
+## HAS_TESTS
+removeDimtypesFromMetadata <- function(metadata, dimtypes) {
+    dimtypes.old <- dimtypes(metadata,
+                             use.names = FALSE)
+    i.dimtype <- match(dimtypes, dimtypes.old, nomatch = 0L)
+    s <- seq_along(dimtypes.old)
+    s <- setdiff(s, i.dimtype)
+    if (length(s) == 0L)
+        stop(gettext("removing all dimensions"))
+    metadata[s]
+}
+
+## HAS_TESTS
+removePairFromMetadata <- function(metadata, origDest = TRUE) {
+    names <- names(metadata)
+    dimtypes <- dimtypes(metadata,
+                         use.names = FALSE)
+    DimScales <- DimScales(metadata,
+                           use.names = FALSE)
+    suffix.keep <- if (origDest) "orig" else "child"
+    suffix.remove <- if (origDest) "dest" else "parent"
+    p.keep <- sprintf("_%s$", suffix.keep)
+    names.keep <- grep(p.keep, names, value = TRUE)
+    names.base <- sub(p.keep, "", names.keep)
+    names.remove <- sprintf("%s_%s", names.base, suffix.remove)
+    i.keep <- match(names.keep, names)
+    i.remove <- match(names.remove, names)
+    names.new <- replace(names,
+                         list = i.keep,
+                         values = names.base)
+    dimtypes.new <- replace(dimtypes,
+                            list = i.keep,
+                            values = "state")
+    s <- seq_along(names)
+    s <- setdiff(s, i.remove)
+    names.new <- names.new[s]
+    dimtypes.new <- dimtypes.new[s]
+    DimScales.new <- DimScales[s]
+    metadata.new <- new("MetaData",
+                        nms = names.new,
+                        dimtypes = dimtypes.new,
+                        DimScales = DimScales.new)
+}
+
+## HAS_TESTS
+safeSample1 <- function(choices) {
+    n <- length(choices)
+    if (n == 0L)
+        stop(gettextf("'%s' has length %d",
+                      "choices", 0L))
+    else if (n == 1L)
+        choices
+    else
+        sample(choices, size = 1L)
+}
 
 ## HAS_TESTS
 splitTriangles <- function(object) {

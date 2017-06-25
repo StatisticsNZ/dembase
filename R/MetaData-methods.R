@@ -432,8 +432,8 @@ setMethod("midpoints",
               names <- names(object)
               dimtypes <- dimtypes(object, use.names = FALSE)
               DimScales <- DimScales(object, use.names = FALSE)
-              selected.dimscales <- dimscales(object)[dimension]
-              not.intervals <- !(selected.dimscales == "Intervals")
+              DimScales.selected <- DimScales[dimension]
+              not.intervals <- !sapply(DimScales.selected, methods::is,  "Intervals")
               n.not.intervals <- sum(not.intervals)
               if (n.not.intervals > 0L) {
                   selected.names <- names(object)[dimension]
@@ -445,10 +445,16 @@ setMethod("midpoints",
               }
               DimScales[dimension] <- lapply(DimScales[dimension],
                                              intervalsToPoints)
+              i.triangle <- match("triangle", dimtypes, nomatch = 0L)
+              has.triangle <- i.triangle > 0L
+              if (has.triangle) {
+                  dimtypes[i.triangle] <- "state"
+                  DimScales[[i.triangle]] <- as(DimScales[[i.triangle]], "Categories")
+              }
               methods::new(class(object),
-                  nms = names,
-                  dimtypes = dimtypes,
-                  DimScales = DimScales)
+                           nms = names,
+                           dimtypes = dimtypes,
+                           DimScales = DimScales)
           })
 
 #' @rdname names-methods

@@ -64,4 +64,3 @@ collapseIterations(x, FUN = sumvals)
 \code{\link{collapseOrigDest}}, \code{\link{collapseDimension}},
 \code{\link{dimtypes}}, \code{\link{dimscales}}
 }
-

@@ -1,4 +1,5 @@
 
+
 context("Component-methods")
 
 ## incrementLowerTri ################################################################
@@ -156,6 +157,99 @@ test_that("ExitsMovements method of incrementLowerTri works", {
 })
 
 
+## incrementInteger ################################################################
+
+test_that("default method of incrementInteger works", {
+    EntriesMovements <- dembase:::EntriesMovements
+    incrementInteger <- dembase:::incrementInteger
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(entries = component,
+                                  template = component)
+    ans.obtained <- incrementInteger(component)
+    ans.expected <- as.integer(component@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("BirthsMovements method of incrementInteger works", {
+    incrementInteger <- dembase:::incrementInteger
+    BirthsMovements <- dembase:::BirthsMovements
+    component <- Counts(array(1:16,
+                              dim = c(2, 2, 2, 2, 3, 2),
+                              dimnames = list(sex = c("m", "f"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              eth_parent = c("a", "b"),
+                                              eth_child = c("a", "b"),
+                                              age = c("10-14", "15-19", "20-24"),
+                                              triangle = c("TL", "TU"))))
+    template <- Counts(array(1:6,
+                             dim = c(2, 2, 2, 6, 2),
+                             dimnames = list(sex = c("m", "f"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             eth = c("a", "b"),
+                                             age = c("0-4", "5-9", "10-14", "15-19", "20-24", "25+"),
+                                             triangle = c("TL", "TU"))))
+    component <- BirthsMovements(component,
+                                 template = template)
+    ans.obtained <- incrementInteger(component)
+    ans.expected <- collapseDimension(component,
+                                      dimension = c("eth_parent", "age", "triangle"))
+    ans.expected <- as.integer(ans.expected@.Data)
+    expect_identical(ans.obtained, ans.expected)    
+})
+
+test_that("Orig-Dest method of incrementInteger works", {
+    incrementInteger <- dembase:::incrementInteger
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    ans.obtained <- incrementInteger(component)
+    ans.expected <- as.integer(net@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("Pool method of incrementInteger works", {
+    incrementInteger <- dembase:::incrementInteger
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    component <- collapseOrigDest(component, to = "pool")
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    ans.obtained <- incrementInteger(component)
+    ans.expected <- as.integer(net@.Data)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 
 ## incrementOpen ################################################################
@@ -185,6 +279,7 @@ test_that("default method of incrementOpen works", {
     ans.expected <- t(ans.expected)
     expect_identical(ans.obtained, ans.expected)
 })
+
 
 test_that("BirthsMovements method of incrementOpen works", {
     incrementOpen <- dembase:::incrementOpen
@@ -645,7 +740,447 @@ test_that("ExitsMovements method of incrementUpperTri works", {
 })
     
 
+## isCompatibleWithPopn ################################################################
+
+test_that("MovementsComponent method of isCompatibleWithPopn works", {
+    EntriesMovements <- dembase:::EntriesMovements
+    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(entries = component,
+                                  template = component)
+    expect_true(isCompatibleWithPopn(component,
+                                     metadata = component@metadata,
+                                     name = "immigration"))
+    expect_identical(isCompatibleWithPopn(component,
+                                          metadata = rev(component@metadata),
+                                          name = "immigration"),
+                     "'immigration' not compatible with 'population'")
+})
+
+test_that("TransitionsComponent method of isCompatibleWithPopn works", {
+    EntriesTransitions <- dembase:::EntriesTransitions
+    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
+    component <- Counts(array(1:24,
+                              dim = c(3, 2, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"),
+                                              time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                              reg = c("a", "b"),
+                                              time = c("2001-2005", "2006-2010"))))
+    component <- EntriesTransitions(entries = component,
+                                    template = template,
+                                    name = "entries")
+    expect_true(isCompatibleWithPopn(component,
+                                     metadata = template@metadata,
+                                     name = "immigration"))
+    expect_identical(isCompatibleWithPopn(component,
+                                          metadata = rev(template@metadata),
+                                          name = "immigration"),
+                     "'immigration' not compatible with 'population'")
+})
+
+test_that("isCompatibleWithPopn works with BirthsMovements", {
+    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
+    BirthsMovements <- dembase:::BirthsMovements
+    ## both have age
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("10-14", "15-19", "20-24"),
+                                              time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(1:20,
+                             dim = c(2, 5, 2),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- BirthsMovements(component,
+                                 template = template)
+    template <- Counts(array(1:24,
+                             dim = c(2, 6, 2),
+                             dimnames = list(time = c("2001-2005", "2006-2010"),
+                                             age = c("0-4", "5-9", "10-14",
+                                                     "15-19", "20-24", "25+"),
+                                             triangle = c("TL", "TU"))))
+    metadata <- template@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata,
+                                         name = "births")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    template.wrong <- Counts(array(1:36,
+                                   dim = c(3, 6, 2),
+                                   dimnames = list(time = c("2001-2005", "2006-2010", "2011-2015"),
+                                                   age = c("0-4", "5-9", "10-14",
+                                                           "15-19", "20-24", "25+"),
+                                                   triangle = c("TL", "TU"))))
+    metadata.wrong <- template.wrong@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata.wrong,
+                                         name = "births")
+    ans.expected <- "'births' not compatible with 'population'"
+    expect_identical(ans.obtained, ans.expected)
+    ## neither has age
+    component <- Counts(array(1:4,
+                              dim = c(2, 2),
+                              dimnames = list(sex = c("f", "m"),
+                                              time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(1:4,
+                             dim = c(2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- BirthsMovements(component,
+                                 template = template)
+    template <- Counts(array(1:24,
+                             dim = c(2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"))))
+    metadata <- template@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata,
+                                         name = "births")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ## has parent
+    component <- Counts(array(1:4,
+                              dim = c(2, 2, 2, 2),
+                              dimnames = list(sex = c("f", "m"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_parent = c("a", "b"),
+                                              reg_child = c("a", "b"))))
+    template <- Counts(array(1:8,
+                             dim = c(2, 2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- BirthsMovements(component,
+                                 template = template)
+    template <- Counts(array(1:8,
+                             dim = c(2, 2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    metadata <- template@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata,
+                                         name = "births")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("isCompatibleWithPopn works with BirthsTransitions", {
+    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
+    BirthsTransitions <- dembase:::BirthsTransitions
+    ## both have age
+    component <- Counts(array(1:24,
+                              dim = c(2, 2, 3, 2),
+                              dimnames = list(reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"),
+                                              age = c("10-14", "15-19", "20-24"),
+                                              time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(1:20,
+                             dim = c(2, 5, 2),
+                             dimnames = list(reg = c("a", "b"),
+                                             age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- BirthsTransitions(component,
+                                   template = template)
+    template <- Counts(array(1:24,
+                             dim = c(2, 2, 6),
+                             dimnames = list(reg = c("a", "b"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             age = c("0-4", "5-9", "10-14",
+                                                     "15-19", "20-24", "25+"))))
+    metadata <- template@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata,
+                                         name = "births")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    template.wrong <- Counts(array(1:36,
+                                   dim = c(3, 6, 2),
+                                   dimnames = list(time = c("2001-2005", "2006-2010", "2011-2015"),
+                                                   age = c("0-4", "5-9", "10-14",
+                                                           "15-19", "20-24", "25+"),
+                                                   reg = c("a", "b"))))
+    metadata.wrong <- template.wrong@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata.wrong,
+                                         name = "births")
+    ans.expected <- "'births' not compatible with 'population'"
+    expect_identical(ans.obtained, ans.expected)
+    ## neither has age
+    component <- Counts(array(1:4,
+                              dim = c(2, 2),
+                              dimnames = list(sex = c("f", "m"),
+                                              time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(1:4,
+                             dim = c(2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- BirthsTransitions(component,
+                                   template = template)
+    template <- Counts(array(1:24,
+                             dim = c(2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"))))
+    metadata <- template@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata,
+                                         name = "births")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ## has parent
+    component <- Counts(array(1:4,
+                              dim = c(2, 2, 2, 2),
+                              dimnames = list(sex = c("f", "m"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_parent = c("a", "b"),
+                                              reg_child = c("a", "b"))))
+    template <- Counts(array(1:8,
+                             dim = c(2, 2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- BirthsTransitions(component,
+                                   template = template)
+    template <- Counts(array(1:8,
+                             dim = c(2, 2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    metadata <- template@metadata
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = metadata,
+                                         name = "births")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("Orig-Dest method of isCompatibleWithPopn works", {
+    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    ans.obtained <- isCompatibleWithPopn(component,
+                                         metadata = template@metadata,
+                                         name = "internal")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = rev(template@metadata),
+                                         name = "internal")
+    ans.expected <- "'internal' not compatible with 'population'"
+    expect_identical(ans.obtained, ans.expected)                                         
+})
+
+test_that("Pool method of isCompatibleWithPopn works", {
+    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    component <- collapseOrigDest(component, to = "pool")
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = template@metadata,
+                                         name = "internal")
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- isCompatibleWithPopn(component = component,
+                                         metadata = rev(template@metadata),
+                                         name = "internal")
+    ans.expected <- "'internal' not compatible with 'population'"
+    expect_identical(ans.obtained, ans.expected)
+})
 
 
 
 
+
+## isPositiveIncrement #############################################################
+
+test_that("isPositiveIncrement worths with Births", {
+    isPositiveIncrement <- dembase:::isPositiveIncrement
+    x <- new("BirthsMovementsHasParentChild")
+    expect_true(isPositiveIncrement(x))
+    x <- new("BirthsMovementsNoParentChild")
+    expect_true(isPositiveIncrement(x))
+})
+
+test_that("isPositiveIncrement worths with Internal", {
+    isPositiveIncrement <- dembase:::isPositiveIncrement
+    x <- new("InternalMovementsNet")
+    expect_true(isPositiveIncrement(x))
+    x <- new("InternalMovementsOrigDest")
+    expect_true(isPositiveIncrement(x))
+    x <- new("InternalMovementsPool")
+    expect_true(isPositiveIncrement(x))
+})
+
+test_that("isPositiveIncrement worths with Entries", {
+    isPositiveIncrement <- dembase:::isPositiveIncrement
+    x <- new("EntriesMovements")
+    expect_true(isPositiveIncrement(x))
+})
+
+test_that("isPositiveIncrement worths with Exits", {
+    isPositiveIncrement <- dembase:::isPositiveIncrement
+    x <- new("ExitsMovements")
+    expect_false(isPositiveIncrement(x))
+})
+
+test_that("isPositiveIncrement worths with NetMovements", {
+    isPositiveIncrement <- dembase:::isPositiveIncrement
+    x <- new("NetMovements")
+    expect_true(isPositiveIncrement(x))
+})
+
+
+## midpoints #############################################################
+
+
+test_that("midpoints works with Component", {
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(entries = component,
+                                  template = component)
+    ans.obtained <- midpoints(component)
+    ans.expected <- midpoints(as(component, "Counts"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- midpoints(component, dimension = "time")
+    ans.expected <- midpoints(as(component, "Counts"), dimension = "time")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+## slab #############################################################
+
+test_that("slab works with MovementsComponent", {
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(entries = component,
+                                  template = component)
+    ans.obtained <- slab(component,
+                         dimension = "time",
+                         elements = "2006-2010",
+                         drop = FALSE)
+    ans.expected <- Counts(array(7:12,
+                              dim = c(2, 3, 1),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = "2006-2010")))
+    ans.expected <- EntriesMovements(ans.expected,
+                                     template = ans.expected)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+test_that("slab works with BirthsMovements", {
+    BirthsMovements <- dembase:::BirthsMovements
+    component <- Counts(array(1:4,
+                              dim = c(2, 1, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = "5-9", 
+                                              time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(1:12,
+                             dim = c(2, 3, 2),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"))))
+    component <- BirthsMovements(births = component,
+                                 template = template)
+    ans.obtained <- slab(component,
+                         dimension = "time",
+                         elements = "2006-2010",
+                         drop = FALSE)
+    ans.expected <- Counts(array(3:4,
+                                 dim = c(2, 1, 1),
+                                 dimnames = list(triangle = c("TL", "TU"),
+                                                 age = "5-9",
+                                                 time = "2006-2010")))
+    template <- Counts(array(7:12,
+                             dim = c(2, 3, 1),
+                             dimnames = list(triangle = c("TL", "TU"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = "2006-2010")))
+    ans.expected <- BirthsMovements(ans.expected,
+                                    template = template)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("slab works with InternalMovementsPool", {
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg = c("a", "b"))))
+    component <- collapseOrigDest(component, to = "pool")
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    ans.obtained <- slab(component,
+                         dimension = "age",
+                         elements = "0-4",
+                         drop = FALSE)
+    ans.expected <- as(component, "Counts")
+    ans.expected <- subarray(ans.expected, age == "0-4", drop = FALSE)
+    ans.expected <- new("InternalMovementsPool",
+                        .Data = ans.expected@.Data,
+                        metadata = ans.expected@metadata,
+                        iDirection = 5L,
+                        iBetween = 4L)
+    expect_identical(ans.obtained, ans.expected)
+})

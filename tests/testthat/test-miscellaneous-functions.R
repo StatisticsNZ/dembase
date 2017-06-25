@@ -3290,16 +3290,32 @@ test_that("default version of agePopnForwardUpperTri works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("checkAndTidyMovementsComponent works", {
-    checkAndTidyMovementsComponent <- dembase:::checkAndTidyMovementsComponent
+test_that("checkAdjustAndScale works", {
+    checkAdjustAndScale <- dembase:::checkAdjustAndScale
+    expect_null(checkAdjustAndScale(adjust = FALSE, scale = 0.1))
+    expect_null(checkAdjustAndScale(adjust = TRUE, scale = 0.1))
+    expect_error(checkAdjustAndScale(adjust = "TRUE", scale = 0.1),
+                 "'adjust' does not have type \"logical\"")
+    expect_error(checkAdjustAndScale(adjust = c(TRUE, FALSE), scale = 0.1),
+                 "'adjust' does not have length 1")
+    expect_error(checkAdjustAndScale(adjust = TRUE, scale = "0.1"),
+                 "'scale' is non-numeric")
+    expect_error(checkAdjustAndScale(adjust = TRUE, scale = c(0.1, 0.1)),
+                 "'scale' does not have length 1")
+    expect_error(checkAdjustAndScale(adjust = TRUE, scale = 0),
+                 "'scale' is non-positive")
+})
+
+test_that("checkAndTidyComponent works", {
+    checkAndTidyComponent <- dembase:::checkAndTidyComponent
     splitTriangles <- dembase:::splitTriangles
     ## valid object
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                                      time = c("2001-2005", "2006-2010"))))
     set.seed(1)
-    ans.obtained <- checkAndTidyMovementsComponent(x, name = "immigration")
+    ans.obtained <- checkAndTidyComponent(x, name = "immigration")
     set.seed(1)
     ans.expected <- splitTriangles(x)
     expect_identical(ans.obtained, ans.expected)
@@ -3307,122 +3323,138 @@ test_that("checkAndTidyMovementsComponent works", {
     x <- Counts(array(as.numeric(1:8),
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"),
-                          triangle = c("TL", "TU"))))
-    ans.obtained <- checkAndTidyMovementsComponent(x, name = "component")
+                                      time = c("2001-2005", "2006-2010"),
+                                      triangle = c("TL", "TU"))))
+    ans.obtained <- checkAndTidyComponent(x, name = "component")
     ans.expected <- toInteger(x)
     expect_identical(ans.obtained, ans.expected)
     x <- Counts(array(c(1:7, 8.1),
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"),
-                          triangle = c("TL", "TU"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "component"),
+                                      time = c("2001-2005", "2006-2010"),
+                                      triangle = c("TL", "TU"))))
+    expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' invalid : non-integer values")
     ## time, age, cohort dimensions
     x <- Counts(array(1:8,
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          reg = 1:2,
-                          eth = 1:2)))
-    expect_error(checkAndTidyMovementsComponent(x, name = "component"),
+                                      reg = 1:2,
+                                      eth = 1:2)))
+    expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' does not have dimension with dimtype \"time\"")
     x <- Counts(array(1:8,
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c(2000, 2005),
-                          region = 1:2)))
-    expect_error(checkAndTidyMovementsComponent(x, name = "component"),
+                                      time = c(2000, 2005),
+                                      region = 1:2)))
+    expect_error(checkAndTidyComponent(x, name = "component"),
                  "dimension of 'component' with dimtype \"time\" has dimscale \"Points\"")
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c(0, 5),
-                          time = c("2001-2005", "2006-2010"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "component"),
+                                      time = c("2001-2005", "2006-2010"))))
+    expect_error(checkAndTidyComponent(x, name = "component"),
                  "dimension of 'component' with dimtype \"age\" has dimscale \"Points\"")
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("<0", "0-4"),
-                          time = c("2001-2005", "2006-2010"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "component"),
+                                      time = c("2001-2005", "2006-2010"))))
+    expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' invalid : first interval of dimension with dimtype \"age\" is open")
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(cohort = c("2001-2005", "2006-20120"),
-                          time = c("2001-2005", "2006-2010"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "component"),
+                                      time = c("2001-2005", "2006-2010"))))
+    expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' has dimension with dimtype \"cohort\"")
-    ## triangle
-    x <- Counts(array(1:4,
-                      dim = c(2, 2),
-                      dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
-    x2 <- splitTriangles(x)
-    ans.obtained <- checkAndTidyMovementsComponent(x2, name = "immigration")
-    ans.expected <- x2
-    expect_identical(ans.obtained, ans.expected)
-    x <- Counts(array(1:4,
-                      dim = c(2, 2),
-                      dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
-    set.seed(1)
-    ans.obtained <- checkAndTidyMovementsComponent(x, name = "immigration")
-    set.seed(1)
-    ans.expected <- splitTriangles(x)
-    expect_identical(ans.obtained, ans.expected)
     ## origin-destination
     x <- Counts(array(1:16,
                       dim = c(2, 2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"),
-                          reg_orig = 1:2,
-                          reg_dest = 1:2)))
+                                      time = c("2001-2005", "2006-2010"),
+                                      reg_orig = 1:2,
+                                      reg_dest = 1:2)))
     set.seed(1)
-    ans.obtained <- checkAndTidyMovementsComponent(x,
-                                                   name = "immigration",
-                                                   allowOrig = TRUE)
+    ans.obtained <- checkAndTidyComponent(x,
+                                          name = "immigration",
+                                          allowOrig = TRUE)
     set.seed(1)
     ans.expected <- splitTriangles(x)
     expect_identical(ans.obtained, ans.expected)
-    expect_error(checkAndTidyMovementsComponent(x, name = "immigration"),
+    expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' has dimensions with dimtypes \"origin\" and \"destination\"")
     ## parent-child
     x <- Counts(array(1:16,
                       dim = c(2, 2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"),
-                          reg_parent = 1:2,
-                          reg_child = 1:2)))
+                                      time = c("2001-2005", "2006-2010"),
+                                      reg_parent = 1:2,
+                                      reg_child = 1:2)))
     set.seed(1)
-    ans.obtained <- checkAndTidyMovementsComponent(x,
-                                                   name = "immigration",
-                                                   allowParent = TRUE)
+    ans.obtained <- checkAndTidyComponent(x,
+                                          name = "immigration",
+                                          allowParent = TRUE)
     set.seed(1)
     ans.expected <- splitTriangles(x)
     expect_identical(ans.obtained, ans.expected)
-    expect_error(checkAndTidyMovementsComponent(x, name = "immigration"),
-                 "'immigration' has dimensions with dimtypes \"parent\" and \"child\"")
+    expect_error(checkAndTidyComponent(x, name = "immigration"),
+                  "'immigration' has dimensions with dimtypes \"parent\" and \"child\"")
     ## regular
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2011"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "immigration"),
+                                      time = c("2001-2005", "2006-2011"))))
+    expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' does not have regular age-time plan :")
     ## positive length
     x <- Counts(array(0,
                       dim = c(0, 2),
                       dimnames = list(age = character(),
-                          time = c("2001-2005", "2006-2010"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "immigration"),
+                                      time = c("2001-2005", "2006-2010"))))
+    expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' has length 0")
     ## negatives
     x <- Counts(array(c(1:3, -1L),
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
-    expect_error(checkAndTidyMovementsComponent(x, name = "immigration"),
+                                      time = c("2001-2005", "2006-2010"))))
+    expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' has negative values")
+    ## allow triangles
+    x <- Counts(array(as.numeric(1:8),
+                      dim = c(2, 2, 2),
+                      dimnames = list(age = c("0-4", "5+"),
+                                      time = c("2001-2005", "2006-2010"),
+                                      triangle = c("TL", "TU"))))
+    expect_error(checkAndTidyComponent(x, name = "component", allowTriangles = FALSE),
+                 "'component' has Lexis triangles")
+    ## triangle
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(age = c("0-4", "5+"),
+                                      time = c("2001-2005", "2006-2010"))))
+    x2 <- splitTriangles(x)
+    ans.obtained <- checkAndTidyComponent(x2, name = "immigration")
+    ans.expected <- x2
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(age = c("0-4", "5+"),
+                                      time = c("2001-2005", "2006-2010"))))
+    set.seed(1)
+    ans.obtained <- checkAndTidyComponent(x, name = "immigration")
+    set.seed(1)
+    ans.expected <- splitTriangles(x)
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(age = c("0-4", "5+"),
+                                      time = c("2001-2005", "2006-2010"))))
+    set.seed(1)
+    ans.obtained <- checkAndTidyComponent(x, name = "immigration", triangles = FALSE)
+    ans.expected <- x
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("checkNamesComponents works", {
@@ -3443,6 +3475,151 @@ test_that("checkNamesComponents works", {
                                       componentType = "entries"),
                  "names for 'entries' have duplicates")
 })    
+
+test_that("derivePopnMoveNoAge works when population is large", {
+    set.seed(1)
+    derivePopnMoveNoAge <- dembase:::derivePopnMoveNoAge
+    population <- Counts(array(1001:1015,
+                               dim = c(5, 10),
+                               dimnames = list(region = 1:5,
+                                               year = seq(2000, 2045, 5))))
+    births <- array(1:4,
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    internal <- array(1:10,
+                      dim = c(5, 5, 9),
+                      dimnames = list(region_orig = 1:5,
+                                      region_dest = 1:5,
+                                      year = paste(seq(2001, 2041, 5),
+                                                   seq(2005, 2045, 5),
+                                                   sep = "-")))
+    deaths <- array(1:4,
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    births <- Counts(births)
+    deaths <- Counts(deaths)
+    internal <- Counts(internal)
+    object <- Movements(population = population,
+                        births = births,
+                        internal = internal,
+                        exits = list(deaths = deaths))
+    ans.obtained <- derivePopnMoveNoAge(object,
+                                        adjust = FALSE,
+                                        scale = 0.1)
+    expect_true(validObject(ans.obtained))
+    expect_false(all(ans.obtained@population[,1] == ans.obtained@population[,10]))
+    expect_true(all(isConsistent(ans.obtained)))
+})
+
+test_that("derivePopnMoveNoAge works when population is small", {
+    set.seed(1)
+    derivePopnMoveNoAge <- dembase:::derivePopnMoveNoAge
+    population <- Counts(array(21:35,
+                               dim = c(5, 10),
+                               dimnames = list(region = 1:5,
+                                               year = seq(2000, 2045, 5))))
+    births <- array(1:4,
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    internal <- array(1:10,
+                      dim = c(5, 5, 9),
+                      dimnames = list(region_orig = 1:5,
+                                      region_dest = 1:5,
+                                      year = paste(seq(2001, 2041, 5),
+                                                   seq(2005, 2045, 5),
+                                                   sep = "-")))
+    deaths <- array(1:4,
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    net.mig <- array(c(3, -2, 1, -4),
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    births <- Counts(births)
+    deaths <- Counts(deaths)
+    internal <- Counts(internal)
+    net.mig <- Counts(net.mig)
+    object <- Movements(population = population,
+                        births = births,
+                        internal = internal,
+                        exits = list(deaths = deaths),
+                        net = list(net.mig = net.mig))
+    expect_error(derivePopnMoveNoAge(object,
+                                     adjust = FALSE,
+                                     scale = 0.1),
+                 "population has negative values")
+    ans.obtained <- derivePopnMoveNoAge(object,
+                                        adjust = TRUE,
+                                        scale = 0.1)
+    expect_true(validObject(ans.obtained))
+    expect_false(all(ans.obtained@population[,1] == ans.obtained@population[,10]))
+    expect_true(all(isConsistent(ans.obtained)))
+})
+
+test_that("derivePopnMoveHasAge works", {
+    set.seed(1)
+    derivePopnMoveHasAge <- dembase:::derivePopnMoveHasAge
+    population <- Counts(array(501:510,
+                               dim = c(5, 3, 5),
+                               dimnames = list(region = 1:5,
+                                               age = c("0-4", "5-9", "10+"),
+                                               year = seq(2000, 2020, 5))))
+    births <- Counts(array(50:55,
+                           dim = c(5, 1, 4),
+                           dimnames = list(region = 1:5,
+                                           age = "5-9",
+                                           year = paste(seq(2001, 2016, 5),
+                                                        seq(2005, 2020, 5),
+                                                        sep = "-"))))
+    internal <- array(1:10,
+                      dim = c(5, 5, 3, 4),
+                      dimnames = list(region_orig = 1:5,
+                                      region_dest = 1:5,
+                                      age = c("0-4", "5-9", "10+"),
+                                      year = paste(seq(2001, 2016, 5),
+                                                   seq(2005, 2020, 5),
+                                                   sep = "-")))
+    internal[slice.index(internal, 1) == slice.index(internal, 2)] <- 0L
+    internal <- Counts(internal)
+    deaths <- Counts(array(15:10,
+                           dim = c(5, 3, 4),
+                           dimnames = list(region = 1:5,
+                                           age = c("0-4", "5-9", "10+"),
+                                           year = paste(seq(2001, 2016, 5),
+                                                        seq(2005, 2020, 5),
+                                                        sep = "-"))))
+    object <- Movements(population = population,
+                        births = births,
+                        internal = internal,
+                        exits = list(deaths = deaths))
+    expect_error(derivePopnMoveHasAge(object,
+                                      adjust = FALSE,
+                                      scale = 0.1),
+                 "population has negative values")
+    ans.obtained <- derivePopnMoveHasAge(object,
+                                         adjust = TRUE,
+                                         scale = 0.1)
+    expect_true(validObject(ans.obtained))
+    expect_false(all(ans.obtained@population@.Data[,,1] == ans.obtained@population@.Data[,,5]))
+    expect_true(all(isConsistent(ans.obtained)))
+})
+
+
+
 
 test_that("dimCompCompatibleWithPopn works", {
     dimCompCompatibleWithPopn <- dembase:::dimCompCompatibleWithPopn
@@ -3754,6 +3931,30 @@ test_that("exposureWithTriangles works", {
                      exposureNoTriangles(population))
 })
 
+test_that("getDimScaleTimePopn works", {
+    getDimScaleTimePopn <- dembase:::getDimScaleTimePopn
+    component <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                  triangle = c("TL", "TU"),
+                                  time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- getDimScaleTimePopn(component, name = "component")
+    ans.expected <- new("Points", dimvalues = c(2000, 2005, 2010))
+    expect_identical(ans.obtained, ans.expected)
+    component <- Counts(array(1:6,
+                              dim = c(3, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                              region = c("a", "b"))))
+    expect_error(getDimScaleTimePopn(component, name = "component"),
+                 "'component' does not have a dimension with dimtype \"time\"")
+    component <- Counts(array(1:6,
+                              dim = c(3, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                              time = c("2000", "2005"))))
+    expect_error(getDimScaleTimePopn(component, name = "component"),
+                 "time dimension of 'component' does not have dimscale \"Intervals\"")
+})
+
 test_that("iMinAge works", {
     iMinAge <- dembase:::iMinAge
     ## valid arguments
@@ -3871,123 +4072,78 @@ test_that("incrementUpperTriHelper works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("default version of isCompatibleWithPopn works", {
-    isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
-    ## valid arguments
-    component <- Counts(array(1L,
-                              dim = c(2, 2, 2, 2),
-                              dimnames = list(reg = c("a", "b"),
-                                  age = c("20-24", "25-29"),
-                                  time = c("2001-2005", "2006-2010"),
-                                  triangle = c("TL", "TU"))))
-    component <- new("BirthsMovementsNoParentChild",
-                     .Data = component@.Data,
-                     metadata = component@metadata,
-                     iMinAge = 5L)
-    population <- Counts(array(1L,
-                               dim = c(2, 7, 3),
-                               dimnames = list(reg = c("a", "b"),
-                                   age = c("0-4", "5-9", "10-14", "15-19",
-                                       "20-24", "25-29", "30+"),
-                                   time = c("2000", "2005", "2010"))))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    nameComponent <- "births"
-    expect_true(isCompatibleWithPopn(component = component,
-                                     population = population,
-                                     nameComponent = nameComponent))
-    internal <- Counts(array(1L,
-                             dim = c(3, 3, 1),
-                             dimnames = list(reg_orig = c("a", "b", "c"),
-                                 reg_dest = c("a", "b", "c"),
-                                 time = "2001-2010")))
-    internal <- new("InternalMovementsOrigDest",
-                    .Data = internal@.Data,
-                    metadata = internal@metadata)
-    population <- Counts(array(1L,
-                               dim = c(3, 2),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c(2000, 2010))))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    expect_true(isCompatibleWithPopn(component = internal,
-                                     population = population,
-                                     nameComponent = "internal"))
-    ## dims incompatible
-    component <- Counts(array(1L,
-                              dim = c(2, 2, 2, 2),
-                              dimnames = list(reg = c("a", "b"),
-                                  age = c("20-24", "25-29"),
-                                  time = c("2001-2005", "2006-2010"),
-                                  triangle = c("TL", "TU"))))
-    component <- new("BirthsMovementsNoParentChild",
-                     .Data = component@.Data,
-                     metadata = component@metadata,
-                     iMinAge = 5L)
-    population <- Counts(array(1L,
-                               dim = c(2, 7, 4),
-                               dimnames = list(reg = c("a", "b"),
-                                   age = c("0-4", "5-9", "10-14", "15-19",
-                                       "20-24", "25-29", "30+"),
-                                   time = c("2000", "2005", "2010", "2015"))))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    nameComponent <- "births"
-    expect_identical(isCompatibleWithPopn(component = component,
-                                          population = population,
-                                          nameComponent = nameComponent),
-                     "'births' and 'population' not compatible : \"time\" dimensions have incompatible dimscales")
-    ## population has extra dimension
-    component <- Counts(array(1L,
-                              dim = c(2, 2, 2, 2),
-                              dimnames = list(reg = c("a", "b"),
-                                  age = c("20-24", "25-29"),
-                                  time = c("2001-2005", "2006-2010"),
-                                  triangle = c("TL", "TU"))))
-    component <- new("BirthsMovementsNoParentChild",
-                     .Data = component@.Data,
-                     metadata = component@metadata,
-                     iMinAge = 5L)
-    population <- Counts(array(1L,
-                               dim = c(2, 7, 3, 3),
-                               dimnames = list(reg = c("a", "b"),
-                                   age = c("0-4", "5-9", "10-14", "15-19",
-                                       "20-24", "25-29", "30+"),
-                                   time = c("2000", "2005", "2010"),
-                                   iteration = 1:3)))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    nameComponent <- "births"
-    expect_identical(isCompatibleWithPopn(component = component,
-                                          population = population,
-                                          nameComponent = nameComponent),
-                     "'population' has dimension \"iteration\" but 'births' does not")
-    ## component has extra dimension
-    component <- Counts(array(1L,
-                              dim = c(2, 2, 2, 2, 2),
-                              dimnames = list(reg_orig = c("a", "b"),
-                                  reg_dest = c("a", "b"),
-                                  age = c("0-4", "5+"),
-                                  time = c("2001-2005", "2006-2010"),
-                                  triangle = c("TL", "TU"))))
-    component <- new("InternalMovementsOrigDest",
-                     .Data = component@.Data,
-                     metadata = component@metadata)
-    population <- Counts(array(1L,
-                              dim = c(2, 3),
-                              dimnames = list(age = c("0-4", "5+"),
-                                  time = c(2000, 2005, 2010))))
-    population <- new("Population",
-                      .Data = population@.Data,
-                      metadata = population@metadata)
-    expect_identical(isCompatibleWithPopn(component = component,
-                                          population = population,
-                                          nameComponent = "internal"),
-                     "'internal' has dimension \"reg_orig\" but 'population' does not have dimension \"reg\"")
+test_that("makeDimtypeIndex works", {
+    makeDimtypeIndex <- dembase:::makeDimtypeIndex
+    x <- Values(array(0,
+                      dim = c(3, 2, 2, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                          region_orig = c("a", "b"),
+                          region_dest = c("a", "b"),
+                          time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- makeDimtypeIndex(x, "age")
+    ans.expected <- slice.index(x@.Data, 1)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMappingBirths works", {
+    makeMappingBirths <- dembase:::makeMappingBirths
+    births <- Counts(array(1L,
+                           dim = c(2, 5, 2),
+                           dimnames = list(sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- makeMappingBirths(births)
+    ans.expected <- 1:10
+    expect_identical(ans.obtained, ans.expected)
+    births <- Counts(array(1L,
+                           dim = c(2, 2, 2, 5, 2),
+                           dimnames = list(age = c("5-9", "10-14"),
+                                           triangle = c("TL", "TU"),
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- makeMappingBirths(births)
+    ans.expected <- rep(1:10, each = 4)
+    expect_identical(ans.obtained, ans.expected)
+    births <- Counts(array(1L,
+                           dim = c(2, 5, 5, 2, 2, 2),
+                           dimnames = list(sex = c("m", "f"),
+                                           reg_child = 1:5,
+                                           reg_parent = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           age = c("5-9", "10-14"),
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeMappingBirths(births)
+    ans.expected <- rep(rep(rep(1:10, times = 5), times = 2), times = 2)
+    expect_identical(ans.obtained, ans.expected)
+    births <- Counts(array(1L,
+                           dim = c(2, 2, 5, 5, 2, 2),
+                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                                           sex = c("m", "f"),
+                                           reg_parent = 1:5,
+                                           reg_child = 1:5,
+                                           age = c("5-9", "10-14"),
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeMappingBirths(births)
+    ans.expected <- rep(rep(c(rep(rep(1:2, each = 2), times = 5),
+                          rep(rep(3:4, each = 2), times = 5),
+                          rep(rep(5:6, each = 2), times = 5),
+                          rep(rep(7:8, each = 2), times = 5),
+                          rep(rep(9:10, each = 2), times = 5)),
+                          times = 5),
+                        times = 2)
+    births <- CountsOne(values = 1:10, labels = 2001:2010, name = "year", dimscale = "Intervals")
+    ans.obtained <- makeMappingBirths(births)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    births <- Counts(array(1L,
+                           dim = c(2, 2, 2),
+                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                                           age = c("5-9", "10-14"),
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- makeMappingBirths(births)
+    ans.expected <- rep(1L, 4L)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("makeMetadataExtendOrigDestParentChild works", {
@@ -4111,6 +4267,14 @@ test_that("makeTemplateComponent works", {
                                      age = 0:4,
                                      time = 1:5,
                                      triangle = c("TL", "TU"))),
+                           dimscales = c(time = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeTemplateComponent(population, triangles = FALSE)
+    ans.expected <- Counts(array(0L,
+                                 dim = c(4, 5, 5),
+                                 dimnames = list(reg = 1:4,
+                                     age = 0:4,
+                                     time = 1:5)),
                            dimscales = c(time = "Intervals"))
     expect_identical(ans.obtained, ans.expected)
     ## no age
@@ -4264,6 +4428,94 @@ test_that("popnOpen works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("removeDimtypesMetadata works", {
+    removeDimtypesFromMetadata <- dembase:::removeDimtypesFromMetadata
+    metadata <- new("MetaData",
+                    nms = c("age", "reg_dest", "reg_orig"),
+                    dimtypes = c("age", "destination", "origin"),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Categories", dimvalues = c("a", "b"))))
+    ans.obtained <- removeDimtypesFromMetadata(metadata, dimtypes = "age")
+    ans.expected <- new("MetaData",
+                        nms = c("reg_dest", "reg_orig"),
+                        dimtypes = c("destination", "origin"),
+                        DimScales = list(new("Categories", dimvalues = c("a", "b")),
+                                         new("Categories", dimvalues = c("a", "b"))))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- removeDimtypesFromMetadata(metadata, dimtypes = "parent")
+    ans.expected <- metadata
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(removeDimtypesFromMetadata(metadata, dimtypes = c("age", "destination", "origin")),
+                 "removing all dimensions")
+    metadata <- new("MetaData",
+                    nms = c("age", "sex", "reg"),
+                    dimtypes = c("age", "sex", "state"),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                                     new("Sexes", dimvalues = c("Female", "Male")),
+                                     new("Categories", dimvalues = c("a", "b"))))
+    ans.obtained <- removeDimtypesFromMetadata(metadata, dimtypes = c("age", "sex"))
+    ans.expected <- new("MetaData",
+                    nms = "reg",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = c("a", "b"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("removePairFromMetadata works", {
+    removePairFromMetadata <- dembase:::removePairFromMetadata
+    metadata <- new("MetaData",
+                    nms = c("age", "reg_dest", "reg_orig", "eth_orig", "eth_dest"),
+                    dimtypes = c("age", "destination", "origin", "origin", "destination"),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Categories", dimvalues = c("f", "g")),
+                                     new("Categories", dimvalues = c("f", "g"))))
+    ans.obtained <- removePairFromMetadata(metadata)
+    ans.expected <- new("MetaData",
+                        nms = c("age", "reg", "eth"),
+                        dimtypes = c("age", "state", "state"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Categories", dimvalues = c("f", "g"))))
+    expect_identical(ans.obtained, ans.expected)
+    metadata <- new("MetaData",
+                    nms = c("age", "reg_parent", "reg_child", "eth_orig", "eth_dest"),
+                    dimtypes = c("age", "parent", "child", "origin", "destination"),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Categories", dimvalues = c("a", "b")),
+                                     new("Categories", dimvalues = c("f", "g")),
+                                     new("Categories", dimvalues = c("f", "g"))))
+    ans.obtained <- removePairFromMetadata(metadata, origDest = FALSE)
+    ans.expected <- new("MetaData",
+                        nms = c("age", "reg", "eth_orig", "eth_dest"),
+                        dimtypes = c("age", "state", "origin", "destination"),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                                         new("Categories", dimvalues = c("a", "b")),
+                                         new("Categories", dimvalues = c("f", "g")),
+                                         new("Categories", dimvalues = c("f", "g"))))
+    expect_identical(ans.obtained, ans.expected)
+    metadata <- new("MetaData",
+                    nms = "age", 
+                    dimtypes = "age", 
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf))))
+    ans.obtained <- removePairFromMetadata(metadata)
+    ans.expected <- metadata
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("safeSample1 works", {
+    safeSample1 <- dembase:::safeSample1
+    expect_error(safeSample1(numeric()),
+                 "'choices' has length 0")
+    for (seed in seq_len(10)) {
+        set.seed(seed)
+        expect_identical(safeSample1(seed), seed)
+        expect_true(safeSample1(1:seed) %in% 1:seed)
+    }
+})
 
 test_that("splitTriangles works", {
     splitTriangles <- dembase:::splitTriangles

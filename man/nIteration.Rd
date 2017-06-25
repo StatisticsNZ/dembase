@@ -33,11 +33,10 @@ x <- Counts(VAPopn)
 ## no dimension with dimtype "iteration"
 \dontrun{nIteration(x)}
 }
-\author{
-John Bryant \email{demographic.packages@gmail.com}
-}
 \seealso{
 \code{\link{dimtypes}}, \code{\link{collapseIterations}}
 }
+\author{
+John Bryant \email{demographic.packages@gmail.com}
+}
 \keyword{manip}
-

@@ -1,24 +1,4 @@
 
-## NO_TESTS
-#' @rdname exported-not-api
-setMethod("DimScales",
-          signature(object = "Movements"),
-          function(object) {
-              population <- object@population
-              components <- object@components
-              first.component <- components[[1L]]
-              dimtypes.popn <- dimtypes(population, use.names = FALSE)
-              dimtypes.comp <- dimtypes(first.component, use.names = FALSE)
-              DimScales.popn <- DimScales(population, use.names = FALSE)
-              DimScales.comp <- DimScales(first.component, use.names = FALSE)
-              i.time.popn <- match("time", dimtypes.popn)
-              i.time.comp <- match("time", dimtypes.comp)
-              DS.time.comp <- DimScales.comp[[i.time.comp]]
-              replace(DimScales.popn,
-                      list = i.time.popn,
-                      values = list(DS.time.comp))
-          })
-
 ## HAS_TESTS
 #' @rdname accession
 setMethod("accession",
@@ -92,13 +72,48 @@ setMethod("accession",
               ans
           })
 
+## NO_TESTS
+#' @rdname makeConsistent
+setMethod("makeConsistent",
+          signature(object = "Movements"),
+          function(object, adjust = TRUE, scale = 0.1) {
+              checkAdjustAndScale(adjust = adjust,
+                                  scale = scale)
+              population <- object@population
+              components <- object@components
+              dimtypes <- dimtypes(population,
+                                   use.names = FALSE)
+              i.age <- match("age", dimtypes, nomatch = 0L)
+              has.age <- i.age > 0L
+              if (any(is.na(population)))
+                  population <- impute(population)
+              for (i in seq_along(components)) {
+                  component <- components[[i]]
+                  if (any(is.na(component))) {
+                      component <- impute(component)
+                      components[[i]] <- component
+                  }
+              }
+              object@population <- population
+              object@components <- components
+              if (has.age)
+                  derivePopnMoveHasAge(object = object,
+                                       adjust = adjust,
+                                       scale = scale)
+              else
+                  derivePopnMoveNoAge(object = object,
+                                      adjust = adjust,
+                                      scale = scale)
+          })
+
 ## HAS_TESTS
-#' @rdname isInternallyConsistent
-setMethod("isInternallyConsistent",
+#' @rdname isConsistent
+setMethod("isConsistent",
           signature(object = "Movements"),
           function(object) {
               population <- object@population
               components <- object@components
+              metadata = metadata(object)
               dimtypes <- dimtypes(population,
                                    use.names = FALSE)
               i.age <- match("age", dimtypes, nomatch = 0L)
@@ -113,8 +128,67 @@ setMethod("isInternallyConsistent",
               ## expected
               elements <- seq.int(from = 2L, to = n.time.popn)
               popn.end.expected <- slab(population,
-                                        dimension = "time",
+                                        dimension = i.time,
                                         elements = elements)
-              popn.end.obtained == popn.end.expected
+              ans <- popn.end.obtained == popn.end.expected
+              ans <- array(ans,
+                           dim = dim(metadata),
+                           dimnames = dimnames(metadata))
+              ans
           })
+
+#' @rdname internal-methods
+#' @export
+setMethod("summary",
+          signature(object = "Movements"),
+          function(object) {
+              population <- object@population
+              components <- object@components
+              names.components <- object@namesComponents
+              metadata <- metadata(object)
+              i.time.popn <- match("time", dimtypes(population))
+              population <- new("Counts",
+                                .Data = population@.Data,
+                                metadata = population@metadata)
+              population <- collapseDimension(population,
+                                              margin = i.time.popn)
+              population <- matrix(population@.Data,
+                                   nrow = 1L,
+                                   ncol = length(population@.Data),
+                                   dimnames = list("population",
+                                                   dimnames(population)[[1]]))
+              signs <- character(length = length(components))
+              for (i in seq_along(components)) {
+                  component <- components[[i]]
+                  name <- names.components[i]
+                  i.time.comp <- match("time", dimtypes(component))
+                  is.pos <- isPositiveIncrement(component)
+                  is.internal <- methods::is(component, "Internal")
+                  if (is.internal)
+                      sign <- "."
+                  else
+                      sign <- if (is.pos) "+" else "-"
+                  component <- collapseDimension(component,
+                                                 margin = i.time.comp)
+                  if (i == 1L)
+                      colnames <- dimnames(component)[[1L]]
+                  component <- as.integer(component)
+                  components[[i]] <- component
+                  names.components[i] <- name
+                  signs[i] <- sign
+              }
+              max.char <- max(nchar(names.components))
+              names.components <- sprintf("%*s (%s)", max.char, names.components, signs)
+              components <- do.call(rbind, components)
+              dimnames(components) <- list(names.components, colnames)
+              cat("An object of class", class(object), "\n")
+              showMetaData(metadata)
+              cat("\n")
+              print(population)
+              cat("\n")
+              print(components)
+              cat("\n")
+              cat("all cells consistent :", all(isConsistent(object)), "\n")
+          })
+
 

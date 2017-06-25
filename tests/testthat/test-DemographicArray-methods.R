@@ -1256,42 +1256,56 @@ test_that("metadata works", {
 })
 
 test_that("midpoints works", {
-  a <- array(1:12,
-             dim = c(2, 2, 3),
-             dimnames = list(period = c("2001-2005", "2006-2010"),
-               sex = c("Male", "Female"),
-               age = c("0-4", "5-9", "10+")))
-  b <- array(1:12,
-             dim = c(2, 2, 3),
-             dimnames = list(period = c("2002.5", "2007.5"),
-               sex = c("Male", "Female"),
-               age = c("2.5", "7.5", "12.5")))
-  d <- array(1:12,
-             dim = c(2, 2, 3),
-             dimnames = list(period = c("2002.5", "2007.5"),
-               sex = c("Male", "Female"),
-               age = c("0-4", "5-9", "10+")))
-  x <- Counts(a)
-  y <- Counts(b)
-  z <- Counts(d)
-  expect_identical(midpoints(x, dimension = c(1, 3)), y)
-  expect_identical(midpoints(x, dimension = c("age", "period")), y)
-  expect_identical(midpoints(x), y)
-  expect_identical(midpoints(x, dimension = "period"), z)
-  expect_identical(midpoints(x, dimension = 1), z)
-  x <- Counts(array(0, dim = 0, dimnames = list(age = NULL)))
-  y <- Counts(array(0, dim = 0, dimnames = list(age = NULL)), dimscales = c(age = "Points"))
-  expect_identical(midpoints(x), y)
-  x <- Counts(array(0,
-                    dim = c(2, 2),
-                    dimnames = list(sex = c("f", "m"), region = c("a", "b"))))
-  expect_identical(midpoints(x), x)
-  expect_error(midpoints(x, dimension = "sex"),
-               sprintf("dimension %s does not have dimscale \"Intervals\"",
-                       dQuote("sex")))
-  expect_error(midpoints(x, dimension = c("sex", "region")),
-               sprintf("dimensions %s, %s do not have dimscale \"Intervals\"",
-                       dQuote("sex"), dQuote("region")))
+    a <- array(1:12,
+               dim = c(2, 2, 3),
+               dimnames = list(period = c("2001-2005", "2006-2010"),
+                               sex = c("Male", "Female"),
+                               age = c("0-4", "5-9", "10+")))
+    b <- array(1:12,
+               dim = c(2, 2, 3),
+               dimnames = list(period = c("2002.5", "2007.5"),
+                               sex = c("Male", "Female"),
+                               age = c("2.5", "7.5", "12.5")))
+    d <- array(1:12,
+               dim = c(2, 2, 3),
+               dimnames = list(period = c("2002.5", "2007.5"),
+                               sex = c("Male", "Female"),
+                               age = c("0-4", "5-9", "10+")))
+    x <- Counts(a)
+    y <- Counts(b)
+    z <- Counts(d)
+    expect_identical(midpoints(x, dimension = c(1, 3)), y)
+    expect_identical(midpoints(x, dimension = c("age", "period")), y)
+    expect_identical(midpoints(x), y)
+    expect_identical(midpoints(x, dimension = "period"), z)
+    expect_identical(midpoints(x, dimension = 1), z)
+    x <- Counts(array(0, dim = 0, dimnames = list(age = NULL)))
+    y <- Counts(array(0, dim = 0, dimnames = list(age = NULL)), dimscales = c(age = "Points"))
+    expect_identical(midpoints(x), y)
+    x <- Counts(array(0,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("f", "m"), region = c("a", "b"))))
+    expect_identical(midpoints(x), x)
+    expect_error(midpoints(x, dimension = "sex"),
+                 sprintf("dimension %s does not have dimscale \"Intervals\"",
+                         dQuote("sex")))
+    expect_error(midpoints(x, dimension = c("sex", "region")),
+                 sprintf("dimensions %s, %s do not have dimscale \"Intervals\"",
+                         dQuote("sex"), dQuote("region")))
+    x <- Counts(array(1:12,
+                      dim = c(2, 2, 3),
+                      dimnames = list(period = c("2001-2005", "2006-2010"),
+                                      triangle = c("TL", "TU"),
+                                      age = c("0-4", "5-9", "10+"))))
+    ans.obtained <- midpoints(x)
+    ans.expected <- Counts(array(1:12,
+                                 dim = c(2, 2, 3),
+                                 dimnames = list(period = c("2002.5", "2007.5"),
+                                                 triangle = c("TL", "TU"),
+                                                 age = c("2.5", "7.5", "12.5"))),
+                           dimtypes = c(triangle = "state"),
+                           dimscales = c(triangle = "Categories"))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("nIteration works", {

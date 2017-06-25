@@ -32,4 +32,3 @@ drop(mig)
 \seealso{
 \code{\link[base]{drop}}
 }
-

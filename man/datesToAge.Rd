@@ -38,4 +38,3 @@ datesToAge(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
 Vectors of class \code{\link{Date}} can be created with
 function \code{\link{as.Date}}.
 }
-

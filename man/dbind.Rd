@@ -7,11 +7,11 @@
 dbind(..., args = list(), along)
 }
 \arguments{
+\item{\dots}{Objects of class \code{\linkS4class{DemographicArray}}.}
+
 \item{args}{List of objects of class \code{\linkS4class{DemographicArray}}.}
 
 \item{along}{A dimension name.}
-
-\item{\dots}{Objects of class \code{\linkS4class{DemographicArray}}.}
 }
 \value{
 Object of the same class as the objects specified in \dots{} or
@@ -117,4 +117,3 @@ dbind(x, y, along = "iteration")
 \code{dbind} is based on function \code{abind} in package
 \pkg{abind}.
 }
-

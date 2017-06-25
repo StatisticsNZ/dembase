@@ -122,6 +122,61 @@ test_that("BirthsMovements raises appropriate errors", {
                  "'births' is incompatible with 'population")
 })
 
+
+test_that("BirthsTransitions works with valid inputs", {
+    BirthsTransitions <- dembase:::BirthsTransitions
+    ## no parent-child dimensions; no permuting, collapsing or subsetting
+    births <- Counts(array(10L,
+                           dim = c(3, 3, 3, 2),
+                           dimnames = list(age = c("15-19", "20-24", "25-29"),
+                                           region_orig = 1:3,
+                                           region_dest = 1:3,
+                                           time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(20, 3, 2),
+                             dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
+                                             region = 1:3,
+                                             time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- BirthsTransitions(births = births,
+                                      template = template)
+    ans.expected <- Counts(array(10L,
+                                 dim = c(3, 3, 3, 2),
+                                 dimnames = list(age = c("15-19", "20-24", "25-29"),
+                                                 region_orig = 1:3,
+                                                 region_dest = 1:3,
+                                                 time = c("2001-2005", "2006-2010"))))
+    ans.expected <- new("BirthsTransitionsNoParentChild",
+                        .Data = ans.expected@.Data,
+                        metadata = ans.expected@metadata,
+                        iMinAge = 4L)
+    expect_identical(ans.obtained, ans.expected)
+    ## has parent-child dimensions; has collapsing and subsetting
+    births <- Counts(array(rpois(n = 108, lambda = 20),
+                           dim = c(3, 3, 2, 2, 3),
+                           dimnames = list(age = c("15-19", "20-24", "25-29"),
+                                           region = 1:3,
+                                           eth_child = 1:2,
+                                           eth_parent = 1:2,
+                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+    template <- Counts(array(0L,
+                             dim = c(20, 3, 2, 2),
+                             dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
+                                             region = 1:3,
+                                             eth = 2:1,
+                                             time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- BirthsTransitions(births = births,
+                                      template = template)
+    births <- aperm(births, perm = c("age", "region", "eth_parent", "eth_child", "time"))
+    births <- subarray(births, time < 2010)
+    births <- births[,,2:1,2:1,]
+    ans.expected <- new("BirthsTransitionsHasParentChild",
+                        .Data = births@.Data,
+                        metadata = births@metadata,
+                        iMinAge = 4L)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 test_that("EntriesMovements works with valid inputs", {
     EntriesMovements <- dembase:::EntriesMovements
     entries <- Counts(array(c(1L, NA),
@@ -173,6 +228,36 @@ test_that("EntriesMovements throws appropriate errors", {
                                   name = "immigration"),
                  "'immigration' is incompatible with 'population' :")
 })
+
+
+test_that("EntriesTransitions works with valid inputs", {
+    EntriesTransitions <- dembase:::EntriesTransitions
+    entries <- Counts(array(1L,
+                            dim = c(3, 3, 3, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            region_orig = 1:3,
+                                            region_dest = 1:3,
+                                            time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2),
+                             dimnames = list(region = 1:3,
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"))))
+    ans.obtained <- EntriesTransitions(entries = entries,
+                                       template = template,
+                                       name = "immigration")
+    ans.expected <- Counts(array(1L,
+                                 dim = c(3, 3, 3, 2),
+                                 dimnames = list(region_orig = 1:3,
+                                                 region_dest = 1:3,
+                                                 age = c("0-4", "5-9", "10+"),
+                                                 time = c("2001-2005", "2006-2010"))))
+    ans.expected <- new("EntriesTransitions",
+                        .Data = ans.expected@.Data,
+                        metadata = ans.expected@metadata)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("ExitsMovements works with valid inputs", {
     ExitsMovements <- dembase:::ExitsMovements

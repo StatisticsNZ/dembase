@@ -80,4 +80,3 @@ attachSubtotals(x,
 \seealso{
 \code{\link{impute}}, \code{\linkS4class{CountsWithSubtotals}}
 }
-

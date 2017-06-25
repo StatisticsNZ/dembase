@@ -1168,6 +1168,16 @@ setMethod("perturb",
           })
 
 ## HAS_TESTS
+#' @rdname population
+#' @export
+setMethod("population",
+          signature(object = "DemographicArray"),
+          function(object) {
+              as(object@population, "Counts")
+          })
+
+
+## HAS_TESTS
 #' @rdname prop.table
 #' @export
 setMethod("prop.table",

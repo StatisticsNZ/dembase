@@ -39,4 +39,3 @@ Other functions that can be used to subset a dimension with
 \code{\link{slab}}, and \code{\link{[}}.  To remove an \code{"iteration"}
 dimension entirely, use \code{\link{collapseIterations}}.
 }
-

@@ -53,4 +53,3 @@ counts before calculating.  With sparse data a better approach would be to
 fit a model and then redistribute using the fitted values, using function
 \code{\link{redistribute}}.
 }
-

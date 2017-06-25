@@ -16,7 +16,7 @@ All non-missing values must be non-negative integers.
 
 Objects are typically created by calls to \code{\link{attachSubtotals}}.
 }
+
 \seealso{
 \code{impute}
 }
-

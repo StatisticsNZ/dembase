@@ -2,12 +2,13 @@
 % Please edit documentation in R/AllClasses.R
 \docType{class}
 \name{net-pool-classes}
+\alias{net-pool-classes}
 \alias{Net-class}
 \alias{Pool-class}
-\alias{net-pool-classes}
+\alias{Net-class}
+\alias{Pool-class}
 \title{Classes to summarise origin-destination flows.}
 \description{
 Classes to describe net flows, or 'in' and 'out' flows, typically to be
 supplied to function \link{Movements}.
 }
-

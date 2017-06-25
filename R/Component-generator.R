@@ -15,12 +15,14 @@ BirthsMovements <- function(births, template) {
     if (!methods::is(births, "Counts"))
         stop(gettextf("'%s' has class \"%s\"",
                       "births", class(births)))
-    births <- checkAndTidyMovementsComponent(births,
-                                             name = "births",
-                                             requireInteger = TRUE,
-                                             allowNegatives = FALSE,
-                                             allowOrig = FALSE,
-                                             allowParent = TRUE)
+    births <- checkAndTidyComponent(births,
+                                    name = "births",
+                                    requireInteger = TRUE,
+                                    allowNegatives = FALSE,
+                                    allowOrig = FALSE,
+                                    allowParent = TRUE,
+                                    allowTriangles = TRUE,
+                                    triangles = TRUE)
     dimtypes.bth <- dimtypes(births, use.names = FALSE)
     dimtypes.tpt <- dimtypes(template, use.names = FALSE)
     has.age.bth <- "age" %in% dimtypes.bth
@@ -28,7 +30,7 @@ BirthsMovements <- function(births, template) {
     has.parent.bth <- "parent" %in% dimtypes.bth
     if (has.age.bth && has.age.tpt) {
         template.trimmed <- tryCatch(trimAgeIntervalsToMatch(x = template, y = births),
-                             error = function(e) e)
+                                     error = function(e) e)
         if (methods::is(template.trimmed, "error"))
             stop(gettextf("'%s' is incompatible with '%s' : %s",
                           "births", "population", template.trimmed$message))
@@ -57,9 +59,56 @@ BirthsMovements <- function(births, template) {
     else
         class <- "BirthsMovementsNoParentChild"
     methods::new(class,
-        .Data = births@.Data,
-        metadata = births@metadata,
-        iMinAge = i.min.age)
+                 .Data = births@.Data,
+                 metadata = births@metadata,
+                 iMinAge = i.min.age)
+}
+
+## HAS_TESTS
+BirthsTransitions <- function(births, template) {
+    if (!methods::is(births, "Counts"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "births", class(births)))
+    births <- checkAndTidyComponent(births,
+                                    name = "births",
+                                    requireInteger = TRUE,
+                                    allowNegatives = FALSE,
+                                    allowOrig = TRUE,
+                                    allowParent = TRUE,
+                                    allowTriangles = FALSE,
+                                    triangles = FALSE)
+    dimtypes.bth <- dimtypes(births, use.names = FALSE)
+    dimtypes.tpt <- dimtypes(template, use.names = FALSE)
+    has.age.bth <- "age" %in% dimtypes.bth
+    has.age.tpt <- "age" %in% dimtypes.tpt
+    has.parent.bth <- "parent" %in% dimtypes.bth
+    if (has.age.bth && has.age.tpt) {
+        template.trimmed <- tryCatch(trimAgeIntervalsToMatch(x = template, y = births),
+                                     error = function(e) e)
+        if (methods::is(template.trimmed, "error"))
+            stop(gettextf("'%s' is incompatible with '%s' : %s",
+                          "births", "population", template.trimmed$message))
+        i.min.age <- iMinAge(current = births, target = template)
+        template <- template.trimmed
+    }
+    else
+        i.min.age <- NA_integer_
+    births <- tryCatch(makeOrigDestParentChildCompatible(x = births,
+                                                         y = template,
+                                                         subset = TRUE,
+                                                         check = TRUE),
+                       error = function(e) e)
+    if (methods::is(births, "error"))
+        stop(gettextf("'%s' is incompatible with '%s' : %s",
+                      "births", "population", births$message))
+    if (has.parent.bth)
+        class <- "BirthsTransitionsHasParentChild"
+    else
+        class <- "BirthsTransitionsNoParentChild"
+    methods::new(class,
+                 .Data = births@.Data,
+                 metadata = births@metadata,
+                 iMinAge = i.min.age)
 }
 
 ## HAS_TESTS
@@ -67,12 +116,14 @@ EntriesMovements <- function(entries, template, name) {
     if (!methods::is(entries, "Counts"))
         stop(gettextf("'%s' has class \"%s\"",
                       name, class(entries)))
-    entries <- checkAndTidyMovementsComponent(object = entries,
-                                              name = name,
-                                              requireInteger = TRUE,
-                                              allowNegatives = FALSE,
-                                              allowOrig = FALSE,
-                                              allowParent = FALSE)
+    entries <- checkAndTidyComponent(object = entries,
+                                     name = name,
+                                     requireInteger = TRUE,
+                                     allowNegatives = FALSE,
+                                     allowOrig = FALSE,
+                                     allowParent = FALSE,
+                                     allowTriangles = TRUE,
+                                     triangles = TRUE)
     entries <- tryCatch(makeCompatible(x = entries,
                                        y = template,
                                        subset = TRUE,
@@ -82,21 +133,50 @@ EntriesMovements <- function(entries, template, name) {
         stop(gettextf("'%s' is incompatible with '%s' : %s",
                       name, "population", entries$message))
     methods::new("EntriesMovements",
-        .Data = entries@.Data,
-        metadata = entries@metadata)
+                 .Data = entries@.Data,
+                 metadata = entries@metadata)
 }
+
+## HAS_TESTS
+EntriesTransitions <- function(entries, template, name) {
+    if (!methods::is(entries, "Counts"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      name, class(entries)))
+    entries <- checkAndTidyComponent(object = entries,
+                                     name = name,
+                                     requireInteger = TRUE,
+                                     allowNegatives = FALSE,
+                                     allowOrig = TRUE,
+                                     allowParent = FALSE,
+                                     allowTriangles = FALSE,
+                                     triangles = FALSE)
+    entries <- tryCatch(makeOrigDestParentChildCompatible(x = entries,
+                                                          y = template,
+                                                          subset = TRUE,
+                                                          check = TRUE),
+                        error = function(e) e)
+    if (methods::is(entries, "error"))
+        stop(gettextf("'%s' is incompatible with '%s' : %s",
+                      name, "population", entries$message))
+    methods::new("EntriesTransitions",
+                 .Data = entries@.Data,
+                 metadata = entries@metadata)
+}
+
 
 ## HAS_TESTS
 ExitsMovements <- function(exits, template, name) {
     if (!methods::is(exits, "Counts"))
         stop(gettextf("'%s' has class \"%s\"",
                       name, class(exits)))
-    exits <- checkAndTidyMovementsComponent(object = exits,
-                                            name = name,
-                                            requireInteger = TRUE,
-                                            allowNegatives = FALSE,
-                                            allowOrig = FALSE,
-                                            allowParent = FALSE)
+    exits <- checkAndTidyComponent(object = exits,
+                                   name = name,
+                                   requireInteger = TRUE,
+                                   allowNegatives = FALSE,
+                                   allowOrig = FALSE,
+                                   allowParent = FALSE,
+                                   allowTriangles = TRUE,
+                                   triangles = TRUE)
     exits <- tryCatch(makeCompatible(x = exits,
                                      y = template,
                                      subset = TRUE,
@@ -130,12 +210,14 @@ setMethod("InternalMovements",
               if (!any(is.orig))
                   stop(gettextf("'%s' does not have class \"%s\" or \"%s\" and does not have dimensions with dimtype \"%s\" or \"%s\"",
                                 "internal", "Net", "Pool", "origin", "destination"))
-              internal <- checkAndTidyMovementsComponent(object = internal,
-                                                         name = "internal",
-                                                         requireInteger = TRUE,
-                                                         allowNegatives = FALSE,
-                                                         allowOrig = TRUE,
-                                                         allowParent = FALSE)
+              internal <- checkAndTidyComponent(object = internal,
+                                                name = "internal",
+                                                requireInteger = TRUE,
+                                                allowNegatives = FALSE,
+                                                allowOrig = TRUE,
+                                                allowParent = FALSE,
+                                                allowTriangles = TRUE,
+                                                triangles = TRUE)
               internal <- tryCatch(makeOrigDestParentChildCompatible(x = internal,
                                                                      y = template,
                                                                      subset = TRUE,
@@ -145,8 +227,8 @@ setMethod("InternalMovements",
                   stop(gettextf("'%s' is incompatible with '%s' : %s",
                                 "internal", "population", internal$message))
               methods::new("InternalMovementsOrigDest",
-                  .Data = internal@.Data,
-                  metadata = internal@metadata)
+                           .Data = internal@.Data,
+                           metadata = internal@metadata)
           })
 
 ## HAS_TESTS
@@ -157,20 +239,22 @@ setMethod("InternalMovements",
               i.direction <- internal@iDirection
               names.between <- names(internal)[i.between]
               name.direction <- names(internal)[i.direction]
-              internal <- checkAndTidyMovementsComponent(object = internal,
-                                                         name = "internal",
-                                                         requireInteger = TRUE,
-                                                         allowNegatives = FALSE,
-                                                         allowOrig = FALSE,
-                                                         allowParent = FALSE)
+              internal <- checkAndTidyComponent(object = internal,
+                                                name = "internal",
+                                                requireInteger = TRUE,
+                                                allowNegatives = FALSE,
+                                                allowOrig = FALSE,
+                                                allowParent = FALSE,
+                                                allowTriangles = TRUE,
+                                                triangles = TRUE)
               Out <- slab(internal,
-                           dimension = name.direction,
-                           elements = 1L,
-                           drop = FALSE)
-              In <- slab(internal,
                           dimension = name.direction,
-                          elements = 2L,
+                          elements = 1L,
                           drop = FALSE)
+              In <- slab(internal,
+                         dimension = name.direction,
+                         elements = 2L,
+                         drop = FALSE)
               Out <- tryCatch(makeCompatible(x = Out,
                                              y = template,
                                              subset = TRUE,
@@ -190,10 +274,10 @@ setMethod("InternalMovements",
               if (any(not.collapsed)) {
                   i.between <- i.between[not.collapsed]
                   methods::new("InternalMovementsPool",
-                      .Data = internal@.Data,
-                      metadata = internal@metadata,
-                      iBetween = i.between,
-                      iDirection = i.direction)
+                               .Data = internal@.Data,
+                               metadata = internal@metadata,
+                               iBetween = i.between,
+                               iDirection = i.direction)
               }
               else
                   stop(gettextf("no \"%s\" dimensions from '%s' found in '%s'",
@@ -206,12 +290,14 @@ setMethod("InternalMovements",
           function(internal, template) {
               i.between <- internal@iBetween
               names.between <- names(internal)[i.between]
-              internal <- checkAndTidyMovementsComponent(object = internal,
-                                                         name = "internal",
-                                                         requireInteger = TRUE,
-                                                         allowNegatives = TRUE,
-                                                         allowOrig = FALSE,
-                                                         allowParent = FALSE)
+              internal <- checkAndTidyComponent(object = internal,
+                                                name = "internal",
+                                                requireInteger = TRUE,
+                                                allowNegatives = TRUE,
+                                                allowOrig = FALSE,
+                                                allowParent = FALSE,
+                                                allowTriangles = TRUE,
+                                                triangles = TRUE)
               internal <- tryCatch(makeCompatible(x = internal,
                                                   y = template,
                                                   subset = TRUE,
@@ -225,9 +311,9 @@ setMethod("InternalMovements",
               if (any(not.collapsed)) {
                   i.between <- i.between[not.collapsed]
                   methods::new("InternalMovementsNet",
-                      .Data = internal@.Data,
-                      metadata = internal@metadata,
-                      iBetween = i.between)
+                               .Data = internal@.Data,
+                               metadata = internal@metadata,
+                               iBetween = i.between)
               }
               else
                   stop(gettextf("no \"%s\" dimensions from '%s' found in '%s'",
@@ -239,12 +325,14 @@ NetMovements <- function(net, template, name) {
     if (!methods::is(net, "Counts"))
         stop(gettextf("'%s' has class \"%s\"",
                       name, class(net)))
-    net <- checkAndTidyMovementsComponent(object = net,
-                                          name = name,
-                                          requireInteger = TRUE,
-                                          allowNegatives = TRUE,
-                                          allowOrig = FALSE,
-                                          allowParent = FALSE)
+    net <- checkAndTidyComponent(object = net,
+                                 name = name,
+                                 requireInteger = TRUE,
+                                 allowNegatives = TRUE,
+                                 allowOrig = FALSE,
+                                 allowParent = FALSE,
+                                 allowTriangles = TRUE,
+                                 triangles = TRUE)
     net <- tryCatch(makeCompatible(x = net,
                                    y = template,
                                    subset = TRUE,
@@ -254,8 +342,8 @@ NetMovements <- function(net, template, name) {
         stop(gettextf("'%s' is incompatible with '%s' : %s",
                       name, "population", net$message))
     methods::new("NetMovements",
-        .Data = net@.Data,
-        metadata = net@metadata)
+                 .Data = net@.Data,
+                 metadata = net@metadata)
 }
 
 #' @rdname net-pool-generators
@@ -280,9 +368,9 @@ setMethod("Net",
                                     "between", names[i], dimtypes[i]))
               }
               methods::new("Net",
-                  .Data = object@.Data,
-                  metadata = object@metadata,
-                  iBetween = between)
+                           .Data = object@.Data,
+                           metadata = object@metadata,
+                           iBetween = between)
           })
 
 #' @rdname net-pool-generators
@@ -328,13 +416,13 @@ setMethod("Pool",
                                    list = direction,
                                    values = list(DimScale.direction))
               metadata <- methods::new("MetaData",
-                              nms = names,
-                              dimtypes = dimtypes,
-                              DimScales = DimScales)
+                                       nms = names,
+                                       dimtypes = dimtypes,
+                                       DimScales = DimScales)
               dimnames(.Data) <- dimnames(metadata)
               methods::new("Pool",
-                  .Data = .Data,
-                  metadata = metadata,
-                  iDirection = direction,
-                  iBetween = between)
+                           .Data = .Data,
+                           metadata = metadata,
+                           iDirection = direction,
+                           iBetween = between)
           })

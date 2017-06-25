@@ -351,6 +351,7 @@ setClass("Counts", contains = c("array", "DemographicArray"))
 #' @export
 setClass("Values", contains = c("array", "DemographicArray"))
 
+#' @rdname DemographicArray-class
 #' @export
 setClassUnion("DemographicArrayOrNumeric",
               members = c("DemographicArray",
@@ -1276,6 +1277,9 @@ setClass("InsEqualOuts",
              iDirection <- object@iDirection
              iBetween <- object@iBetween
              ## ins equal outs
+             object <- new("Counts",
+                           .Data = object@.Data,
+                           metadata = object@metadata)
              outs <- slab(object, dimension = iDirection, elements = 1L, drop = FALSE)
              ins <- slab(object, dimension = iDirection, elements = 2L, drop = FALSE)
              outs <- collapseDimension(outs, dimension = iBetween)
@@ -1569,11 +1573,23 @@ setClass("DemographicAccount",
              population <- object@population
              components <- object@components
              namesComponents <- object@namesComponents
+             ## population is valid
+             value <- tryCatch(validObject(population),
+                               error = function(e) e)
+             if (is(value, "error"))
+                 return(value$message)
              ## components has positive length
              if (identical(length(components), 0L))
                  return(gettextf("'%s' has length %d",
                                  "components", 0L))
              n.births <- sum(sapply(components, methods::is,"Births"))
+             ## components all valid
+             for (component in components) {
+                 value <- tryCatch(validObject(component),
+                                   error = function(e) e)
+                 if (is(value, "error"))
+                     return(value$message)
+             }
              ## no more than one births
              if (n.births > 1L)
                  return(gettextf("more than one component with class \"%s\"",
@@ -1613,16 +1629,6 @@ setClass("DemographicAccount",
              if (!identical(length(components), length(namesComponents)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "components", "namesComponents"))
-             ## all elements of 'components' compatible with 'population'
-             for (i in seq_along(components)) {
-                 component <- components[[i]]
-                 name.component <- namesComponents[i]
-                 return.value <- isCompatibleWithPopn(component = component,
-                                                      population = population,
-                                                      nameComponent = name.component)
-                 if (!isTRUE(return.value))
-                     return(return.value)
-             }
              TRUE
          })
 
@@ -1631,11 +1637,25 @@ setClass("DemographicAccount",
 setClass("Movements",
          contains = "DemographicAccount",
          validity = function(object) {
+             population <- object@population
              components <- object@components
+             namesComponents <- object@namesComponents
              ## all components have class "MovementsComponent"
              if (!all(sapply(components, methods::is,"MovementsComponent")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "components", "MovementsComponent"))
+             ## all elements of 'components' compatible with 'population'
+             template <- makeTemplateComponent(population)
+             metadata.template <- metadata(template)
+             for (i in seq_along(components)) {
+                 component <- components[[i]]
+                 name.component <- namesComponents[i]
+                 return.value <- isCompatibleWithPopn(component = component,
+                                                      metadata = metadata.template,
+                                                      name = name.component)
+                 if (!isTRUE(return.value))
+                     return(return.value)
+             }
              TRUE
          })
 
@@ -1644,11 +1664,26 @@ setClass("Movements",
 setClass("Transitions",
          contains = "DemographicAccount",
          validity = function(object) {
+             population <- object@population
              components <- object@components
+             namesComponents <- object@namesComponents
              ## all components have class "TransitionsComponent"
              if (!all(sapply(components, methods::is,"TransitionsComponent")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "components", "TransitionsComponent"))
+             ## all elements of 'components' compatible with 'population'
+             template <- makeTemplateComponent(population,
+                                               triangles = FALSE)
+             metadata.template <- metadata(template)
+             for (i in seq_along(components)) {
+                 component <- components[[i]]
+                 name.component <- namesComponents[i]
+                 return.value <- isCompatibleWithPopn(component = component,
+                                                      metadata = metadata.template,
+                                                      name = name.component)
+                 if (!isTRUE(return.value))
+                     return(return.value)
+             }
              TRUE
          })
 

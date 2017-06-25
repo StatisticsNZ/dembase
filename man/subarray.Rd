@@ -13,13 +13,13 @@ subarray(object, ...)
 \arguments{
 \item{object}{Object of class \code{\linkS4class{DemographicArray}}.}
 
+\item{\dots}{Further arguments to be passed to or from other methods.}
+
 \item{subarray}{Logical expression picking out a subarray within
 \code{object}.}
 
 \item{drop}{Logical, specifying whether dimensions of length 1 should be
 retained in the result.  Defaults to \code{TRUE}.}
-
-\item{\dots}{Further arguments to be passed to or from other methods.}
 }
 \value{
 Typically an object of class \code{\linkS4class{DemographicArray}}, but
@@ -63,6 +63,7 @@ scripts to extract or manipulate a dataset, the greater transparency and
 flexibility of \code{subarray} typically make it a better choice than
 \code{[}.
 }
+
 \examples{
 library(demdata)
 rates <- Values(VADeaths2)
@@ -102,4 +103,3 @@ f <- function(orig) {
 vectors, matrices, or data frames, though without the requirement that the
 resulting subsets have all the combinations of values required for an array.
 }
-

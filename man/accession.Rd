@@ -51,4 +51,3 @@ account <- Movements(population = population,
 accession(account)
 accession(account, births = FALSE)
 }
-

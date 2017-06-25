@@ -251,7 +251,7 @@ slab(va.rates,
 
 When doing arithmetic on pairs of objects, `demest` removes categories from one object if these are not found in the other object.  In the example below, `births` covers more years than `females`, and `females` has more age groups than `births`.
 ```{r}
-births <- demdata::nz.births
+births <- demdata::nz.births.reg
 popn <- demdata::nz.popn.reg
 births <- Counts(births,
                  dimscales = c(year = "Intervals"))

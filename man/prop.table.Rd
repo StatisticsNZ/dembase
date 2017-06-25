@@ -39,4 +39,3 @@ prop.table(x, margin = 2:4)
 ## the equivalent, using dimension names
 prop.table(x, margin = c("sex", "residence", "color"))
 }
-

@@ -101,4 +101,3 @@ extrapolate(deaths, along = "age", labels = c("75-79", "80+"), growth = gr)
 \seealso{
 \code{\link{growth}}
 }
-
