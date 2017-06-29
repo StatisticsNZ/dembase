@@ -3098,32 +3098,6 @@ makeMetadataForExposure <- function(population, triangles) {
 }
 
 
-## NOT NEEDED - DELETE?? (2017-06-25)
-## ## NO_TESTS
-## makeMetadataTemplate <- function(population) {
-##     dimtypes <- dimtypes(population, use.names = FALSE)
-##     DimScales <- DimScales(population, use.names = FALSE)
-##     i.time <- match("time", dimtypes)
-##     i.age <- match("age", dimtypes, nomatch = 0L)
-##     DimScale.time <- DimScales[[i.time]]
-##     dimvalues.time <- dimvalues(DimScale.time)
-##     DimScale.time <- new("Intervals", dimvalues = dimvalues.time)
-##     DimScales <- replace(DimScales,
-##                          list = i.time,
-##                          values = list(DimScale.time))
-##     has.age <- i.age > 0L
-##     if (has.age) {
-##         names <- make.unique(c(names, "triangle"))
-##         dimtypes <- c(dimtypes, "triangle")
-##         DimScale.triangle <- methods::new("Triangles", dimvalues = c("TL", "TU"))
-##         DimScales <- append(DimScales, DimScale.triangle)
-##     }
-##     new("MetaData",
-##         nms = names,
-##         dimtypes = dimtypes,
-##         DimScales = DimScales)    
-## }
-
 ## HAS_TESTS
 makeTemplateComponent <- function(population, triangles = TRUE) {
     names <- names(population)
