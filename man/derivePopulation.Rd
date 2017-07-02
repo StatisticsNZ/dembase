@@ -74,6 +74,26 @@ deaths <- Counts(array(c(0, 9),
 derivePopulation(initial = initial,
                   births = births,
                   exits = list(deaths = deaths))
+
+## Calculations using age-time steps of one quarter.  (Note, incidentally,
+## that an account does not have to start from age 0 if it does not
+## include births.)
+initial <- Counts(array(11:15,
+                        dim = c(5, 1),
+                        dimnames = list(age = c("20-20.25", "20.25-20.5",
+                                           "20.5-20.75", "20.75-21", "21+"),
+                                        time = 2000)),
+                  dimscales = c(time = "Points"))
+deaths <- Counts(array(c(0, 2, 1, 3, 4, 1, 2, 3, 1, 5),
+                       dim = c(5, 2, 1),
+                       dimnames = list(age = c("20-20.25", "20.25-20.5",
+                                           "20.5-20.75", "20.75-21", "21+"),
+                                       triangle = c("TL", "TU"),
+                                       time = "2000-2000.25")))
+account <- derivePopulation(initial = initial,
+                            exits = list(deaths = deaths))
+account
+summary(account)
 }
 \seealso{
 Most of the work for \code{derivePopulation} is done by

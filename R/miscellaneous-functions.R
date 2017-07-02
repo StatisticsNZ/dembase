@@ -141,42 +141,18 @@ getValidDimtypes <- function()
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
 ## HAS_TESTS
-#' Calculate ages from dates.
-#'
-#' Calculates ages in completed years from (i) a vector of dates, and (ii)
-#' a vector of dates of birth.
-#'
-#' If \code{date} and \code{dob} are different lengths, the shorter
-#' vector is recycled.
-#'
-#' @param date A vector of class \code{\link[base]{Date}}.  All elements of
-#' \code{date} must be equal to or greater than the corresponding elements
-#' of \code{dob}.
-#' @param dob A vector of class \code{\link[base]{Date}}.
-#'
-#' @return An vector of integers.
-#'
-#' @seealso Vectors of class \code{\link{Date}} can be created with
-#' function \code{\link{as.Date}}.
-#' @examples
-#' dates <- as.Date(c("2005-07-05", "2010-07-05"))
-#' dobs <- as.Date(c("2005-06-30", "2006-07-01"))
-#' datesToAge(date = dates, dob = dobs)
-#' 
-#' ## 'date' must be later than 'dob'
-#' \dontrun{
-#' datesToAge(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
-#' }
-#' @export
-datesToAge <- function(date, dob) {
+checkAndTidyDateAndDOB <- function(date, dob) {
     for (name in c("date", "dob")) {
         value <- get(name)
-        if (!is(value, "Date"))
+        if (!methods::is(value, "Date"))
             stop(gettextf("'%s' does not have class \"%s\"",
                           name, "Date"))
         if (identical(length(value), 0L))
             stop(gettextf("'%s' has length %d",
                           name, 0L))
+        if (identical(length(value[!is.na(value)]), 0L))
+            stop(gettextf("all elements of '%s' are missing",
+                          name))
     }
     n.date <- length(date)
     n.dob <- length(dob)
@@ -198,24 +174,252 @@ datesToAge <- function(date, dob) {
     if (any(date[both.obs] < dob[both.obs]))
         stop(gettextf("some elements of '%s' are less than the corresponding elements of '%s'",
                       "date", "dob"))
-    day.date <- format(date, "%d")
-    day.dob <- format(dob, "%d")
-    month.date <- format(date, "%m")
-    month.dob <- format(dob, "%m")
-    year.date <- format(date, "%Y")
-    year.dob <- format(dob, "%Y")
-    day.date <- as.integer(day.date)
-    day.dob <- as.integer(day.dob)
-    month.date <- as.integer(month.date)
-    month.dob <- as.integer(month.dob)
-    year.date <- as.integer(year.date)
-    year.dob <- as.integer(year.dob)
-    year.diff <- year.date - year.dob
-    has.had.birthday.this.year <- ((month.date > month.dob)
-        | ((month.date == month.dob) & (day.date >= day.dob)))
-    year.diff - 1L + has.had.birthday.this.year
+    list(date = date, dob = dob)
 }
-        
+
+## HAS_TESTS
+checkLastOpen <- function(lastOpen) {
+    if (!is.logical(lastOpen))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "lastOpen", "logical"))
+    if (!identical(length(lastOpen), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "lastOpen", 1L))
+    if (is.na(lastOpen))
+        stop(gettextf("'%s' is missing",
+                      "lastOpen"))
+    NULL
+}
+
+## HAS_TESTS
+checkStart <- function(start) {
+    if (!methods::is(start, "Date"))
+        stop(gettextf("'%s' does not have class \"%s\"",
+                      "start", "Date"))
+    if (!identical(length(start), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "start", 1L))
+    if (is.na(start))
+        stop(gettextf("'%s' is missing",
+                      "start"))
+    NULL   
+}
+
+## HAS_TESTS
+checkStep <- function(step) {
+    if (!identical(length(step), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "step", 1L))
+    if (is.na(step))
+        stop(gettextf("'%s' is missing",
+                      "step"))
+    from <- as.Date("1970-01-01")
+    value <- tryCatch(seq.Date(from = from,
+                               by = step,
+                               length.out = 2L)[2L],
+                      error = function(e) e)
+    if (methods::is(value, "error"))
+        stop(gettextf("invalid value for '%s' : %s",
+                      "step", value$message))
+    if (value <= from)
+        stop(gettextf("'%s' non-positive",
+                      "step"))
+    to <- as.Date("1971-01-01")
+    value <- seq.Date(from = from,
+                      by = step,
+                      to = to)
+    step.less.than.year <- length(value) > 1L
+    if (step.less.than.year) {
+        if (!isTRUE(all.equal(value[length(value)], to)))
+            stop(gettextf("invalid value for '%s' : one year cannot be divided into units of length \"%s\"",
+                          "step", step))
+    }
+    NULL
+}
+
+#' Calculate ages and Lexis triangles from dates.
+#'
+#' Calculates ages in completed years, or Lexis triangles, from a vector of dates, and
+#' a vector of dates of birth.
+#'
+#' If \code{date} and \code{dob} are different lengths, the shorter
+#' vector is recycled.
+#'
+#' By default, age-time steps are assumed to be equal to one year. However,
+#' alternative lengths can be specified, via the \code{step} argument.
+#' Typical alternative values are \code{"5 years"}, \code{"month"}, 
+#' \code{"quarter"}, and \code{"6 months"}.  Integers are rounded down,
+#' so that, for instance, \code{"5.999 years"} is equivalent to \code{"5 years"}.
+#' Negative values are not allowed.  
+#'
+#' By default, the first time interval is assumed to start on 1 January.  Thus,
+#' for example, one-year intervals might start on 1 January 2000, 1 January 2001,
+#' 1 January 2002, etc, and one-quarter intervals might start on 1 January 2000,
+#' 1 April 2000, 1 July 2000, etc.
+#'
+#' Sometimes, however, intervals need to start on a different date.
+#' To do this, use \code{start} argument to specify the start date
+#' for a typical period.  For instance,  "years to June"
+#' (ie intervals running from 1 July 2000 - 30 June 2001,
+#' 1 July 2001 - 30 June 2000, etc), can be obtained by setting
+#' \code{start} to \code{as.Date("2000-07-01")}.  See below for examples.
+#'
+#' @param date A vector of class \code{\link[base]{Date}}.  All elements of
+#' \code{date} must be equal to or greater than the corresponding elements
+#' of \code{dob}.
+#' @param dob A vector of class \code{\link[base]{Date}}.
+#' @param step Length of age-time step.
+#' @param lastOpen Whether last age interval is open on the right.
+#' @param start A single \code{\link[base]{Date}}, giving the first day
+#' of one of the time intervals.
+#'
+#' @return A factor.
+#'
+#' @seealso Vectors of class \code{\link{Date}} can be created with
+#' function \code{\link{as.Date}}.
+#' @examples
+#' date <- as.Date(c("2005-07-05", "2006-06-30", "2008-07-05"))
+#' dob <- as.Date(c("2005-06-30", "2005-06-30", "2006-07-01"))
+#' datesToAge(date = date, dob = dob)
+#' datesToAge(date = date, dob = dob, lastOpen = FALSE)
+#' datesToAge(date = date, dob = dob, step = "2 years")
+#' datesToAge(date = date, dob = dob, step = "quarter")
+#' datesToAge(date = date, dob = dob, step = "month")
+#' datesToAge(date = date, dob = dob)
+#' datesToTriangle(date = date, dob = dob)
+#' datesToTriangle(date = date, dob = dob, step = "2 years")
+#' datesToTriangle(date = date, dob = dob, start = as.Date("2000-07-01"))
+#' 
+#' ## 'date' must be later than 'dob'
+#' \dontrun{
+#' datesToAge(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
+#' }
+#' @export
+#' @name datesToAge
+NULL
+
+## HAS_TESTS
+#' @rdname datesToAge
+#' @export
+datesToAge <- function(date, dob, step = "1 year", lastOpen = TRUE) {
+    l <- checkAndTidyDateAndDOB(date = date,
+                                dob = dob)
+    date <- l$date
+    dob <- l$dob
+    checkStep(step)
+    checkLastOpen(lastOpen)
+    i.age.interval <- iAgeInterval(date = date,
+                                   dob = dob,
+                                   step = step)
+    n.age.interval <- max(i.age.interval, na.rm = TRUE)
+    age.labels <- makeAgeLabelsFromStep(step = step,
+                                        nAgeInterval = n.age.interval,
+                                        lastOpen = lastOpen)
+    ans <- age.labels[i.age.interval]
+    factor(ans, levels = age.labels)
+}
+
+## HAS_TESTS
+#' @rdname datesToAge
+#' @export
+datesToTriangle <- function(date, dob, step = "1 year", start = as.Date("1970-01-01")) {
+    l <- checkAndTidyDateAndDOB(date = date,
+                                dob = dob)
+    date <- l$date
+    dob <- l$dob
+    checkStep(step)
+    checkStart(start)
+    i.age.interval <- iAgeInterval(date = date,
+                                   dob = dob,
+                                   step = step)
+    i.time.interval <- iTimeInterval(date = date,
+                                     dob = dob,
+                                     step = step,
+                                     start = start)
+    ans <- ifelse(i.time.interval > i.age.interval, "TU", "TL")
+    factor(ans, levels = c("TL", "TU"))
+}
+
+## HAS_TESTS
+## This could be made more efficient by
+## extracting the relevant code from
+## seq.Date, but it may not be worthwhile.
+iAgeInterval <- function(date, dob, step) {
+    ans <- rep(NA_integer_, times = length(date))
+    f <- function(date1, dob1) {
+        s <- seq.Date(from = dob1,
+                      to = date1,
+                      by = step)
+        length(s)
+    }
+    is.obs <- !is.na(date) & !is.na(dob)
+    ans[is.obs] <- mapply(f, date[is.obs], dob[is.obs])
+    ans
+}
+
+## HAS_TESTS
+iTimeInterval <- function(date, dob, step, start) {
+    vec <- makeDateVec(date = date,
+                       dob = dob,
+                       step = step,
+                       start = start)
+    i.date <- findInterval(x = date,
+                           vec = vec)
+    i.dob <- findInterval(x = dob,
+                          vec = vec)
+    i.date - i.dob + 1L
+}
+
+## HAS_TESTS
+## assume that all inputs have been sanity checked
+makeAgeLabelsFromStep <- function(step, nAgeInterval, lastOpen) {
+    date.from <- as.Date("1970-01-01")
+    date.to <- as.Date("1971-01-01")
+    value <- seq.Date(from = date.from,
+                      by = step,
+                      to = date.to)
+    step.less.than.or.equal.to.year <- length(value) > 1L
+    if (step.less.than.or.equal.to.year)
+        step.length <- 1 / (length(value) - 1L)
+    else {
+        value <- seq.Date(from = date.from,
+                          by = step,
+                          length.out = 2L)
+        years <- as.integer(format(value, "%Y"))
+        step.length <- diff(years)
+    }
+    dimvalues <- seq(from = 0,
+                     by = step.length,
+                     length.out = nAgeInterval + 1L)
+    if (lastOpen)
+        dimvalues[length(dimvalues)] <- Inf
+    DimScale <- methods::new("Intervals", dimvalues = dimvalues)
+    labels(DimScale)
+}
+
+## HAS_TESTS
+makeDateVec <- function(date, dob, step, start) {
+    max.date <- max(date, na.rm = TRUE)
+    min.dob <- min(dob, na.rm = TRUE) 
+    if (min.dob < start) {
+        neg.step <- paste0("-", step)
+        from <- seq(from = start, to = min.dob, by = neg.step)
+        from <- from[length(from)]
+        from <- seq(from = from, by = neg.step, length.out = 2L)
+        from <- from[2L]
+    }
+    else if (min.dob == start) {
+        from <- start
+    }
+    else {
+        from <- seq(from = start, by = step, to = min.dob)
+        from <- from[length(from)]
+    }
+    to <- seq(from = from, by = step, to = max.date)
+    to <- to[length(to)]
+    seq(from = from, to = to, by = step)
+}
+
 
 
 ## FUNCTIONS FOR PROCESSING DIMENSIONS NAME AND INDICES #############################
@@ -1264,6 +1468,7 @@ ageMinMaxReplace <- function(object, value, min = TRUE) {
 ## HAS_TESTS
 makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
                                          limitPrintLower = NULL) {
+    kDigits <- 4L
     n <- length(dimvalues)
     if (n > 0L) {
         if (is.null(intervalSeparator))
@@ -1287,6 +1492,8 @@ makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
             else
                 lower <- lower + 1L
         }
+        lower <- round(lower, kDigits)
+        upper <- round(upper, kDigits)
         ans[ans == ""] <- paste(lower, upper, sep = intervalSeparator)
         ans
     }
