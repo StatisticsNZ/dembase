@@ -1,0 +1,119 @@
+---
+title: "Creating a Counts Object"
+author: "John Bryant and Junni L. Zhang"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Introduction 
+
+Create a Counts object. Do using base R, then using tidyverse.
+
+Overview
+- tidy data
+- call xtabs
+- call Counts
+
+## The raw data
+
+```{r}
+injuries.df <- demdata::nz.injuries
+```
+
+
+```{r}
+head(injuries.df)
+```
+
+```{r}
+summary(injuries.df)
+```
+
+
+## What is a Counts object?
+
+
+## Cleaning up the age dimension
+
+```{r}
+injuries.df$age <- as.character(injuries.df$age)
+```
+
+```{r}
+injuries.df <- subset(injuries.df, age != "Total all ages")
+unique(injuries.df$age)
+```
+
+Recode final age group
+```{r}
+injuries.df$age <- sub(" years and over", "+", injuries.df$age)
+unique(injuries.df$age)
+```
+
+Get rid of "years"
+
+```{r}
+injuries.df$age <- sub(" years", "", injuries.df$age)
+unique(injuries.df$age)
+```
+
+## Using xtabs
+
+```{r}
+injuries <- xtabs(count ~ age + sex + cause + year,
+                  data = injuries.df)
+```
+
+```{r}
+class(injuries)
+dimnames(injuries)
+```
+
+```{r}
+injuries[ , "Female", , "2015"]
+```
+
+
+## Create Counts object, and deal with dimscale
+
+```{r}
+library(dembase)
+# injuries <- Counts(injuries)
+```
+```{r}
+injuries <- Counts(injuries,
+                   dimscales = c(year = "Intervals"))
+```
+
+```{r}
+summary(injuries)
+```
+
+```{r}
+plot(injuries)
+```
+
+
+## The tidyverse way
+
+```{r}
+library(tidyverse)
+injuries <- demdata::nz.injuries %>%
+  filter(age != "Total all ages") %>%
+  mutate(age = as.character(age),
+         age = recode(age, "90 years and over" = "90+"),
+         age = sub(" years", "", age)) %>%
+  xtabs(count ~ age + sex + year + cause,
+        data = .) %>%
+  Counts(dimscales = c(year = "Intervals"))
+```
+
+
