@@ -178,6 +178,21 @@ checkAndTidyDateAndDOB <- function(date, dob) {
 }
 
 ## HAS_TESTS
+checkDate <- function(date) {
+    if (!methods::is(date, "Date"))
+        stop(gettextf("'%s' does not have class \"%s\"",
+                      "date", "Date"))
+    if (identical(length(date), 0L))
+        stop(gettextf("'%s' has length %d",
+                      "date", 0L))
+    if (identical(length(date[!is.na(date)]), 0L))
+        stop(gettextf("all elements of '%s' are missing",
+                      "date"))
+    NULL
+}
+
+
+## HAS_TESTS
 checkLastOpen <- function(lastOpen) {
     if (!is.logical(lastOpen))
         stop(gettextf("'%s' does not have type \"%s\"",
@@ -237,6 +252,27 @@ checkStep <- function(step) {
     NULL
 }
 
+## HAS_TESTS
+checkStepAndStart <- function(step, start) {
+    date.from <- as.Date("1970-01-01")
+    date.to <- as.Date("1971-01-01")
+    value <- seq.Date(from = date.from,
+                      by = step,
+                      to = date.to)
+    n.steps <- length(value) - 1L
+    step.less.than.year <- n.steps > 1L
+    if (step.less.than.year) {
+        jan1 <- as.Date(paste0(format(start, "%Y"), "-01-01"))
+        seq <- seq.Date(from = jan1,
+                        to = start,
+                        by = step)
+        if (!isTRUE(all.equal(seq[length(seq)], start)))
+            stop(gettextf("'%s' does not belong to sequence formed from '%s'",
+                          "start", "step"))
+        NULL
+    }
+}
+
 #' Calculate ages and Lexis triangles from dates.
 #'
 #' Calculates ages in completed years, or Lexis triangles, from a vector of dates, and
@@ -250,7 +286,10 @@ checkStep <- function(step) {
 #' Typical alternative values are \code{"5 years"}, \code{"month"}, 
 #' \code{"quarter"}, and \code{"6 months"}.  Integers are rounded down,
 #' so that, for instance, \code{"5.999 years"} is equivalent to \code{"5 years"}.
-#' Negative values are not allowed.  
+#' Negative values are not allowed.  If a step length is less than 1 year,
+#' it must divide the year without leaving a remainder.  Thus, for example,
+#' \code{"4 months"} is a valid value for \code{step}, but \code{"5 months"}
+#' is not.
 #'
 #' By default, the first time interval is assumed to start on 1 January.  Thus,
 #' for example, one-year intervals might start on 1 January 2000, 1 January 2001,
@@ -264,6 +303,9 @@ checkStep <- function(step) {
 #' 1 July 2001 - 30 June 2000, etc), can be obtained by setting
 #' \code{start} to \code{as.Date("2000-07-01")}.  See below for examples.
 #'
+#' If \code{step} is less than one year, then \code{start} must belong to
+#' the series 1 January, 1 January + step, 1 January + 2 * step, ...
+#' 
 #' @param date A vector of class \code{\link[base]{Date}}.  All elements of
 #' \code{date} must be equal to or greater than the corresponding elements
 #' of \code{dob}.
@@ -280,28 +322,29 @@ checkStep <- function(step) {
 #' @examples
 #' date <- as.Date(c("2005-07-05", "2006-06-30", "2008-07-05"))
 #' dob <- as.Date(c("2005-06-30", "2005-06-30", "2006-07-01"))
-#' datesToAge(date = date, dob = dob)
-#' datesToAge(date = date, dob = dob, lastOpen = FALSE)
-#' datesToAge(date = date, dob = dob, step = "2 years")
-#' datesToAge(date = date, dob = dob, step = "quarter")
-#' datesToAge(date = date, dob = dob, step = "month")
-#' datesToAge(date = date, dob = dob)
-#' datesToTriangle(date = date, dob = dob)
-#' datesToTriangle(date = date, dob = dob, step = "2 years")
-#' datesToTriangle(date = date, dob = dob, start = as.Date("2000-07-01"))
+#' datesToAgeGroups(date = date, dob = dob)
+#' datesToAgeGroups(date = date, dob = dob, lastOpen = FALSE)
+#' datesToAgeGroups(date = date, dob = dob, step = "2 years")
+#' datesToAgeGroups(date = date, dob = dob, step = "quarter")
+#' datesToAgeGroups(date = date, dob = dob, step = "month")
+#' datesToPeriods(date = date)
+#' datesToPeriods(date = date, step = "quarter")
+#' datesToTriangles(date = date, dob = dob)
+#' datesToTriangles(date = date, dob = dob, step = "2 years")
+#' datesToTriangles(date = date, dob = dob, start = as.Date("2000-07-01"))
 #' 
 #' ## 'date' must be later than 'dob'
 #' \dontrun{
-#' datesToAge(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
+#' datesToAgeGroups(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
 #' }
 #' @export
-#' @name datesToAge
+#' @name datesToAgeGroups
 NULL
 
 ## HAS_TESTS
-#' @rdname datesToAge
+#' @rdname datesToAgeGroups
 #' @export
-datesToAge <- function(date, dob, step = "1 year", lastOpen = TRUE) {
+datesToAgeGroups <- function(date, dob, step = "1 year", lastOpen = TRUE) {
     l <- checkAndTidyDateAndDOB(date = date,
                                 dob = dob)
     date <- l$date
@@ -319,23 +362,86 @@ datesToAge <- function(date, dob, step = "1 year", lastOpen = TRUE) {
     factor(ans, levels = age.labels)
 }
 
-## HAS_TESTS
-#' @rdname datesToAge
+#' @rdname datesToAgeGroups
 #' @export
-datesToTriangle <- function(date, dob, step = "1 year", start = as.Date("1970-01-01")) {
+datesToPeriods <- function(date, step = "1 year", start = as.Date("1970-01-01")) {
+    checkDate(date)
+    checkStep(step)
+    checkStart(start)
+    checkStepAndStart(step = step,
+                      start = start)
+    vec <- makeDateVec(dates = date,
+                       step = step,
+                       start = start)
+    labels <- makePeriodLabelsFromVec(vec = vec,
+                                      step = step)
+    i.period <- findInterval(x = date,
+                             vec = vec)
+    ans <- labels[i.period]
+    s.periods.used <- seq.int(from = min(i.period),
+                              to = max(i.period))
+    levels <- labels[s.periods.used]
+    factor(ans, levels = levels)
+}
+
+## HAS_TESTS
+makePeriodLabelsFromVec <- function(vec, step) {
+    date.from <- as.Date("1970-01-01")
+    date.to <- as.Date("1971-01-01")
+    value <- seq.Date(from = date.from,
+                      by = step,
+                      to = date.to)
+    n.steps <- length(value) - 1L
+    step.less.than.year <- n.steps > 1L
+    if (step.less.than.year) {
+        step.length <- 1 / n.steps
+        year.first <- as.integer(format(vec[1L], "%Y"))
+        jan1 <- as.Date(paste0(year.first, "-01-01"))
+        dates.first.year <- seq.Date(from = jan1,
+                                     by = step,
+                                     length.out = n.steps)
+        i.first <- match(vec[1L], dates.first.year)
+        from <- year.first + (i.first - 1L) * step.length
+        length.out <- length(vec) + 1L
+        dimvalues <- seq(from = from,
+                         by = step.length,
+                         length.out = length.out)
+    }
+    else {
+        value <- seq.Date(from = date.from,
+                          by = step,
+                          length.out = 2L)
+        years <- as.integer(format(value, "%Y"))
+        step.length <- diff(years)
+        year.first <- as.integer(format(vec[1L] - 1L, "%Y"))
+        length.out <- length(vec) + 1L
+        dimvalues <- seq(from = year.first,
+                         by = step.length,
+                         length.out = length.out)
+    }
+    DimScale <- new("Intervals", dimvalues = dimvalues)
+    labels(DimScale)
+}
+
+## HAS_TESTS
+#' @rdname datesToAgeGroups
+#' @export
+datesToTriangles <- function(date, dob, step = "1 year", start = as.Date("1970-01-01")) {
     l <- checkAndTidyDateAndDOB(date = date,
                                 dob = dob)
     date <- l$date
     dob <- l$dob
     checkStep(step)
     checkStart(start)
+    checkStepAndStart(step = step,
+                      start = start)
     i.age.interval <- iAgeInterval(date = date,
                                    dob = dob,
                                    step = step)
-    i.time.interval <- iTimeInterval(date = date,
-                                     dob = dob,
-                                     step = step,
-                                     start = start)
+    i.time.interval <- iTimeIntervalSinceBirth(date = date,
+                                               dob = dob,
+                                               step = step,
+                                               start = start)
     ans <- ifelse(i.time.interval > i.age.interval, "TU", "TL")
     factor(ans, levels = c("TL", "TU"))
 }
@@ -358,9 +464,9 @@ iAgeInterval <- function(date, dob, step) {
 }
 
 ## HAS_TESTS
-iTimeInterval <- function(date, dob, step, start) {
-    vec <- makeDateVec(date = date,
-                       dob = dob,
+iTimeIntervalSinceBirth <- function(date, dob, step, start) {
+    dates <- c(date, dob)
+    vec <- makeDateVec(dates = dates,
                        step = step,
                        start = start)
     i.date <- findInterval(x = date,
@@ -398,21 +504,24 @@ makeAgeLabelsFromStep <- function(step, nAgeInterval, lastOpen) {
 }
 
 ## HAS_TESTS
-makeDateVec <- function(date, dob, step, start) {
-    max.date <- max(date, na.rm = TRUE)
-    min.dob <- min(dob, na.rm = TRUE) 
-    if (min.dob < start) {
-        neg.step <- paste0("-", step)
-        from <- seq(from = start, to = min.dob, by = neg.step)
+makeDateVec <- function(dates, step, start) {
+    max.date <- max(dates, na.rm = TRUE)
+    min.date <- min(dates, na.rm = TRUE) 
+    if (min.date < start) {
+        if (grepl("^[1-9]", step))
+            neg.step <- paste0("-", step)
+        else
+            neg.step <- paste("-1", step)
+        from <- seq(from = start, to = min.date, by = neg.step)
         from <- from[length(from)]
         from <- seq(from = from, by = neg.step, length.out = 2L)
         from <- from[2L]
     }
-    else if (min.dob == start) {
+    else if (min.date == start) {
         from <- start
     }
     else {
-        from <- seq(from = start, by = step, to = min.dob)
+        from <- seq(from = start, by = step, to = min.date)
         from <- from[length(from)]
     }
     to <- seq(from = from, by = step, to = max.date)
