@@ -431,6 +431,9 @@ test_that("inferDimvalues method for Intervals works", {
   expect_identical(inferDimvalues(new("Intervals"),
                                   labels = as.character(2001:2004)),
                    c(2000, 2001, 2002, 2003, 2004))
+  expect_identical(inferDimvalues(new("Intervals"),
+                                  labels = c("less than 0", "0 - 29 years", "30 years and over")),
+                   c(-Inf, 0, 30, Inf))
 })
 
 test_that("labels method for Intervals works", {

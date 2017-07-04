@@ -13,16 +13,29 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
+GET SECOND DATASET THAT WILL WORK FIRST TIME
+
 ## Introduction 
 
-Create a Counts object. Do using base R, then using tidyverse.
+- basic data structure is counts object
+- to use dembase need to know how to create one
 
-Overview
-- tidy data
-- call xtabs
-- call Counts
+
+In this vignette, we create a "Counts" object from data in a data.frame.  We create the object twice.  In the first version, we create the object step by step, using functions from base R.  In the second version, we create the object in one go, using functions from the 'tidyverse' (tidyverse.org).
+
+In both cases, we go through the following steps:
+    1. Tidy data
+    1. Tabulate
+
+
 
 ## The raw data
+
+assume people can read into R themselves
+data frame
+categorical variables plus one column of counts
+typically have to do some work to get it into this form
+
 
 ```{r}
 injuries.df <- demdata::nz.injuries
@@ -31,6 +44,7 @@ injuries.df <- demdata::nz.injuries
 
 ```{r}
 head(injuries.df)
+tail(injuries.df)
 ```
 
 ```{r}
@@ -40,8 +54,22 @@ summary(injuries.df)
 
 ## What is a Counts object?
 
+- multiway array - counts column
+- metadata - comes from the categorial variables
+
+define dimscales and dimtypes - ones needed
+
+give example
+
+
+
 
 ## Cleaning up the age dimension
+
+Counts can understand age intervals, but only if they come in a certain form
+examples of valid and invalid age intervals (informal rules)
+typically have to tidy the age column to get it into the right form
+currently not very intelligent - will make more intelligent in future
 
 ```{r}
 injuries.df$age <- as.character(injuries.df$age)
@@ -65,29 +93,51 @@ injuries.df$age <- sub(" years", "", injuries.df$age)
 unique(injuries.df$age)
 ```
 
-## Using xtabs
+## Tabulate counts
+
+need to construct a multiway array
+lots of functions that can do this, but xtabs is usually the most convenient
 
 ```{r}
 injuries <- xtabs(count ~ age + sex + cause + year,
-                  data = injuries.df)
+                  data = injuries.df,
+                  subset = age != "Total all ages",
+                  drop.unused.levels = TRUE)
 ```
+
+rearranges into array of age, sex, cause, and year
+
+if you had individual-level data it would add up
+
 
 ```{r}
 class(injuries)
+dim(injuries)
 dimnames(injuries)
 ```
 
 ```{r}
-injuries[ , "Female", , "2015"]
+injuries[ , "Female", , "2013"]
 ```
 
+we have a multiway array
 
 ## Create Counts object, and deal with dimscale
 
-```{r}
+HAVE AN EXAMPLE THAT
+
+counts object includes metadata on the dimensions, as well as the data itself
+
+infers from dimnames
+
+```{r, error = TRUE}
 library(dembase)
-# injuries <- Counts(injuries)
+injuries <- Counts(injuries[,,,1])
 ```
+points vs intervals
+Counts can't tell whether year 
+
+
 ```{r}
 injuries <- Counts(injuries,
                    dimscales = c(year = "Intervals"))

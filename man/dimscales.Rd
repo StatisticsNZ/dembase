@@ -53,18 +53,24 @@ The table below lists valid dimscales.  Dimscales \code{"Categories"},
 other three, which are associated with particular \code{\link{dimtypes}}.
 
 \tabular{lll}{ \emph{dimscale} \tab \emph{Description} \tab \emph{Example}
-\cr \code{"Categories"} \tab Discrete qualitative categories.  No
-duplicates. \tab \code{"Female", "Male"} \cr \code{"Intervals"} \tab
-Segments of real line, ordered, with no gaps or overlap.  First interval can
+\cr
+\code{"Categories"} \tab Discrete qualitative categories.  No
+duplicates. \tab \code{"East", "West"} \cr
+\code{"Sexes"} \tab Biological sexes.  \tab \code{"Female", "Male"} \cr
+\code{"Intervals"} \tab' Segments of real line, ordered, with no gaps
+or overlap.  First interval can
 extend to negative infinity, and last interval can extend to positive
-infinity. \tab \code{"0", "1-4", "5-9", "10-14", "15+"}. \cr \code{"Points"}
-\tab Real numbers, ordered. \tab \code{2000, 2005, 2010} \cr
+infinity. \tab \code{"0", "1-4", "5-9", "10-14", "15+"}. \cr
+\code{"Points"} \tab Real numbers, ordered. \tab \code{2000, 2005, 2010} \cr
 \code{"Iterations"} \tab Positive integers, ordered.  Used exclusively with
-dimtype \code{"iteration"}. \tab \code{1, 2, 3} \cr \code{"Quantiles"} \tab
+dimtype \code{"iteration"}. \tab \code{1, 2, 3} \cr
+\code{"Quantiles"} \tab
 Real numbers in interval [0,1], ordered.  Used exclusively with dimtype
-\code{"quantile"}. \tab \code{"Lower", "Upper"} \cr \code{"Triangles"} \tab
+\code{"quantile"}. \tab \code{"2.5\%", "50\%", "97.5\%"} \cr 
+\code{"Triangles"} \tab
 Upper or lower Lexis triangle.  Used exclusively with dimtype
-\code{"triangle"}. \tab \code{"Lower", "Upper"} \cr \code{"Pool"} \tab
+\code{"triangle"}. \tab \code{"Lower", "Upper"} \cr 
+\code{"Pool"} \tab
 In-migration or out-migration in a 'migrant pool' model.  Used exclusively
 with dimtype \code{"pool"}. \tab \code{"Ins", "Outs"} \cr }
 }

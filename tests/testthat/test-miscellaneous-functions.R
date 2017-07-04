@@ -95,14 +95,10 @@ test_that("getSynonymsForIntervalSeparator works", {
 
 test_that("getSynonymsForOpenIntervalSymbol works", {
   getSynonymsForOpenIntervalSymbol <- dembase:::getSynonymsForOpenIntervalSymbol
-  expect_that("+" %in% getSynonymsForOpenIntervalSymbol(),
-              is_true())
-  expect_that(" and over" %in% getSynonymsForOpenIntervalSymbol(which = "final"),
-              is_true())
-  expect_that("<" %in% getSynonymsForOpenIntervalSymbol(which = "firstLeft"),
-              is_true())
-  expect_that(" or less" %in% getSynonymsForOpenIntervalSymbol("firstRight"),
-              is_true())
+  expect_true("+" %in% getSynonymsForOpenIntervalSymbol())
+  expect_true("andover" %in% getSynonymsForOpenIntervalSymbol(which = "final"))
+  expect_true("<" %in% getSynonymsForOpenIntervalSymbol(which = "firstLeft"))
+  expect_true("orless" %in% getSynonymsForOpenIntervalSymbol("firstRight"))
   expect_error(getSynonymsForOpenIntervalSymbol(which = "wrong"),
                sprintf("'arg' should be one of %s, %s, %s",
                        dQuote("final"), dQuote("firstLeft"), dQuote("firstRight")))

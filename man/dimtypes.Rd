@@ -53,14 +53,17 @@ dimtypes being more specialized.  Different dimtypes require different
 \tabular{rll}{ dimtype \tab Description \tab Permitted dimscales \cr
 \code{"state"} \tab Any qualitative attribute \tab \code{"Categories"} \cr
 \code{"age"} \tab Age \tab \code{"Intervals"}, \code{"Points"} \cr
-\code{"time"} \tab "Points" in time or extended intervals \tab
-\code{"Intervals"}, \code{"Points"} \cr \code{"origin"},
-\code{"destination"} \tab Starting and finishing states \tab
-\code{"Categories"} \cr \code{"parent"}, \code{"child"} \tab Parent's state
-versus child's state \tab \code{"Categories"} \cr \code{"cohort"} \tab
-Cohort \tab \code{"Intervals"} \cr \code{"iteration"} \tab
-Simulation number \tab \code{"Iterations"} \cr \code{"quantile"} \tab
-Quantile (between 0 and 1) \tab \code{"Quantiles"} \cr \code{"triangle"}
+\code{"sex"} \tab Sex \tab \code{"Sexes"} \cr
+\code{"time"} \tab Periods or exact times \tab \code{"Intervals"},
+\code{"Points"} \cr
+\code{"origin"}, \code{"destination"} \tab Starting and finishing states
+\tab \code{"Categories"} \cr
+\code{"parent"}, \code{"child"} \tab Parent's state versus child's state
+\tab \code{"Categories"} \cr
+\code{"cohort"} \tab Cohort \tab \code{"Intervals"} \cr
+\code{"iteration"} \tab Simulation number \tab \code{"Iterations"} \cr
+\code{"quantile"} \tab Quantile (between 0 and 1) \tab \code{"Quantiles"}
+\cr \code{"triangle"}
 \tab Lexis triangle \tab \code{"Triangle"} \cr }
 
 \itemize{
@@ -70,6 +73,7 @@ that is not dealt with by the more specialized dimtypes.
 age-groups. If age is measured qualitatively (eg \code{"children"} and
 \code{"adults"}), then dimtype \code{"state"} should be used instead. An
 object can have at most one dimension with dimtype \code{"age"}.
+  \item \code{"sex"}.  Biological sex.
   \item \code{"time"}.  Time, measured on a numerical scale.  Can be points in time,
 or intervals between points in time. If time is measured qualitatively (eg
 \code{"before"} and \code{"after"}), then dimtype \code{"state"} should be

@@ -117,10 +117,10 @@ getSynonymsForIntervalSeparator <- function()
 getSynonymsForOpenIntervalSymbol <- function(which = c("final", "firstLeft", "firstRight")) {
     which <- match.arg(which)
     switch(which,
-           final = c("+", " plus", " or higher", " or more",
-             " and higher", " and more", " and over"),
-           firstLeft = c("<", "less than", "up to"),
-           firstRight = " or less",
+           final = c("+", "plus", "orhigher", "ormore",
+                     "andhigher", "andmore", "andover"),
+           firstLeft = c("<", "lessthan", "upto"),
+           firstRight = "orless",
            stop(gettextf("invalid value for '%s'", "which")))
 }
 

@@ -369,6 +369,8 @@ setMethod("inferDimvalues",
               dimvalues <- numeric(n + 1L)
               intervalSeparators <- getSynonymsForIntervalSeparator()
               limitPrintLower <- getLimitPrintLower()
+              ## remove year|years from labels
+              labels <- sub("year|years", "", ignore.case = TRUE, labels)
               ## remove white space from labels
               labels <- gsub(" ", "", labels)
               ## see if the first label can be interpreted as denoting an open
