@@ -1276,7 +1276,7 @@ test_that("validity tests for BirthsMovementsNoParentChild inherited from iMinAg
     x.wrong <- x
     x.wrong@iMinAge <- 0L
     expect_error(validObject(x.wrong),
-                 "'iMinAge' is non-positive")
+                 "'iMinAge' is less than 2")
     x <- Counts(array(1L,
                       dim = 2L,
                       dimnames = list(time = c("2001-2005", "2006-2010"))))

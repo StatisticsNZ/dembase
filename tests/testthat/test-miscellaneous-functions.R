@@ -5052,6 +5052,42 @@ test_that("trimAgeIntervalsToMatch works", {
                  "dimensions with dimtype \"age\" not compatible")
 })
 
+test_that("trimAgeIntervalsTo1549 works", {
+    trimAgeIntervalsTo1549 <- dembase:::trimAgeIntervalsTo1549
+    x <- Counts(array(1:20,
+                      dim = 20,
+                      dimnames = list(age = paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"))))
+    ans.obtained <- trimAgeIntervalsTo1549(x)
+    ans.expected <- Counts(array(4:10,
+                                 dim = 7,
+                                 dimnames = list(age = paste(seq(15, 45, 5), seq(19, 49, 5), sep = "-"))))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:2,
+                      dim = 2,
+                      dimnames = list(age = c("0-14", "15+"))))
+    ans.obtained <- trimAgeIntervalsTo1549(x)
+    ans.expected <- Counts(array(2L,
+                                 dim = 1,
+                                 dimnames = list(age = "15+")))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:3,
+                      dim = 3,
+                      dimnames = list(age = c("0-14", "15-59", "60+"))))
+    ans.obtained <- trimAgeIntervalsTo1549(x)
+    ans.expected <- Counts(array(2L,
+                                 dim = 1,
+                                 dimnames = list(age = "15-59")))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(2L,
+                      dim = 1,
+                      dimnames = list(age = "15-59")))
+    expect_error(trimAgeIntervalsTo1549(x),
+                 "fewer than 2 age groups")
+})
+
+
+
+
 
 ## FUNCTIONS FOR PLOTTING ############################################################
 

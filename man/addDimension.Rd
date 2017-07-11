@@ -37,7 +37,8 @@ will be added after this dimension.}
 dimscales of new dimensions.)}
 
 \item{scale}{Optional numeric vector of scaling factors - or, if several dimensions
-are being added, and each dimension is scaled differently, a list of numeric vectors.}
+are being added, and each dimension is scaled differently, a list of numeric vectors.
+Can only be used if \code{object} has class \code{\linkS4class{Values}}.}
 
 \item{\dots}{Not currently used.}
 }
@@ -48,6 +49,11 @@ Modified version of \code{object}
 Add one or more dimensions to an object of class \code{\linkS4class{DemographicArray}}
 }
 \details{
+If \code{object} has class \code{\linkS4class{Counts}}, then the new dimension(s)
+must have length 1.  If \code{object} has class \code{\linkS4class{Values}},
+then the new dimensions can be longer than 1, in which case the \code{scale}
+argument becomes relevant.
+
 \code{labels}, \code{scale}, \code{dimtype}, and \code{dimscale} are
 all recycled where appropriate.  For instance, if \code{scale} is shorter than
 \code{labels}, then \code{scales} is recycled until it matches the

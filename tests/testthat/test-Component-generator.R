@@ -90,6 +90,22 @@ test_that("BirthsMovements works with valid inputs", {
                         metadata = births@metadata,
                         iMinAge = 4L)
     expect_identical(ans.obtained, ans.expected)
+    ## births does not have age dimension; template does
+    births <- Counts(array(10L,
+                           dim = c(3, 2),
+                           dimnames = list(region = 1:3,
+                                           time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(20, 3, 2, 2),
+                             dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
+                                 region = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("TL", "TU"))))
+    ans.obtained <- BirthsMovements(births = births,
+                                    template = template)
+    expect_identical(names(ans.obtained), c("age", "region", "time", "triangle"))
+    expect_identical(collapseDimension(as(ans.obtained, "Counts"), margin = c("region", "time")),
+                     births)
 })
 
 test_that("BirthsMovements raises appropriate errors", {

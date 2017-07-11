@@ -3715,6 +3715,31 @@ trimAgeIntervalsToMatch <- function(x, y) {
     slab(x, dimension = i.x, elements = elements, drop = FALSE)
 }
 
+## assume that (i) 'x' has dimension with dimtype "age",
+## (ii) the age dimension has dimscale "Intervals",
+## (iii) there are at least 2 age groups
+trimAgeIntervalsTo1549 <- function(x) {
+    dimtypes <- dimtypes(x, use.names = FALSE)
+    DimScales <- DimScales(x, use.names = FALSE)
+    i.age <- match("age", dimtypes)
+    DimScale.age <- DimScales[[i.age]]
+    dimvalues.age <- dimvalues(DimScale.age)
+    n.age <- length(dimvalues.age) - 1L
+    if (n.age < 2L)
+        stop(gettextf("fewer than %d age groups",
+                      2L))
+    i.first <- findInterval(x = 15, vec = dimvalues.age)
+    i.last <- findInterval(x = 49, vec = dimvalues.age)
+    if (i.first < 2L)
+        i.first <- 2L
+    if (i.last > n.age)
+        i.last <- n.age
+    elements <- seq.int(from = i.first, to = i.last)
+    slab(x,
+         dimension = i.age,
+         elements = elements,
+         drop = FALSE)
+}
 
 
 ## DBIND AND HELPER FUNCTIONS #####################################################

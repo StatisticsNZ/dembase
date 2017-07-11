@@ -23,8 +23,12 @@ BirthsMovements <- function(births, template) {
                                     allowParent = TRUE,
                                     allowTriangles = TRUE,
                                     triangles = TRUE)
+    dim.bth <- dim(births)
+    names.bth <- names(births)
     dimtypes.bth <- dimtypes(births, use.names = FALSE)
     dimtypes.tpt <- dimtypes(template, use.names = FALSE)
+    DimScales.bth <- DimScales(births, use.names = FALSE)
+    DimScales.tpt <- DimScales(template, use.names = FALSE)
     has.age.bth <- "age" %in% dimtypes.bth
     has.age.tpt <- "age" %in% dimtypes.tpt
     has.parent.bth <- "parent" %in% dimtypes.bth
@@ -34,6 +38,37 @@ BirthsMovements <- function(births, template) {
         if (methods::is(template.trimmed, "error"))
             stop(gettextf("'%s' is incompatible with '%s' : %s",
                           "births", "population", template.trimmed$message))
+        i.min.age <- iMinAge(current = births, target = template)
+        template <- template.trimmed
+    }
+    else if (!has.age.bth && has.age.tpt) {
+        template.trimmed <- trimAgeIntervalsTo1549(template)
+        i.age <- match("age", dimtypes.tpt)
+        i.triangle <- match("triangle", dimtypes.tpt)
+        DimScales.tpt.trim <- DimScales(template.trimmed, use.names = FALSE)
+        DimScale.age <- DimScales.tpt.trim[[i.age]]
+        DimScale.triangle <- DimScales.tpt[[i.triangle]]
+        .Data.births <- births@.Data
+        n.extra <- length(DimScale.age) * 2L
+        prob <- rep(1L, times = n.extra)
+        FUN <- function(x) stats::rmultinom(n = 1L, size = x, prob = prob)
+        .Data.births <- vapply(.Data.births,
+                               FUN = FUN,
+                               FUN.VALUE = prob)
+        .Data.births <- t(.Data.births)
+        names <- make.unique(c(names.bth, "age", "triangle"))
+        dimtypes <- c(dimtypes.bth, c("age", "triangle"))
+        DimScales <- c(DimScales.bth, list(DimScale.age, DimScale.triangle))
+        metadata.births <- new("MetaData",
+                               nms = names,
+                               dimtypes = dimtypes,
+                               DimScales = DimScales)
+        .Data.births <- array(.Data.births,
+                              dim = dim(metadata.births),
+                              dimnames = dimnames(metadata.births))
+        births <- new("Counts",
+                      .Data = .Data.births,
+                      metadata = metadata.births)
         i.min.age <- iMinAge(current = births, target = template)
         template <- template.trimmed
     }

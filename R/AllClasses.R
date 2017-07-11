@@ -1244,8 +1244,8 @@ setClass("IMinAge",
                                      "iMinAge"))
                  ## if has.age: 'minAge' positive
                  if (iMinAge <= 1L)
-                     return(gettextf("'%s' is non-positive",
-                                     "iMinAge"))
+                     return(gettextf("'%s' is less than %d",
+                                     "iMinAge", 2L))
              }
              else {
                  ## if !has.age: 'minAge' is missing

@@ -118,6 +118,11 @@ Movements <- function(population, births = NULL, internal = NULL,
 #' have identical time dimensions to one another, and these dimensions
 #' must have dimscale \code{"Intervals"}.
 #'
+#' If \code{initial} has an age dimension, then all components must
+#' have an age dimension, except for \code{births}.  (\code{births}
+#' will be given age and triangle dimensions, and entries will be randomly
+#' distributed across these.)
+#'
 #' @inheritParams Movements
 #' @param initial The starting or jump-off population. An object of
 #' class \code{\linkS4class{Counts}}.
@@ -150,6 +155,14 @@ Movements <- function(population, births = NULL, internal = NULL,
 #'                                        time = c("1971-2000"))))
 #' derivePopulation(initial = initial,
 #'                   births = births,
+#'                   exits = list(deaths = deaths))
+#'
+#' ## 'births' has no age dimension, so it is given one
+#' births.no.age <- Counts(array(13,
+#'                               dim = 1,
+#'                               dimnames = list(time = "1971-2000")))
+#' derivePopulation(initial = initial,
+#'                   births = births.no.age,
 #'                   exits = list(deaths = deaths))
 #'
 #' ## Calculations using age-time steps of one quarter.  (Note, incidentally,
