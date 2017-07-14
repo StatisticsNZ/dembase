@@ -1256,20 +1256,6 @@ setClass("IMinAge",
              TRUE
          })
 
-
-## HAS_TESTS
-setClass("NetSumsToZero",
-         contains = c("VIRTUAL", "IBetween"),
-         validity = function(object) {
-             iBetween <- object@iBetween
-             ## sums across "between" dimensions equal 0
-             sums <- collapseDimension(object, dimension = iBetween)
-             if (any(sums[!is.na(sums)] != 0))
-                 return(gettextf("\"%s\" dimensions do not sum to 0",
-                                 "between"))
-             TRUE
-         })             
-
 ## HAS_TESTS
 setClass("InsEqualOuts",
          contains = c("VIRTUAL", "IBetween", "IDirection"),
@@ -1293,6 +1279,51 @@ setClass("InsEqualOuts",
              TRUE
          })
 
+## HAS_TESTS
+setClass("NetSumsToZero",
+         contains = c("VIRTUAL", "IBetween"),
+         validity = function(object) {
+             iBetween <- object@iBetween
+             ## sums across "between" dimensions equal 0
+             sums <- collapseDimension(object, dimension = iBetween)
+             if (any(sums[!is.na(sums)] != 0))
+                 return(gettextf("\"%s\" dimensions do not sum to 0",
+                                 "between"))
+             TRUE
+         })             
+
+## HAS_TESTS
+setClass("TimeIsIntervals",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dimtypes <- dimtypes(object, use.names = FALSE)
+             DimScales <- DimScales(object, use.names = FALSE)
+             i.time <- match("time", dimtypes, nomatch = 0L)
+             if (i.time > 0L) {
+                 DimScale.time <- DimScales[[i.time]]
+                 if (!methods::is(DimScale.time, "Intervals"))
+                     return(gettextf("dimension with dimtype \"%s\" has dimscale \"%s\"",
+                                     "time", class(DimScale.time)))
+             }
+             TRUE
+         })
+
+## HAS_TESTS
+setClass("TimeIsPoints",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dimtypes <- dimtypes(object, use.names = FALSE)
+             DimScales <- DimScales(object, use.names = FALSE)
+             i.time <- match("time", dimtypes, nomatch = 0L)
+             if (i.time > 0L) {
+                 DimScale.time <- DimScales[[i.time]]
+                 if (!methods::is(DimScale.time, "Points"))
+                     return(gettextf("dimension with dimtype \"%s\" has dimscale \"%s\"",
+                                     "time", class(DimScale.time)))
+             }
+             TRUE
+         })
+
 #' Classes to summarise origin-destination flows.
 #' 
 #' Classes to describe net flows, or 'in' and 'out' flows, typically to be
@@ -1308,17 +1339,20 @@ NULL
 #' @export
 setClass("Net",
          contains = c("Counts",
-             "NoOrigDest", "NoParentChild",
-             "NetSumsToZero"))
+                      "NoOrigDest",
+                      "NoParentChild",
+                      "NetSumsToZero"))
 
 ## HAS_TESTS
 #' @rdname net-pool-classes
 #' @export
 setClass("Pool",
          contains = c("Counts",
-             "NoOrigDest", "NoParentChild",
-             "NonNegative",
-             "InsEqualOuts"))
+                      "NoOrigDest",
+                      "NoParentChild",
+                      "NonNegative",
+                      "InsEqualOuts"))
+
 
 #' Classes used by DemographicAccount.
 #'
@@ -1348,7 +1382,8 @@ setClass("Population",
                       "IsRegular",
                       "NoOrigDest",
                       "NoParentChild",
-                      "NoTriangle"),
+                      "NoTriangle",
+                      "TimeIsPoints"),
          validity = function(object) {
              dimtypes <- dimtypes(object, use.names = FALSE)
              DimScales <- DimScales(object, use.names = FALSE)
@@ -1375,7 +1410,8 @@ setClass("Component",
                       "AgeIsIntervals",
                       "FirstAgeIntervalClosed",
                       "IsRegular",
-                      "NoCohort"))
+                      "NoCohort",
+                      "TimeIsIntervals"))
 
 setClass("MovementsComponent",
          contains = c("VIRTUAL",

@@ -2605,8 +2605,6 @@ setGeneric("redistributeCategory",
                standardGeneric("redistributeCategory"))
 
 
-
-
 #' Reset iteration labels.
 #'
 #' Reset the labels used by a dimension with \code{\link{dimtype}}
@@ -2621,6 +2619,50 @@ setGeneric("resetIterations",
            function(object)
                standardGeneric("resetIterations"))
 
+#' Reset values where origin equals destination.
+#'
+#' Given a \code{\linkS4class{DemographicArray}} with \code{\link{dimtypes}}
+#' \code{"origin"} and \code{"destination"}, set cells on the "diagonal",
+#' ie where the origin equals the destination, to a value such as \code{0}
+#' or \code{NA}.
+#'
+#' The origin and destination dimensions are specified via the \code{base}
+#' argument.  \code{base} is the "base name", that is, the first part
+#' of the dimension name.  If is an origin dimension called
+#' \code{"region_orig"}, for instance, and a destination called
+#' \code{"region_dest"}, then the base name is \code{"region"}.
+#' If no \code{base} argument is supplied, then all origin and
+#' destination dimensions in the object are used.
+#'
+#' If no \code{reset} argument is supplied, then it defaults to
+#' \code{0} in the case of \code{\linkS4class{Counts}} objects and
+#' \code{NA} in the case of \code{\linkS4class{Values}} objects.
+#'
+#' @inheritParams collapseOrigDest
+#' @param object An object of class \code{\linkS4class{DemographicArray}}.
+#' @param reset The new value to be used on the diagonal.
+#'
+#' @return The original object, with the objects on the diagonal changed.
+#'
+#' @seealso \code{\link{collapseOrigDest}} to collapse away
+#' origin and destination dimensions.  \code{\link{alignPair}}
+#' puts origin and destination categories in the same order.
+#'
+#' @examples
+#' x <- Counts(array(1:4,
+#'                   dim = c(2, 2),
+#'                   dimnames = list(reg_orig = c("A", "B"),
+#'                                   reg_dest = c("A", "B"))))
+#' resetDiag(x)
+#' resetDiag(x, base = "reg")
+#' resetDiag(x, reset = NA)
+#'
+#' ## with Values object, reset defaults to NA, not 0
+#' x.val <- as(x, "Values")
+#' resetDiag(x.val)
+setGeneric("resetDiag",
+           function(object, base = NULL, reset = NULL)
+               standardGeneric("resetDiag"))
 
 
 #' @rdname ageMinMax

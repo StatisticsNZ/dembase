@@ -3305,8 +3305,24 @@ test_that("reallocateToEndAges throws appropriate errors", {
                  "weights cannot be used when 'object' has class \"Counts\"")
 })
 
+test_that("resetDiagInner works", {
+    object <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(reg_orig = c("A", "B"),
+                                           reg_dest = c("A", "B"))))
+    ans.obtained <- resetDiag(object)
+    ans.expected <- object
+    ans.expected[c(1,4)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- resetDiag(object, reset = NULL)
+    ans.expected <- object
+    ans.expected[c(1,4)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- resetDiag(object, reset = NA)
+    ans.expected <- object
+    ans.expected[c(1,4)] <- NA_integer_
+    expect_identical(ans.obtained, ans.expected)
+})
     
     
-    
-    
-                
+

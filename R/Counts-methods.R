@@ -2244,3 +2244,38 @@ setMethod("redistributeCategory",
           })
 
 
+#' @rdname resetDiag
+#' @export
+setMethod("resetDiag",
+          signature(object = "Counts",
+                    reset = "ANY"),
+          function(object, base = NULL, reset = NULL) {
+              resetDiagInner(object = object,
+                             base = base,
+                             reset = reset)
+          })
+
+#' @rdname resetDiag
+#' @export
+setMethod("resetDiag",
+          signature(object = "Counts",
+                    reset = "missing"),
+          function(object, base = NULL, reset = NULL) {
+              reset <- 0L
+              resetDiagInner(object = object,
+                             base = base,
+                             reset = reset)
+          })
+
+#' @rdname resetDiag
+#' @export
+setMethod("resetDiag",
+          signature(object = "Counts",
+                    reset = "NULL"),
+          function(object, base = NULL, reset = NULL) {
+              reset <- 0L
+              resetDiagInner(object = object,
+                             base = base,
+                             reset = reset)
+          })
+

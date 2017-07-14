@@ -5699,6 +5699,89 @@ test_that("redistributeInnerDistn works with cases encountered when counts is nu
 })
 
 
+test_that("resetDiagInner works", {
+    resetDiagInner <- dembase:::resetDiagInner
+    object <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(reg_orig = c("A", "B"),
+                                           reg_dest = c("A", "B"))))
+    ans.obtained <- resetDiagInner(object,
+                                   base = "reg",
+                                   reset = 0L)
+    ans.expected <- object
+    ans.expected[c(1,4)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- resetDiagInner(object,
+                                   base = NULL,
+                                   reset = 0L)
+    ans.expected <- object
+    ans.expected[c(1,4)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- resetDiagInner(object,
+                                   base = NULL,
+                                   reset = NA)
+    ans.expected <- object
+    ans.expected[c(1,4)] <- NA_integer_
+    expect_identical(ans.obtained, ans.expected)
+    object <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(reg_orig = c("A", "B"),
+                                           reg_dest = c("B", "A"))))
+    ans.obtained <- resetDiagInner(object,
+                                   base = NULL,
+                                   reset = 0L)
+    ans.expected <- object
+    ans.expected[2:3] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    object <- Counts(array(1:6,
+                           dim = c(2, 3),
+                           dimnames = list(reg_orig = c("A", "B"),
+                                           reg_dest = c("B", "A", "C"))))
+    ans.obtained <- resetDiagInner(object,
+                                   base = NULL,
+                                   reset = 0L)
+    ans.expected <- object
+    ans.expected[2:3] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    object <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(reg_orig = c("A", "B"),
+                                           sex = c("Female", "Male"),
+                                           reg_dest = c("A", "B"))))
+    ans.obtained <- resetDiagInner(object,
+                                   base = NULL,
+                                   reset = 0L)
+    ans.expected <- object
+    ans.expected[c(1, 3, 6, 8)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    object <- Counts(array(32,
+                           dim = c(2, 2, 2, 2, 2),
+                           dimnames = list(reg_orig = c("A", "B"),
+                                           eth_orig = c("c", "d"),
+                                           sex = c("Female", "Male"),
+                                           eth_dest = c("c", "d"),
+                                           reg_dest = c("A", "B"))))
+    ans.obtained <- resetDiagInner(object,
+                                   base = "eth",
+                                   reset = 0L)
+    ans.expected <- object
+    ans.expected[c(1, 2, 5, 6, 11, 12, 15, 16, 17, 18, 21, 22, 27, 28, 31, 32)] <- 0L
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("resetDiagInner throws appropriate errors", {
+    ## resetDiagInner <- dembase:::resetDiagInner
+    object <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(reg1 = c("A", "B"),
+                                           reg2 = c("A", "B"))))
+    expect_error(resetDiagInner(object, base = NULL, reset = 0),
+                 "no dimensions with dimtypes \"origin\" or \"destination\"")
+    expect_error(resetDiagInner(object, base = "reg1", reset = 0),
+                 "'base' outside valid range")
+})
+
+
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################
 
 test_that("expandAx works", {
@@ -6414,6 +6497,18 @@ test_that("checkAndTidyNIter works", {
                  "'n' is not an integer")
     expect_error(checkAndTidyNIter(0L),
                  "'n' is less than 1")
+})
+
+test_that("checkAndTidyReset works", {
+    checkAndTidyReset <- dembase:::checkAndTidyReset
+    expect_identical(checkAndTidyReset(0L), 0L)
+    expect_identical(checkAndTidyReset(NA_integer_), NA_integer_)
+    expect_identical(checkAndTidyReset(0.1), 0.1)
+    expect_identical(checkAndTidyReset(0.0), 0L)
+    expect_error(checkAndTidyReset(c(0, 1)),
+                 "'reset' does not have length 1")
+    expect_error(checkAndTidyReset("0"),
+                 "'reset' is non-numeric")
 })
 
 test_that("checkAndTidyEpsilon works", {

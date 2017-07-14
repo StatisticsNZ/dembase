@@ -126,6 +126,12 @@ setMethod("population",
               as(object@population, "Counts")
           })
 
+
+
+
+                
+
+
 ## HAS_TESTS
 #' @rdname componentNames
 #' @export

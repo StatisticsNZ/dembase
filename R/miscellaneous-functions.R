@@ -4526,7 +4526,28 @@ dapply <- function(X, MARGIN, FUN, ...) {
 }
 
 
-## FUNCTIONS FOR PERTURBING AND REDISTRIBUTING DATA ###################################
+## FUNCTIONS FOR MANIPULATING, PERTURBING AND REDISTRIBUTING DATA ######################
+
+
+
+checkAndTidyReset <- function(reset) {
+    if (!identical(length(reset), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "reset", 1L))
+    if (is.na(reset))
+        NA_integer_
+    else {
+        if (!is.numeric(reset))
+            stop(gettextf("'%s' is non-numeric",
+                          "reset"))
+        if (isTRUE(all.equal(reset, round(reset))))
+            as.integer(reset)
+        else
+            as.numeric(reset)
+    }
+}
+
+
 
 ## HAS_TESTS
 checkAndTidyEpsilon <- function(epsilon) {
@@ -4777,6 +4798,51 @@ redistributeInnerDistn <- function(counts, weights, transform, useC) {
         ans
     }
 }
+
+
+resetDiagInner <- function(object, base, reset) {
+    reset <- checkAndTidyReset(reset)
+    .Data <- object@.Data
+    names <- names(object)
+    dimtypes <- dimtypes(object, use.names = FALSE)
+    DimScales <- DimScales(object, use.names = FALSE)
+    if (is.null(base)) {
+        is.orig <- dimtypes == "origin"
+        if (!any(is.orig))
+            stop(gettextf("no dimensions with dimtypes \"%s\" or \"%s\"",
+                          "origin", "destination"))
+        base <- removeSuffixes(names[is.orig])
+    }
+    i.orig <- match(sprintf("%s_orig", base), names, nomatch = 0L)
+    if (any(i.orig == 0L))
+        stop(gettextf("'%s' outside valid range", "base"))
+    i.dest <- match(sprintf("%s_dest", base), names)
+    for (i in seq_along(i.orig)) {
+        i.dim.orig <- i.orig[i]
+        i.dim.dest <- i.dest[i]
+        DS.orig <- DimScales[[i.dim.orig]]
+        DS.dest <- DimScales[[i.dim.dest]]
+        dv.orig <- dimvalues(DS.orig)
+        dv.dest <- dimvalues(DS.dest)
+        index.orig <- slice.index(.Data, MARGIN = i.dim.orig)
+        index.dest <- slice.index(.Data, MARGIN = i.dim.dest)
+        for (i.dv.orig in seq_along(dv.orig)) {
+            dv <- dv.orig[i.dv.orig]
+            i.dv.dest <- match(dv, dv.dest, nomatch = 0L)
+            has.dv <- i.dv.dest > 0L
+            if (has.dv) {
+                index <- (index.orig == i.dv.orig) & (index.dest == i.dv.dest)
+                .Data[index] <- reset
+            }
+        }
+    }
+    class <- if (methods::is(object, "Counts")) "Counts" else "Values"
+    metadata <- object@metadata
+    methods::new(class,
+                 .Data = .Data,
+                 metadata = metadata)
+}
+
 
 
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################

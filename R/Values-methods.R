@@ -1588,3 +1588,39 @@ setMethod("tfr",
               dimension <- dimension[dimension != 0L]
               collapseDimension(object, dimension = dimension)
           })
+
+#' @rdname resetDiag
+#' @export
+setMethod("resetDiag",
+          signature(object = "Values",
+                    reset = "ANY"),
+          function(object, base = NULL, reset = NULL) {
+              resetDiagInner(object = object,
+                             base = base,
+                             reset = reset)
+          })
+
+#' @rdname resetDiag
+#' @export
+setMethod("resetDiag",
+          signature(object = "Values",
+                    reset = "NULL"),
+          function(object, base = NULL, reset = NULL) {
+              reset <- NA_integer_
+              resetDiagInner(object = object,
+                             base = base,
+                             reset = reset)
+          })
+
+#' @rdname resetDiag
+#' @export
+setMethod("resetDiag",
+          signature(object = "Values",
+                    reset = "missing"),
+          function(object, base = NULL, reset = NULL) {
+              reset <- NA_integer_
+              resetDiagInner(object = object,
+                             base = base,
+                             reset = reset)
+          })
+

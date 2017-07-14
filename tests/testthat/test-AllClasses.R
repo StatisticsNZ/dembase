@@ -1170,8 +1170,7 @@ test_that("validity tests for Population inherited from NoTriangle work", {
                           triangle = c("TL", "TU"),
                           time = c(0, 1, 2))),
                 dimscales = c(time = "Intervals"))
-    expect_error(new("Population", x),
-                 "has dimension with dimtype \"triangle\"")
+    expect_error(new("Population", x))
 })
 
 test_that("validity tests for Population inherited from NoOrigDest work", {
@@ -1195,6 +1194,18 @@ test_that("validity tests for Population inherited from NoParentChild work", {
     expect_error(new("Population", x),
                  "has dimension with dimtype \"parent\"")
 })
+
+test_that("validity tests for Population inherited from TimeIsPoints work", {
+    x <- Counts(array(1:18,
+                      dim = c(3, 2, 3),
+                      dimnames = list(age = c(0,1,"2+"),
+                          sex = c("f", "m"),
+                          time = c("2001", "2002", "2003"))),
+                dimscales = c(time = "Intervals"))
+    expect_error(new("Population", x),
+                 "dimension with dimtype \"time\" has dimscale \"Intervals\"")
+})
+
 
 test_that("validity tests for Population inherited from Population work", {
     ## time dimension has dimscale "Points"
@@ -1289,6 +1300,20 @@ test_that("validity tests for BirthsMovementsNoParentChild inherited from iMinAg
     x.wrong@iMinAge <- 1L
     expect_error(validObject(x.wrong),
                  "no dimension with dimtype \"age\" but 'iMinAge' is not missing")
+})
+
+test_that("validity tests for BirthsMovementsNoParentChild inherited from TimeIsIntervals work", {
+    x <- Counts(array(1L,
+                      dim = c(2, 2, 1),
+                      dimnames = list(reg = c("a", "b"),
+                          eth = c("A", "B"),
+                          time = "2001")),
+                dimscales = c(time = "Points"))
+    expect_error(new("BirthsMovementsNoParentChild",
+                     .Data = x@.Data,
+                     metadata = x@metadata,
+                     iMinAge = NA_integer_),
+                 "dimension with dimtype \"time\" has dimscale \"Points\"")
 })
 
 test_that("can create valid object of class BirthsMovementsHasParentChild", {
