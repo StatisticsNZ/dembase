@@ -2619,6 +2619,8 @@ setGeneric("resetIterations",
            function(object)
                standardGeneric("resetIterations"))
 
+
+## HAS_TESTS
 #' Reset values where origin equals destination.
 #'
 #' Given a \code{\linkS4class{DemographicArray}} with \code{\link{dimtypes}}

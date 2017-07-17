@@ -122,6 +122,20 @@ test_that("getValidDimtypes works", {
 
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
+test_that("checkAndTidyYearStart works", {
+    checkAndTidyYearStart <- dembase:::checkAndTidyYearStart
+    expect_identical(checkAndTidyYearStart(2000),
+                     2000L)
+    expect_error(checkAndTidyYearStart("5"),
+                 "'yearStart' is non-numeric")
+    expect_error(checkAndTidyYearStart(5:6),
+                 "'yearStart' does not have length 1")
+    expect_error(checkAndTidyYearStart(as.numeric(NA)),
+                 "'yearStart' is missing")
+    expect_error(checkAndTidyYearStart(5.5),
+                 "'yearStart' is not an integer")
+})
+
 test_that("checkAndTidyDateAndDOB", {
     checkAndTidyDateAndDOB <- dembase:::checkAndTidyDateAndDOB
     dob <- as.Date("2000-06-30")
@@ -179,55 +193,38 @@ test_that("checkLastOpen works", {
                  "'lastOpen' is missing")
 })
 
-test_that("checkStart works", {
-    checkStart <- dembase:::checkStart
-    expect_error(checkStart(as.Date("wrong"),
-                            "'start' does not have class \"Date\""))
-    expect_null(checkStart(as.Date("1970-01-01")))
-    expect_error(checkStart(as.Date("1970-01-01", "1970-01-02"),
-                            "'start' does not have length 1"))
-    expect_error(checkStart(as.Date(NA)),
-                 "'start' is missing")
+test_that("completedYears works", {
+    completedYears <- dembase:::completedYears
+    ans.obtained <- completedYears(date = as.Date("2001-04-03"),
+                                         dob = as.Date("2001-01-01"))
+    ans.expected <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2000-01-31", "2000-02-01", "2000-12-31", "2001-01-01"))
+    dob <- as.Date(c("2000-01-01", "2000-01-01", "2000-01-01", "2000-01-01"))
+    ans.obtained <- completedYears(date = date, dob = dob)
+    ans.expected <- c(0L, 0L, 0L, 1L)
+    expect_identical(ans.expected, ans.obtained)
+    ans.obtained <- completedYears(date = as.Date(c("2001-02-28", "2001-02-27", "2001-03-01")),
+                                   dob = rep(as.Date("2000-02-29"), 3))
+    ans.expected <- c(1L, 0L, 1L)
+    expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("checkStep works", {
-    checkStep <- dembase:::checkStep
-    expect_null(checkStep("year"))
-    expect_null(checkStep("5 years"))
-    expect_null(checkStep("2.5 years"))
-    expect_null(checkStep("2 months"))
-    expect_null(checkStep("1 quarter"))
-    expect_null(checkStep("quarter"))
-    expect_error(checkStep(c("year", "month")),
-                 "'step' does not have length 1")
-    expect_error(checkStep(as.character(NA)),
-                 "'step' is missing")
-    expect_error(checkStep("wrong",
-                           "invalid value for 'step' : invalid string for 'by'"))
-    expect_error(checkStep("-5 years"),
-                 "'step' non-positive")
-    expect_error(checkStep("5 months"),
-                 "invalid value for 'step' : one year cannot be divided into units of length \"5 months\"")
-})
-
-test_that("checkStepAndStart works", {
-    checkStepAndStart <- dembase:::checkStepAndStart
-    expect_null(checkStepAndStart(step = "year",
-                                  start = as.Date("1970-01-01")))
-    expect_null(checkStepAndStart(step = "month",
-                                  start = as.Date("1970-01-01")))
-    expect_null(checkStepAndStart(step = "month",
-                                  start = as.Date("1970-02-01")))
-    expect_null(checkStepAndStart(step = "month",
-                                  start = as.Date("2000-11-01")))
-    expect_null(checkStepAndStart(step = "quarter",
-                                  start = as.Date("2000-10-01")))
-    expect_error(checkStepAndStart(step = "quarter",
-                                   start = as.Date("1970-02-01")),
-                            "'start' does not belong to sequence formed from 'step'")
-    expect_error(checkStepAndStart(step = "month",
-                                   start = as.Date("1970-01-02")),
-                            "'start' does not belong to sequence formed from 'step'")
+test_that("completedMonths works", {
+    completedMonths <- dembase:::completedMonths
+    ans.obtained <- completedMonths(date = as.Date("2001-04-03"),
+                                         dob = as.Date("2001-01-01"))
+    ans.expected <- 3L
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2000-01-31", "2000-02-01", "2000-12-31", "2001-01-01"))
+    dob <- as.Date(c("2000-01-01", "2000-01-01", "2000-01-01", "2000-01-01"))
+    ans.obtained <- completedMonths(date = date, dob = dob)
+    ans.expected <- c(0L, 1L, 11L, 12L)
+    expect_identical(ans.expected, ans.obtained)
+    ans.obtained <- completedMonths(date = as.Date(c("2001-02-28", "2001-02-27", "2001-03-01")),
+                                         dob = rep(as.Date("2000-02-29"), 3))
+    ans.expected <- c(12L, 11L, 12L)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("datesToAgeGroups works", {
@@ -267,6 +264,30 @@ test_that("datesToAgeGroups works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("datesToCohorts works", {
+    dob <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
+                      "2001-07-01", "2005-01-01", "2005-12-01"))
+    ans.obtained <- datesToCohorts(dob = dob)
+    ans.expected <- factor(c("2000", 2000, 2001, 2001, 2001, 2005, 2005),
+                           levels = as.character(2000:2005))
+    expect_identical(ans.obtained, ans.expected)
+    dob <- as.Date(c("2000-06-30", "2000-07-01", "2001-07-01"))
+    ans.obtained <- datesToCohorts(dob = dob, step = "6 months")
+    ans.expected <- factor(c("2000-2000.5", "2000.5-2001", "2001.5-2002"),
+                           levels = c("2000-2000.5", "2000.5-2001", "2001-2001.5", "2001.5-2002"))
+    expect_identical(ans.obtained, ans.expected)    
+    dob <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
+    ans.obtained <- datesToCohorts(dob = dob, step = "quarter")
+    ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
+                           levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
+    expect_identical(ans.obtained, ans.expected)    
+    dob <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
+    ans.obtained <- datesToCohorts(dob = dob, step = "quarter", monthStart = "April")
+    ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
+                           levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
+    expect_identical(ans.obtained, ans.expected)    
+})
+
 test_that("datesToPeriods works", {
     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
                       "2001-07-01", "2005-01-01", "2005-12-01"))
@@ -285,40 +306,11 @@ test_that("datesToPeriods works", {
                            levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
     expect_identical(ans.obtained, ans.expected)    
     date <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
-    ans.obtained <- datesToPeriods(date = date, step = "quarter", start = as.Date("2000-04-01"))
+    ans.obtained <- datesToPeriods(date = date, step = "quarter", monthStart = "April")
     ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
                            levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
     expect_identical(ans.obtained, ans.expected)    
 })
-
-##     date <- as.Date(c("2002-06-30", "2003-07-01"))
-##     ans.obtained <- datesToPeriods(date = date, dob = dob, lastOpen = FALSE)
-##     ans.expected <- factor(c("2", "2", "1", "1"),
-##                            levels = as.character(0:2))
-##     expect_identical(ans.obtained, ans.expected)
-##     dob <- as.Date(c(NA, "2000-08-30", "2001-01-01", "2001-12-31"))
-##     date <- as.Date(c("2002-06-30", "2003-07-01"))
-##     ans.obtained <- datesToPeriods(date = date, dob = dob, lastOpen = FALSE)
-##     ans.expected <- factor(c(NA, "2", "1", "1"),
-##                            levels = as.character(0:2))
-##     expect_identical(ans.obtained, ans.expected)
-##     ## 5-year intervals
-##     dob <- as.Date("2000-06-30")
-##     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-##                       "2001-07-01", "2005-01-01", "2005-12-01"))
-##     ans.obtained <- datesToPeriods(date = date, dob = dob, step = "5 years", lastOpen = TRUE)
-##     ans.expected <- factor(c("0-4", "0-4", "0-4", "0-4", "0-4", "0-4", "5+"),
-##                            levels = c("0-4", "5+"))
-##     expect_identical(ans.obtained, ans.expected)
-##     ## quarter intervals
-##     dob <- as.Date("2000-01-01")
-##     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-07-01"))
-##     ans.obtained <- datesToPeriods(date = date, dob = dob, step = "quarter", lastOpen = TRUE)
-##     ans.expected <- factor(c("0.25-0.5", "0.5-0.75", "1.25-1.5", "1.5+"),
-##                            levels = c("0-0.25", "0.25-0.5", "0.5-0.75", "0.75-1", "1-1.25", "1.25-1.5", "1.5+"))
-##     expect_identical(ans.obtained, ans.expected)
-## })
-
 
 test_that("datesToTriangles works", {
     dob <- as.Date("2000-06-30")
@@ -350,217 +342,351 @@ test_that("datesToTriangles works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("iAgeInterval works", {
-    iAgeInterval <- dembase:::iAgeInterval
+test_that("iIntervalSinceBirthYears works", {
+    iIntervalSinceBirthYears <- dembase:::iIntervalSinceBirthYears
     date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
     dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iAgeInterval(date = date,
-                                 dob = dob,
-                                 step = "1 year")
+    ans.obtained <- iIntervalSinceBirthYears(date = date,
+                                            dob = dob,
+                                            stepNum = 1L,
+                                            monthStartNum = 1L,
+                                            yearStart = 2000L)
     ans.expected <- c(2L, 7L, 1L, 6L)
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- iAgeInterval(date = date,
-                                 dob = dob,
-                                 step = "5 years")
-    ans.expected <- c(1L, 2L, 1L, 2L)
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- iAgeInterval(date = date,
-                                 dob = dob,
-                                 step = "quarter")
-    ans.expected <- c(8L, 28L, 4L, 21L)
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c(NA, "2000-08-30"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- iAgeInterval(date = date, dob = dob, step = "1 year")
-    ans.expected <- c(NA, 3L)
-})
-
-test_that("iTimeIntervalSinceBirth works", {
-    iTimeIntervalSinceBirth <- dembase:::iTimeIntervalSinceBirth
     date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
     dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iTimeIntervalSinceBirth(date = date,
+    ans.obtained <- iIntervalSinceBirthYears(date = date,
                                             dob = dob,
-                                            step = "1 year",
-                                            start = as.Date("1970-01-01"))
-    ans.expected <- c(2L, 7L, 1L, 6L)
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- iTimeIntervalSinceBirth(date = date,
-                                            dob = dob,
-                                            step = "5 years",
-                                            start = as.Date("1970-01-01"))
+                                            stepNum = 5L,
+                                            monthStartNum = 1L,
+                                            yearStart = 2000L)
     ans.expected <- c(1L, 2L, 1L, 2L)
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- iTimeIntervalSinceBirth(date = date,
+    date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
+    dob <- as.Date(rep("2000-01-01", 4))
+    ans.obtained <- iIntervalSinceBirthYears(date = date,
                                             dob = dob,
-                                            step = "quarter",
-                                            start = as.Date("1970-01-01"))
-    ans.expected <- c(8L, 28L, 4L, 21L)
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- iTimeIntervalSinceBirth(date = date,
-                                            dob = dob,
-                                            step = "1 year",
-                                            start = as.Date("1970-07-01"))
+                                            stepNum = 1L,
+                                            monthStartNum = 7L,
+                                            yearStart = 2000L)
     ans.expected <- c(3L, 8L, 2L, 6L)
     expect_identical(ans.obtained, ans.expected)
     dob <- as.Date(c(NA, "2000-08-30"))
     date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- iTimeIntervalSinceBirth(date = date, dob = dob, step = "1 year",
-                                            start = as.Date("1970-01-01"))
-    ans.expected <- c(NA, 3L)
+    ans.obtained <- iIntervalSinceBirthYears(date = date,
+                                            dob = dob,
+                                            stepNum = 1L,
+                                            monthStartNum = 1L,
+                                            yearStart = 2000L)
+    ans.expected <- c(NA, 4L)
+    expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeDateVec works", {
-    makeDateVec <- dembase:::makeDateVec
+test_that("iIntervalSinceBirthMonths works", {
+    iIntervalSinceBirthMonths <- dembase:::iIntervalSinceBirthMonths
+    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
+    dob <- as.Date(rep("2000-01-01", 4))
+    ans.obtained <- iIntervalSinceBirthMonths(date = date,
+                                              dob = dob,
+                                              stepNum = 1L)
+    ans.expected <- c(22L, 10L, 12L, 61L)
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
+    dob <- as.Date(rep("2000-01-01", 4))
+    ans.obtained <- iIntervalSinceBirthMonths(date = date,
+                                              dob = dob,
+                                              stepNum = 6L)
+    ans.expected <- c(4L, 2L, 2L, 11L)
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
+    dob <- as.Date(rep("2000-01-01", 4))
+    ans.obtained <- iIntervalSinceBirthMonths(date = date,
+                                              dob = dob,
+                                              stepNum = 3L)
+    ans.expected <- c(8L, 4L, 4L, 21L)
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
+    dob <- as.Date(rep("2000-01-01", 4))
+    ans.obtained <- iIntervalSinceBirthMonths(date = date,
+                                              dob = dob,
+                                              stepNum = 3L)
+    ans.expected <- c(8L, 4L, 4L, 21L)
+    expect_identical(ans.obtained, ans.expected)
+    dob <- as.Date(c(NA, "2000-08-30"))
+    date <- as.Date(c("2002-06-30", "2003-07-01"))
+    ans.obtained <- iIntervalSinceBirthMonths(date = date,
+                                              dob = dob,
+                                              stepNum = 3L)
+    ans.expected <- c(NA, 13L)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("isLeapYear works", {
+    isLeapYear <- dembase:::isLeapYear
+    ans.obtained <- isLeapYear(c(1999, 2000, 2100, 2004, 2003))
+    ans.expected <- c(FALSE, TRUE, FALSE, TRUE, FALSE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeDateVecYears works", {
+    makeDateVecYears <- dembase:::makeDateVecYears
     ## one year, starting 1 Jan
-    ans.obtained <- makeDateVec(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "1 year",
-                                start = as.Date("1970-01-01"))
+    ans.obtained <- makeDateVecYears(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                     stepNum = 1L,
+                                     monthStartNum = 1L,
+                                     yearStart = 2000L)
     ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2017-01-01"),
+                        to = as.Date("2018-01-01"),
                         by = "1 year")
     expect_identical(ans.obtained, ans.expected)
     ## change start date
-    ans.obtained <- makeDateVec(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "1 year",
-                                start = as.Date("1960-01-01"))
+    ans.obtained <- makeDateVecYears(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                     stepNum = 1L,
+                                     monthStartNum = 1L,
+                                     yearStart = 2010L)
     ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2017-01-01"),
+                        to = as.Date("2018-01-01"),
                         by = "1 year")
-    expect_identical(ans.obtained, ans.expected)
-    ## 1 month
-    ans.obtained <- makeDateVec(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "month",
-                                start = as.Date("1970-01-01"))
-    ans.expected <- seq(from = as.Date("2001-04-01"),
-                        to = as.Date("2017-05-01"),
-                        by = "month")
-    expect_identical(ans.obtained, ans.expected)
-    ## 1 quarter
-    ans.obtained <- makeDateVec(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "quarter",
-                                start = as.Date("1970-01-01"))
-    ans.expected <- seq(from = as.Date("2001-04-01"),
-                        to = as.Date("2017-04-01"),
-                        by = "quarter")
-    expect_identical(ans.obtained, ans.expected)
-    ## 1 quarter, start in future
-    ans.obtained <- makeDateVec(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "quarter",
-                                start = as.Date("2070-01-01"))
-    ans.expected <- seq(from = as.Date("2001-04-01"),
-                        to = as.Date("2017-04-01"),
-                        by = "quarter")
     expect_identical(ans.obtained, ans.expected)
     ## 5 years
-    ans.obtained <- makeDateVec(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "5 years",
-                                start = as.Date("1970-01-01"))
+    ans.obtained <- makeDateVecYears(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                     stepNum = 5L,
+                                     monthStartNum = 1L,
+                                     yearStart = 2000L)
     ans.expected <- seq(from = as.Date("2000-01-01"),
-                        to = as.Date("2015-01-01"),
+                        to = as.Date("2020-01-01"),
                         by = "5 years")
     expect_identical(ans.obtained, ans.expected)
-    ## both dates earlier than start
-    ans.obtained <- makeDateVec(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "1 year",
-                                start = as.Date("2070-01-01"))
+    ## 5 years, start in 2001
+    ans.obtained <- makeDateVecYears(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                     stepNum = 5L,
+                                     monthStartNum = 1L,
+                                     yearStart = 2001L)
     ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2017-01-01"),
-                        by = "1 year")
+                        to = as.Date("2021-01-01"),
+                        by = "5 years")
     expect_identical(ans.obtained, ans.expected)
-    ## dob earlier than start, date later
-    ans.obtained <- makeDateVec(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                step = "1 year",
-                                start = as.Date("2010-01-01"))
-    ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2017-01-01"),
-                        by = "1 year")
+    ## 5 years, start in July 2001
+    ans.obtained <- makeDateVecYears(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                     stepNum = 5L,
+                                     monthStartNum = 7L,
+                                     yearStart = 2001L)
+    ans.expected <- seq(from = as.Date("1996-07-01"),
+                        to = as.Date("2021-07-01"),
+                        by = "5 years")
+    expect_identical(ans.obtained, ans.expected)
+    ## 5 years, start in 1 July 2001 - single observation
+    ans.obtained <- makeDateVecYears(date = as.Date("2016-07-01"),
+                                     stepNum = 5L,
+                                     monthStartNum = 7L,
+                                     yearStart = 2001L)
+    ans.expected <- seq(from = as.Date("2016-07-01"),
+                        to = as.Date("2021-07-01"),
+                        by = "5 years")
+    expect_identical(ans.obtained, ans.expected)
+    ## 5 years, start in 1 July 2001 - single observation
+    ans.obtained <- makeDateVecYears(date = as.Date("2016-06-30"),
+                                     stepNum = 5L,
+                                     monthStartNum = 7L,
+                                     yearStart = 2001L)
+    ans.expected <- seq(from = as.Date("2011-07-01"),
+                        to = as.Date("2016-07-01"),
+                        by = "5 years")
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("makeAgeLabelsFromStep works", {
-    makeAgeLabelsFromStep <- dembase:::makeAgeLabelsFromStep
-    ans.obtained <- makeAgeLabelsFromStep(step = "year",
-                                          nAgeInterval = 3,
-                                          lastOpen = TRUE)
+test_that("makeDateVecMonths works", {
+    makeDateVecMonths <- dembase:::makeDateVecMonths
+    ## 1 month
+    ans.obtained <- makeDateVecMonths(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                      stepNum = 1L)
+    ans.expected <- seq(from = as.Date("2001-04-01"),
+                        to = as.Date("2017-06-01"),
+                        by = "month")
+    expect_identical(ans.obtained, ans.expected)
+    ## 1 quarter
+    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
+                                      stepNum = 3L)
+    ans.expected <- seq(from = as.Date("2001-04-01"),
+                        to = as.Date("2017-07-01"),
+                        by = "quarter")
+    expect_identical(ans.obtained, ans.expected)
+    ## 1 quarter
+    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-06-30"), as.Date("2001-04-01"),
+                                               as.Date("2018-11-24")),
+                                      stepNum = 3L)
+    ans.expected <- seq(from = as.Date("2001-04-01"),
+                        to = as.Date("2019-01-01"),
+                        by = "quarter")
+    expect_identical(ans.obtained, ans.expected)
+    ## 20 February 2000
+    ans.obtained <- makeDateVecMonths(date = as.Date("2000-02-29"),
+                                      step = 1L)
+    ans.expected <- seq(from = as.Date("2000-02-01"),
+                        to = as.Date("2000-03-01"),
+                        by = "1 month")
+    expect_identical(ans.obtained, ans.expected)
+    ## date 31 December
+    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-12-31"), as.Date("2001-04-03")),
+                                      step = 2L)
+    ans.expected <- seq(from = as.Date("2001-03-01"),
+                        to = as.Date("2018-01-01"),
+                        by = "2 months")
+    expect_identical(ans.obtained, ans.expected)
+    ## 6 months
+    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-12-31"), as.Date("2001-04-03")),
+                                      step = 6L)
+    ans.expected <- seq(from = as.Date("2001-01-01"),
+                        to = as.Date("2018-01-01"),
+                        by = "6 months")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeAgeLabels works", {
+    makeAgeLabels <- dembase:::makeAgeLabels
+    ans.obtained <- makeAgeLabels(stepNum = 1L,
+                                  stepUnit = "years",
+                                  nAgeInterval = 3,
+                                  lastOpen = TRUE)
     ans.expected <- c("0", "1", "2+")
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabelsFromStep(step = "year",
-                                          nAgeInterval = 3,
-                                          lastOpen = FALSE)
+    ans.obtained <- makeAgeLabels(stepNum = 1L,
+                                  stepUnit = "years",
+                                  nAgeInterval = 3,
+                                  lastOpen = FALSE)
     ans.expected <- c("0", "1", "2")
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabelsFromStep(step = "year",
-                                          nAgeInterval = 4,
-                                          lastOpen = FALSE)
+    ans.obtained <- makeAgeLabels(stepNum = 5L,
+                                  stepUnit = "years",
+                                  nAgeInterval = 3,
+                                  lastOpen = TRUE)
+    ans.expected <- c("0-4", "5-9", "10+")
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeAgeLabels(stepNum = 1L,
+                                  stepUnit = "years",
+                                  nAgeInterval = 4,
+                                  lastOpen = FALSE)
     ans.expected <- c("0", "1", "2", "3")
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabelsFromStep(step = "quarter",
-                                          nAgeInterval = 4,
-                                          lastOpen = FALSE)
+    ans.obtained <- makeAgeLabels(stepNum = 3L,
+                                  stepUnit = "months",
+                                  nAgeInterval = 4,
+                                  lastOpen = FALSE)
     ans.expected <- c("0-0.25", "0.25-0.5", "0.5-0.75", "0.75-1")
     expect_identical(ans.obtained, ans.expected)    
-    ans.obtained <- makeAgeLabelsFromStep(step = "6 months",
-                                          nAgeInterval = 4,
-                                          lastOpen = TRUE)
+    ans.obtained <- makeAgeLabels(stepNum = 6L,
+                                  stepUnits = "months",
+                                  nAgeInterval = 4,
+                                  lastOpen = TRUE)
     ans.expected <- c("0-0.5", "0.5-1", "1-1.5", "1.5+")
     expect_identical(ans.obtained, ans.expected)    
 })
 
-test_that("makePeriodLabelsFromVec works with step lengths >= 1 year", {
-    makePeriodLabelsFromVec <- dembase:::makePeriodLabelsFromVec
+test_that("makePeriodLabelsYears works", {
+    makePeriodLabelsYears <- dembase:::makePeriodLabelsYears
     vec <- as.Date(c("2000-01-01", "2001-01-01", "2002-01-01"))
-    step <- "1 year"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2000", "2001", "2002")
+    stepNum <- 1L
+    ans.obtained <- makePeriodLabelsYears(dateVec = vec,
+                                          stepNum = stepNum)
+    ans.expected <- c("2000", "2001")
     expect_identical(ans.obtained, ans.expected)
     vec <- as.Date(c("2000-07-01", "2001-07-01", "2002-07-01"))
-    step <- "1 year"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2001", "2002", "2003")
+    step <- 1L
+    ans.obtained <- makePeriodLabelsYears(dateVec = vec,
+                                          stepNum = step)
+    ans.expected <- c("2001", "2002")
     expect_identical(ans.obtained, ans.expected)
-    vec <- as.Date(c("2000-07-01", "2005-07-01", "2010-07-01"))
-    step <- "5 years"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2001-2005", "2006-2010", "2011-2015")
+    dateVec <- as.Date(c("2000-07-01", "2005-07-01", "2010-07-01"))
+    stepNum <- 5L
+    ans.obtained <- makePeriodLabelsYears(dateVec = dateVec,
+                                          stepNum = stepNum)
+    ans.expected <- c("2001-2005", "2006-2010")
     expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("makePeriodLabelsFromVec works with step lengths < 1 year", {
-    makePeriodLabelsFromVec <- dembase:::makePeriodLabelsFromVec
+    makePeriodLabelsMonths <- dembase:::makePeriodLabelsMonths
     ## 6 month start on 1 Jan
-    vec <- as.Date(c("2000-01-01", "2000-07-01", "2001-01-01", "2001-07-01", "2002-01-01"))
-    step <- "6 months"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2000-2000.5", "2000.5-2001", "2001-2001.5", "2001.5-2002", "2002-2002.5")
+    dateVec <- as.Date(c("2000-01-01", "2000-07-01", "2001-01-01", "2001-07-01", "2002-01-01"))
+    stepNum <- 6L
+    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
+                                            stepNum = stepNum)
+    ans.expected <- c("2000-2000.5", "2000.5-2001", "2001-2001.5", "2001.5-2002")
     expect_identical(ans.obtained, ans.expected)
     ## 6 month start on 1 July
-    vec <- as.Date(c("2000-07-01", "2001-01-01", "2001-07-01", "2002-01-01"))
-    step <- "6 months"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2000.5-2001", "2001-2001.5", "2001.5-2002", "2002-2002.5")
+    dateVec <- as.Date(c("2000-07-01", "2001-01-01", "2001-07-01", "2002-01-01"))
+    stepNum <- 6L
+    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
+                                            stepNum = stepNum)
+    ans.expected <- c("2000.5-2001", "2001-2001.5", "2001.5-2002")
     expect_identical(ans.obtained, ans.expected)
     ## quarter start on 1 Jan
-    vec <- as.Date(c("2000-01-01", "2000-04-01", "2000-07-01", "2000-10-01", "2001-01-01", "2001-04-01"))
-    step <- "quarter"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75", "2000.75-2001",
-                      "2001-2001.25", "2001.25-2001.5")
+    dateVec <- as.Date(c("2000-01-01", "2000-04-01", "2000-07-01", "2000-10-01", "2001-01-01"))
+    stepNum <- 3L
+    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
+                                            stepNum = stepNum)
+    ans.expected <- c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75", "2000.75-2001")
     expect_identical(ans.obtained, ans.expected)
     ## month start on 1 Feb
-    vec <- as.Date(c("2000-02-01", "2000-03-01", "2000-04-01", "2000-05-01"))
-    step <- "month"
-    ans.obtained <- makePeriodLabelsFromVec(vec = vec,
-                                            step = step)
-    ans.expected <- c("2000.0833-2000.1667", "2000.1667-2000.25", "2000.25-2000.3333", "2000.3333-2000.4167")
+    dateVec <- as.Date(c("2000-02-01", "2000-03-01", "2000-04-01", "2000-05-01"))
+    stepNum <- 1L
+    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
+                                            stepNum = stepNum)
+    ans.expected <- c("2000.0833-2000.1667", "2000.1667-2000.25", "2000.25-2000.3333")
     expect_identical(ans.obtained, ans.expected)
-})    
+})
+
+
+test_that("makeStepUnitsAndStepNum works", {
+    makeStepUnitsAndStepNum <- dembase:::makeStepUnitsAndStepNum
+    expect_identical(makeStepUnitsAndStepNum("year"),
+                     list(stepUnits = "years", stepNum = 1L))
+    expect_identical(makeStepUnitsAndStepNum("5 years"),
+                     list(stepUnits = "years", stepNum = 5L))
+    expect_identical(makeStepUnitsAndStepNum("2 mon"),
+                     list(stepUnits = "months", stepNum = 2L))
+    expect_identical(makeStepUnitsAndStepNum("1 quarter"),
+                     list(stepUnits = "months", stepNum = 3L))
+    expect_identical(makeStepUnitsAndStepNum("2 q"),
+                     list(stepUnits = "months", stepNum = 6L))
+    expect_identical(makeStepUnitsAndStepNum("4 qu"),
+                     list(stepUnits = "months", stepNum = 12L))
+    expect_error(makeStepUnitsAndStepNum(5),
+                 "'step' does not have type \"character\"")
+    expect_error(makeStepUnitsAndStepNum(c("year", "month")),
+                 "'step' does not have length 1")
+    expect_error(makeStepUnitsAndStepNum(as.character(NA)),
+                 "'step' is missing")
+    expect_error(makeStepUnitsAndStepNum("1 years months"),
+                 "invalid value for 'step'")
+    expect_error(makeStepUnitsAndStepNum("1 week"),
+                 "invalid value for 'step' : invalid units")
+    expect_error(makeStepUnitsAndStepNum("2.5 years"),
+                 "invalid value for 'step' : non-integer number of units")
+    expect_error(makeStepUnitsAndStepNum("0 years"),
+                 "invalid value for 'step' : non-positive number of units")
+    expect_error(makeStepUnitsAndStepNum("5 months"),
+                 "invalid value for 'step' : one year cannot be divided into intervals of length \"5 months\"")
+    expect_error(makeStepUnitsAndStepNum("3 quarters"),
+                 "invalid value for 'step' : one year cannot be divided into intervals of length \"3 quarters\"")
+})
+
+test_that("monthStartNum works", {
+    monthStartNum <- dembase:::monthStartNum
+    expect_identical(monthStartNum("January"),
+                     1L)
+    expect_identical(monthStartNum("Mar"),
+                     3L)
+    expect_error(monthStartNum(5),
+                 "'monthStart' does not have type \"character\"")
+    expect_error(monthStartNum(c("Jan", "Feb")),
+                 "'monthStart' does not have length 1")
+    expect_error(monthStartNum(as.character(NA)),
+                 "'monthStart' is missing")
+    expect_error(monthStartNum("wrong"),
+                 "invalid value for 'monthStart' : \"wrong\" is not a valid month")
+})
+
 
 
 
@@ -5770,7 +5896,7 @@ test_that("resetDiagInner works", {
 })
 
 test_that("resetDiagInner throws appropriate errors", {
-    ## resetDiagInner <- dembase:::resetDiagInner
+    resetDiagInner <- dembase:::resetDiagInner
     object <- Counts(array(1:4,
                            dim = c(2, 2),
                            dimnames = list(reg1 = c("A", "B"),

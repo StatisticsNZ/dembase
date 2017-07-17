@@ -1589,6 +1589,7 @@ setMethod("tfr",
               collapseDimension(object, dimension = dimension)
           })
 
+## HAS_TESTS
 #' @rdname resetDiag
 #' @export
 setMethod("resetDiag",
@@ -1600,6 +1601,7 @@ setMethod("resetDiag",
                              reset = reset)
           })
 
+## HAS_TESTS
 #' @rdname resetDiag
 #' @export
 setMethod("resetDiag",
@@ -1612,6 +1614,7 @@ setMethod("resetDiag",
                              reset = reset)
           })
 
+## HAS_TESTS
 #' @rdname resetDiag
 #' @export
 setMethod("resetDiag",

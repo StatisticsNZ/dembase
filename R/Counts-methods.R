@@ -1392,6 +1392,40 @@ setMethod("exposure",
 ##     DimScale.time.new <- intervalsBetweenPoints(DimScale.time)
 ## }
 
+
+
+## exposureOrigDest <- function(object, base = NULL) {
+##     .Data <- object@.Data
+##     dim <- dim(.Data)
+##     names <- names(object)
+##     dimtypes <- dimtypes(object, use.names = FALSE)
+##     DimScales <- DimScales(object, use.names = FALSE)
+##     s <- seq_along(dim)
+##     n.dim <- length(dim)
+##     if (is.null(base)) {
+##         is.orig <- dimtypes == "origin"
+##         if (!any(is.orig))
+##             stop(gettextf("no dimensions with dimtypes \"%s\" or \"%s\"",
+##                           "origin", "destination"))
+##         base <- removeSuffixes(names[is.orig])
+##     }
+##     i.orig <- match(sprintf("%s_orig", base), names, nomatch = 0L)
+##     if (any(i.orig == 0L))
+##         stop(gettextf("'%s' outside valid range", "base"))
+##     i.dest <- match(sprintf("%s_dest", base), names)
+##     for (i in seq_along(i.orig)) {
+##         i.dim.orig <- i.orig[i]
+##         i.dim.dest <- i.dest[i]
+##         perm <- c(i.dim.dest, s[-i.dim.dest])
+##         .Data <- aperm(.Data, perm = perm)
+##         .Data <- colSums(.Data, ndim = n.dim)
+##         .Data <- array(.Data, dim = dim)
+##         perm <- match(s, perm)
+##         .Data <- aperm(.Data, perm = perm)
+##     }
+## }    
+
+
 ## HAS_TESTS
 #' @rdname growth
 #' @export
@@ -2243,7 +2277,7 @@ setMethod("redistributeCategory",
               }
           })
 
-
+## HAS_TESTS
 #' @rdname resetDiag
 #' @export
 setMethod("resetDiag",
@@ -2255,6 +2289,7 @@ setMethod("resetDiag",
                              reset = reset)
           })
 
+## HAS_TESTS
 #' @rdname resetDiag
 #' @export
 setMethod("resetDiag",
@@ -2267,6 +2302,7 @@ setMethod("resetDiag",
                              reset = reset)
           })
 
+## HAS_TESTS
 #' @rdname resetDiag
 #' @export
 setMethod("resetDiag",

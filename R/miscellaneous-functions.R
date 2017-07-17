@@ -141,6 +141,23 @@ getValidDimtypes <- function()
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
 ## HAS_TESTS
+checkAndTidyYearStart <- function(yearStart) {
+    if (!is.numeric(yearStart))
+        stop(gettextf("'%s' is non-numeric",
+                      "yearStart"))
+    if (!identical(length(yearStart), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "yearStart", 1L))
+    if (is.na(yearStart))
+        stop(gettextf("'%s' is missing",
+                      "yearStart"))
+    if (yearStart != as.integer(yearStart))
+        stop(gettextf("'%s' is not an integer",
+                      "yearStart"))
+    as.integer(yearStart)
+}
+
+## HAS_TESTS
 checkAndTidyDateAndDOB <- function(date, dob) {
     for (name in c("date", "dob")) {
         value <- get(name)
@@ -207,104 +224,71 @@ checkLastOpen <- function(lastOpen) {
 }
 
 ## HAS_TESTS
-checkStart <- function(start) {
-    if (!methods::is(start, "Date"))
-        stop(gettextf("'%s' does not have class \"%s\"",
-                      "start", "Date"))
-    if (!identical(length(start), 1L))
-        stop(gettextf("'%s' does not have length %d",
-                      "start", 1L))
-    if (is.na(start))
-        stop(gettextf("'%s' is missing",
-                      "start"))
-    NULL   
+completedYears <- function(date, dob) {
+    year.date <- as.integer(format(date, "%Y"))
+    year.dob <- as.integer(format(dob, "%Y"))
+    month.date <- as.integer(format(date, "%m"))
+    month.dob <- as.integer(format(dob, "%m"))
+    day.date <- as.integer(format(date, "%d"))
+    day.dob <- as.integer(format(dob, "%d"))
+    change.leap.day.date.to.28 <- isLeapYear(year.date) & (month.date == 2L) & (day.date == 29L)
+    change.leap.day.dob.to.28 <- isLeapYear(year.dob) & (month.dob == 2L) & (day.dob == 29L)
+    day.date[change.leap.day.date.to.28] <- 28L
+    day.dob[change.leap.day.dob.to.28] <- 28L
+    diff.year <- year.date - year.dob
+    diff.month <- month.date - month.dob
+    diff.day <- day.date - day.dob
+    diff.year + ((diff.month > 0L) | ((diff.month == 0L) & (diff.day >= 0L))) - 1L
 }
 
 ## HAS_TESTS
-checkStep <- function(step) {
-    if (!identical(length(step), 1L))
-        stop(gettextf("'%s' does not have length %d",
-                      "step", 1L))
-    if (is.na(step))
-        stop(gettextf("'%s' is missing",
-                      "step"))
-    from <- as.Date("1970-01-01")
-    value <- tryCatch(seq.Date(from = from,
-                               by = step,
-                               length.out = 2L)[2L],
-                      error = function(e) e)
-    if (methods::is(value, "error"))
-        stop(gettextf("invalid value for '%s' : %s",
-                      "step", value$message))
-    if (value <= from)
-        stop(gettextf("'%s' non-positive",
-                      "step"))
-    to <- as.Date("1971-01-01")
-    value <- seq.Date(from = from,
-                      by = step,
-                      to = to)
-    step.less.than.year <- length(value) > 1L
-    if (step.less.than.year) {
-        if (!isTRUE(all.equal(value[length(value)], to)))
-            stop(gettextf("invalid value for '%s' : one year cannot be divided into units of length \"%s\"",
-                          "step", step))
-    }
-    NULL
+completedMonths <- function(date, dob) {
+    year.date <- as.integer(format(date, "%Y"))
+    year.dob <- as.integer(format(dob, "%Y"))
+    month.date <- as.integer(format(date, "%m"))
+    month.dob <- as.integer(format(dob, "%m"))
+    day.date <- as.integer(format(date, "%d"))
+    day.dob <- as.integer(format(dob, "%d"))
+    change.leap.day.date.to.28 <- isLeapYear(year.date) & (month.date == 2L) & (day.date == 29L)
+    change.leap.day.dob.to.28 <- isLeapYear(year.dob) & (month.dob == 2L) & (day.dob == 29L)
+    day.date[change.leap.day.date.to.28] <- 28L
+    day.dob[change.leap.day.dob.to.28] <- 28L
+    diff.year <- year.date - year.dob
+    diff.month <- month.date - month.dob
+    diff.day <- day.date - day.dob
+    12L * diff.year + diff.month + (diff.day >= 0L) - 1L
 }
 
-## HAS_TESTS
-checkStepAndStart <- function(step, start) {
-    date.from <- as.Date("1970-01-01")
-    date.to <- as.Date("1971-01-01")
-    value <- seq.Date(from = date.from,
-                      by = step,
-                      to = date.to)
-    n.steps <- length(value) - 1L
-    step.less.than.year <- n.steps > 1L
-    if (step.less.than.year) {
-        jan1 <- as.Date(paste0(format(start, "%Y"), "-01-01"))
-        seq <- seq.Date(from = jan1,
-                        to = start,
-                        by = step)
-        if (!isTRUE(all.equal(seq[length(seq)], start)))
-            stop(gettextf("'%s' does not belong to sequence formed from '%s'",
-                          "start", "step"))
-        NULL
-    }
-}
-
-#' Calculate ages and Lexis triangles from dates.
+#' Calculate ages, periods, cohorts, and Lexis triangles from dates.
 #'
-#' Calculates ages in completed years, or Lexis triangles, from a vector of dates, and
-#' a vector of dates of birth.
+#' Calculates ages in completed years, periods, birth cohorts,
+#' or Lexis triangles from dates.
 #'
 #' If \code{date} and \code{dob} are different lengths, the shorter
 #' vector is recycled.
 #'
 #' By default, age-time steps are assumed to be equal to one year. However,
 #' alternative lengths can be specified, via the \code{step} argument.
-#' Typical alternative values are \code{"5 years"}, \code{"month"}, 
-#' \code{"quarter"}, and \code{"6 months"}.  Integers are rounded down,
-#' so that, for instance, \code{"5.999 years"} is equivalent to \code{"5 years"}.
-#' Negative values are not allowed.  If a step length is less than 1 year,
-#' it must divide the year without leaving a remainder.  Thus, for example,
-#' \code{"4 months"} is a valid value for \code{step}, but \code{"5 months"}
-#' is not.
+#' The steps are described as multiples of years, quarters or months.
+#' If no multiple is provided, it is assumed to equal one.
+#' Typical values are \code{"5 years"}, \code{"month"}, 
+#' \code{"quarter"}, and \code{"6 months"}.  If a step length is less than 1
+#' year,  then it must divide the year without leaving a remainder.
+#' Thus, for example, \code{"4 months"} is a valid value for \code{step},
+#' but \code{"5 months"} is not.
 #'
-#' By default, the first time interval is assumed to start on 1 January.  Thus,
-#' for example, one-year intervals might start on 1 January 2000, 1 January 2001,
-#' 1 January 2002, etc, and one-quarter intervals might start on 1 January 2000,
-#' 1 April 2000, 1 July 2000, etc.
+#' By default, periods of one year are assumed to start on 1 January.
+#' Other starting months can be specified via \code{monthStart}.
+#' See below for examples.
 #'
-#' Sometimes, however, intervals need to start on a different date.
-#' To do this, use \code{start} argument to specify the start date
-#' for a typical period.  For instance,  "years to June"
-#' (ie intervals running from 1 July 2000 - 30 June 2001,
-#' 1 July 2001 - 30 June 2000, etc), can be obtained by setting
-#' \code{start} to \code{as.Date("2000-07-01")}.  See below for examples.
-#'
-#' If \code{step} is less than one year, then \code{start} must belong to
-#' the series 1 January, 1 January + step, 1 January + 2 * step, ...
+#' Multi-year periods are assumed to start on years beginning with 0 or 5.
+#' Other values can be specified via \code{yearStart}.  See below for examples. 
+#' 
+#' These functions handle leap years differently from \code{\link{seq.Date}}.
+#' Like most people, but unlike \code{\link{seq.Date}}, they treat 29 February
+#' as if it was 28 February.  For instance, with \code{datesToAge}, a
+#' person who was born on 29 February 2000 reaches age 1 on 28 February 2001.
+#' With \code{seq.Date}, they reach age 1 on 1 March 2001.
 #' 
 #' @param date A vector of class \code{\link[base]{Date}}.  All elements of
 #' \code{date} must be equal to or greater than the corresponding elements
@@ -312,8 +296,10 @@ checkStepAndStart <- function(step, start) {
 #' @param dob A vector of class \code{\link[base]{Date}}.
 #' @param step Length of age-time step.
 #' @param lastOpen Whether last age interval is open on the right.
-#' @param start A single \code{\link[base]{Date}}, giving the first day
-#' of one of the time intervals.
+#' @param monthStart The English name of a month (as defined by
+#' \code{\link{month.name}}.  Can be abbreviated.
+#' @param yearStart An integer. Controls the start date of multi-year
+#' periods.
 #'
 #' @return A factor.
 #'
@@ -328,14 +314,18 @@ checkStepAndStart <- function(step, start) {
 #' datesToAgeGroups(date = date, dob = dob, step = "quarter")
 #' datesToAgeGroups(date = date, dob = dob, step = "month")
 #' datesToPeriods(date = date)
+#' datesToPeriods(date = date, monthStart = "July")
+#' datesToPeriods(date = date, step = "2 years", yearStart = 2001)
 #' datesToPeriods(date = date, step = "quarter")
+#' datesToCohorts(dob)
+#' datesToCohorts(dob, step = "2 quarters")
 #' datesToTriangles(date = date, dob = dob)
 #' datesToTriangles(date = date, dob = dob, step = "2 years")
-#' datesToTriangles(date = date, dob = dob, start = as.Date("2000-07-01"))
+#' datesToTriangles(date = date, dob = dob, monthStart = "April")
 #' 
 #' ## 'date' must be later than 'dob'
 #' \dontrun{
-#' datesToAgeGroups(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
+#' datesToAgeGroups(date = as.Date("2000-01-01"), dob = as.Date("2005-01-01"))
 #' }
 #' @export
 #' @name datesToAgeGroups
@@ -349,34 +339,68 @@ datesToAgeGroups <- function(date, dob, step = "1 year", lastOpen = TRUE) {
                                 dob = dob)
     date <- l$date
     dob <- l$dob
-    checkStep(step)
+    l <- makeStepUnitsAndStepNum(step)
+    step.units <- l$stepUnits
+    step.num <- l$stepNum
     checkLastOpen(lastOpen)
-    i.age.interval <- iAgeInterval(date = date,
-                                   dob = dob,
-                                   step = step)
+    if (step.units == "years")
+        age <- completedYears(date = date,
+                              dob = dob)
+    else if (step.units == "months")
+        age <- completedMonths(date = date,
+                               dob = dob)
+    else
+        stop(gettextf("invalid value for '%s' : \"%s\"",
+                      "stepUnits", step.units))
+    i.age.interval <- age %/% step.num + 1L
     n.age.interval <- max(i.age.interval, na.rm = TRUE)
-    age.labels <- makeAgeLabelsFromStep(step = step,
-                                        nAgeInterval = n.age.interval,
-                                        lastOpen = lastOpen)
+    age.labels <- makeAgeLabels(stepNum = step.num,
+                                stepUnits = step.units,
+                                nAgeInterval = n.age.interval,
+                                lastOpen = lastOpen)
     ans <- age.labels[i.age.interval]
     factor(ans, levels = age.labels)
 }
 
 #' @rdname datesToAgeGroups
 #' @export
-datesToPeriods <- function(date, step = "1 year", start = as.Date("1970-01-01")) {
+datesToCohorts <- function(dob, step = "years", monthStart = "January",
+                           yearStart = 2000) {
+    datesToPeriods(date = dob,
+                   step = step,
+                   monthStart = monthStart,
+                   yearStart = yearStart)
+}
+
+#' @rdname datesToAgeGroups
+#' @export
+datesToPeriods <- function(date, step = "years", monthStart = "January",
+                           yearStart = 2000) {
     checkDate(date)
-    checkStep(step)
-    checkStart(start)
-    checkStepAndStart(step = step,
-                      start = start)
-    vec <- makeDateVec(dates = date,
-                       step = step,
-                       start = start)
-    labels <- makePeriodLabelsFromVec(vec = vec,
-                                      step = step)
+    l <- makeStepUnitsAndStepNum(step)
+    step.units <- l$stepUnits
+    step.num <- l$stepNum
+    if (step.units == "years") {
+        yearStart <- checkAndTidyYearStart(yearStart)
+        monthStartNum <- monthStartNum(monthStart)
+        date.vec <- makeDateVecYears(dates = date,
+                                     stepNum = step.num,
+                                     monthStartNum = monthStartNum,
+                                     yearStart = yearStart)
+        labels <- makePeriodLabelsYears(dateVec = date.vec,
+                                        stepNum = step.num)
+    }
+    else if (step.units == "months") {
+        date.vec <- makeDateVecMonths(dates = date,
+                                      stepNum = step.num)
+        labels <- makePeriodLabelsMonths(dateVec = date.vec,
+                                         stepNum = step.num)
+    }
+    else
+        stop(gettextf("invalid value for '%s'",
+                      "stepUnits"))
     i.period <- findInterval(x = date,
-                             vec = vec)
+                             vec = date.vec)
     ans <- labels[i.period]
     s.periods.used <- seq.int(from = min(i.period),
                               to = max(i.period))
@@ -385,90 +409,50 @@ datesToPeriods <- function(date, step = "1 year", start = as.Date("1970-01-01"))
 }
 
 ## HAS_TESTS
-makePeriodLabelsFromVec <- function(vec, step) {
-    date.from <- as.Date("1970-01-01")
-    date.to <- as.Date("1971-01-01")
-    value <- seq.Date(from = date.from,
-                      by = step,
-                      to = date.to)
-    n.steps <- length(value) - 1L
-    step.less.than.year <- n.steps > 1L
-    if (step.less.than.year) {
-        step.length <- 1 / n.steps
-        year.first <- as.integer(format(vec[1L], "%Y"))
-        jan1 <- as.Date(paste0(year.first, "-01-01"))
-        dates.first.year <- seq.Date(from = jan1,
-                                     by = step,
-                                     length.out = n.steps)
-        i.first <- match(vec[1L], dates.first.year)
-        from <- year.first + (i.first - 1L) * step.length
-        length.out <- length(vec) + 1L
-        dimvalues <- seq(from = from,
-                         by = step.length,
-                         length.out = length.out)
-    }
-    else {
-        value <- seq.Date(from = date.from,
-                          by = step,
-                          length.out = 2L)
-        years <- as.integer(format(value, "%Y"))
-        step.length <- diff(years)
-        year.first <- as.integer(format(vec[1L] - 1L, "%Y"))
-        length.out <- length(vec) + 1L
-        dimvalues <- seq(from = year.first,
-                         by = step.length,
-                         length.out = length.out)
-    }
-    DimScale <- new("Intervals", dimvalues = dimvalues)
-    labels(DimScale)
-}
-
-## HAS_TESTS
 #' @rdname datesToAgeGroups
 #' @export
-datesToTriangles <- function(date, dob, step = "1 year", start = as.Date("1970-01-01")) {
+datesToTriangles <- function(date, dob, step = "years", monthStart = "January",
+                             yearStart = 2000) {
     l <- checkAndTidyDateAndDOB(date = date,
                                 dob = dob)
     date <- l$date
     dob <- l$dob
-    checkStep(step)
-    checkStart(start)
-    checkStepAndStart(step = step,
-                      start = start)
-    i.age.interval <- iAgeInterval(date = date,
-                                   dob = dob,
-                                   step = step)
-    i.time.interval <- iTimeIntervalSinceBirth(date = date,
-                                               dob = dob,
-                                               step = step,
-                                               start = start)
+    l <- makeStepUnitsAndStepNum(step)
+    step.units <- l$stepUnits
+    step.num <- l$stepNum
+    if (step.units == "years") {
+        yearStart <- checkAndTidyYearStart(yearStart)
+        month.start.num <- monthStartNum(monthStart)
+        age <- completedYears(date = date,
+                              dob = dob)
+        i.time.interval <- iIntervalSinceBirthYears(date = date,
+                                                    dob = dob,
+                                                    stepNum = step.num,
+                                                    monthStartNum = month.start.num,
+                                                    yearStart = yearStart)
+    }
+    else if (step.units == "months") {
+        age <- completedMonths(date = date,
+                               dob = dob)
+        i.time.interval <- iIntervalSinceBirthMonths(date = date,
+                                                     dob = dob,
+                                                     stepNum = step.num)
+    }
+    else
+        stop(gettextf("invalid value for '%s' : \"%s\"",
+                      "stepUnits", step.units))
+    i.age.interval <- age %/% step.num + 1L
     ans <- ifelse(i.time.interval > i.age.interval, "TU", "TL")
     factor(ans, levels = c("TL", "TU"))
 }
 
 ## HAS_TESTS
-## This could be made more efficient by
-## extracting the relevant code from
-## seq.Date, but it may not be worthwhile.
-iAgeInterval <- function(date, dob, step) {
-    ans <- rep(NA_integer_, times = length(date))
-    f <- function(date1, dob1) {
-        s <- seq.Date(from = dob1,
-                      to = date1,
-                      by = step)
-        length(s)
-    }
-    is.obs <- !is.na(date) & !is.na(dob)
-    ans[is.obs] <- mapply(f, date[is.obs], dob[is.obs])
-    ans
-}
-
-## HAS_TESTS
-iTimeIntervalSinceBirth <- function(date, dob, step, start) {
+iIntervalSinceBirthYears <- function(date, dob, stepNum, monthStartNum, yearStart) {
     dates <- c(date, dob)
-    vec <- makeDateVec(dates = dates,
-                       step = step,
-                       start = start)
+    vec <- makeDateVecYears(dates = dates,
+                            stepNum = stepNum,
+                            monthStartNum = monthStartNum,
+                            yearStart = yearStart)
     i.date <- findInterval(x = date,
                            vec = vec)
     i.dob <- findInterval(x = dob,
@@ -477,25 +461,187 @@ iTimeIntervalSinceBirth <- function(date, dob, step, start) {
 }
 
 ## HAS_TESTS
-## assume that all inputs have been sanity checked
-makeAgeLabelsFromStep <- function(step, nAgeInterval, lastOpen) {
-    date.from <- as.Date("1970-01-01")
-    date.to <- as.Date("1971-01-01")
-    value <- seq.Date(from = date.from,
-                      by = step,
-                      to = date.to)
-    step.less.than.or.equal.to.year <- length(value) > 1L
-    if (step.less.than.or.equal.to.year)
-        step.length <- 1 / (length(value) - 1L)
-    else {
-        value <- seq.Date(from = date.from,
-                          by = step,
-                          length.out = 2L)
-        years <- as.integer(format(value, "%Y"))
-        step.length <- diff(years)
+iIntervalSinceBirthMonths <- function(date, dob, stepNum) {
+    dates <- c(date, dob)
+    vec <- makeDateVecMonths(dates = dates,
+                             stepNum = stepNum)
+    i.date <- findInterval(x = date,
+                           vec = vec)
+    i.dob <- findInterval(x = dob,
+                          vec = vec)
+    i.date - i.dob + 1L
+}
+
+## HAS_TESTS
+isLeapYear <- function(year) {
+    ((year %% 4L == 0L) & (year %% 100L != 0L)) | (year %% 400L == 0L)
+}
+
+## HAS_TESTS
+makeDateVecYears <- function(dates, stepNum, monthStartNum, yearStart) {
+    min.date <- min(dates, na.rm = TRUE)
+    max.date <- max(dates, na.rm = TRUE)
+    month.min <- as.integer(format(min.date, "%m"))
+    month.max <- as.integer(format(max.date, "%m"))
+    year.min <- as.integer(format(min.date, "%Y"))
+    year.max <- as.integer(format(max.date, "%Y"))
+    if (month.min >= monthStartNum)
+        year.from <- year.min
+    else
+        year.from <- year.min - 1L
+    year.from <- year.from - ((year.from - yearStart) %% stepNum)
+    if (month.max < monthStartNum)
+        year.to <- year.max
+    else
+        year.to <- year.max + 1L
+    if ((year.to - yearStart) %% stepNum != 0L)
+        year.to <- year.to - ((year.to - yearStart) %% stepNum) + stepNum
+    from <- paste(year.from, monthStartNum, 1, sep = "-")
+    to <- paste(year.to, monthStartNum, 1, sep = "-")
+    from <- as.Date(from)
+    to <- as.Date(to)
+    by <- paste(stepNum, "years")
+    seq.Date(from = from,
+             by = by,
+             to = to)
+}
+
+## HAS_TESTS
+makeDateVecMonths <- function(dates, stepNum) {
+    min.date <- min(dates, na.rm = TRUE)
+    max.date <- max(dates, na.rm = TRUE)
+    month.min <- as.integer(format(min.date, "%m"))
+    month.max <- as.integer(format(max.date, "%m"))
+    year.min <- as.integer(format(min.date, "%Y"))
+    year.max <- as.integer(format(max.date, "%Y"))
+    year.from <- year.min
+    month.from <- month.min - ((month.min - 1L) %% stepNum)
+    if (month.max < 13L - stepNum) {
+        year.to <- year.max
+        if (month.max %% stepNum == 0L)
+            month.to <- month.max + 1L
+        else
+            month.to <- month.max - (month.max %% stepNum) + stepNum + 1L
     }
+    else {
+        year.to <- year.max + 1L
+        month.to <- 1L
+    }
+    from <- paste(year.from, month.from, 1, sep = "-")
+    to <- paste(year.to, month.to, 1, sep = "-")
+    from <- as.Date(from)
+    to <- as.Date(to)
+    by <- paste(stepNum, "months")
+    seq.Date(from = from,
+             by = by,
+             to = to)
+}
+
+
+## HAS_TESTS
+makeStepUnitsAndStepNum <- function(step) {
+    kValidUnits <- c("months", "quarters", "years")
+    if (!is.character(step))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "step", "character"))
+    if (!identical(length(step), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "step", 1L))
+    if (is.na(step))
+        stop(gettextf("'%s' is missing",
+                      "step"))
+    step.split <- strsplit(step,
+                           split = " ",
+                           fixed = TRUE)[[1L]]
+    n.split <- length(step.split)
+    if (n.split == 1L)
+        units <- step.split
+    else if (n.split == 2L)
+        units <- step.split[2L]
+    else
+        stop(gettextf("invalid value for '%s'",
+                      "step"))
+    i.units <- pmatch(units, kValidUnits, nomatch = 0L)
+    units.valid <- i.units > 0L
+    if (!units.valid)
+        stop(gettextf("invalid value for '%s' : invalid units",
+                      "step"))
+    units <- kValidUnits[i.units]
+    if (n.split == 1L)
+        num <- 1L
+    else {
+        num <- step.split[1L]
+        num <- tryCatch(as.numeric(num),
+                        warning = function(w) w)
+        if (methods::is(num, "warning"))
+            stop(gettextf("invalid value for '%s' : invalid number of units",
+                          "step"))
+        if (!isTRUE(all.equal(as.integer(num), num)))
+            stop(gettextf("invalid value for '%s' : non-integer number of units",
+                          "step"))
+        num <- as.integer(num)
+        if (num <= 0L)
+            stop(gettextf("invalid value for '%s' : non-positive number of units",
+                          "step"))
+        if ((units == "months") && ((12L %% num) != 0L))
+            stop(gettextf("invalid value for '%s' : one year cannot be divided into intervals of length \"%s %s\"",
+                          "step", num, units))
+        if ((units == "quarters") && ((12L %% (num * 3L)) != 0L))
+            stop(gettextf("invalid value for '%s' : one year cannot be divided into intervals of length \"%s %s\"",
+                          "step", num, units))
+    }
+    if (units == "quarters") {
+        units <- "months"
+        num <- num * 3L
+    }
+    list(stepUnits = units, stepNum = num)
+}
+
+## HAS_TESTS
+makePeriodLabelsYears <- function(dateVec, stepNum) {
+    year.first <- format(dateVec[1L] - 1L, "%Y")
+    year.last <- format(dateVec[length(dateVec)] - 1L, "%Y")
+    from <- as.integer(year.first)
+    to <- as.integer(year.last)
+    dimvalues <- seq.int(from = from,
+                         by = stepNum,
+                         to = to)
+    DimScale <- new("Intervals", dimvalues = dimvalues)
+    labels(DimScale)
+}
+
+## HAS_TESTS
+makePeriodLabelsMonths <- function(dateVec, stepNum) {
+    year.first <- format(dateVec[1L], "%Y")
+    year.last <- format(dateVec[length(dateVec)], "%Y")
+    month.first <- format(dateVec[1L], "%m")
+    month.last <- format(dateVec[length(dateVec)], "%m")
+    year.from <- as.integer(year.first)
+    year.to <- as.integer(year.last)
+    month.from <- as.integer(month.first)
+    month.to <- as.integer(month.last)
+    from <- year.from + (month.from - 1L) / 12L
+    to <- year.to + (month.to - 1L) / 12L
+    by <- stepNum / 12L
+    dimvalues <- seq.int(from = from,
+                         by = by,
+                         to = to)
+    DimScale <- new("Intervals", dimvalues = dimvalues)
+    labels(DimScale)
+}
+
+## HAS_TESTS
+## assume that all inputs have been sanity checked
+makeAgeLabels <- function(stepNum, stepUnits, nAgeInterval, lastOpen) {
+    if (stepUnits == "years")
+        by <- stepNum
+    else if (stepUnits == "months")
+        by <- stepNum / 12
+    else
+        stop(gettextf("invalid value for '%s' : \"%s\"",
+                      "stepUnits", stepUnits))
     dimvalues <- seq(from = 0,
-                     by = step.length,
+                     by = by,
                      length.out = nAgeInterval + 1L)
     if (lastOpen)
         dimvalues[length(dimvalues)] <- Inf
@@ -504,31 +650,23 @@ makeAgeLabelsFromStep <- function(step, nAgeInterval, lastOpen) {
 }
 
 ## HAS_TESTS
-makeDateVec <- function(dates, step, start) {
-    max.date <- max(dates, na.rm = TRUE)
-    min.date <- min(dates, na.rm = TRUE) 
-    if (min.date < start) {
-        if (grepl("^[1-9]", step))
-            neg.step <- paste0("-", step)
-        else
-            neg.step <- paste("-1", step)
-        from <- seq(from = start, to = min.date, by = neg.step)
-        from <- from[length(from)]
-        from <- seq(from = from, by = neg.step, length.out = 2L)
-        from <- from[2L]
-    }
-    else if (min.date == start) {
-        from <- start
-    }
-    else {
-        from <- seq(from = start, by = step, to = min.date)
-        from <- from[length(from)]
-    }
-    to <- seq(from = from, by = step, to = max.date)
-    to <- to[length(to)]
-    seq(from = from, to = to, by = step)
+monthStartNum <- function(monthStart) {
+    if (!is.character(monthStart))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "monthStart", "character"))
+    if (!identical(length(monthStart), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "monthStart", 1L))
+    if (is.na(monthStart))
+        stop(gettextf("'%s' is missing",
+                      "monthStart"))
+    i <- pmatch(monthStart, month.name, nomatch = 0L)
+    is.valid <- i > 0L
+    if (!is.valid)
+        stop(gettextf("invalid value for '%s' : \"%s\" is not a valid month",
+                      "monthStart", monthStart))
+    i
 }
-
 
 
 ## FUNCTIONS FOR PROCESSING DIMENSIONS NAME AND INDICES #############################
@@ -4799,7 +4937,7 @@ redistributeInnerDistn <- function(counts, weights, transform, useC) {
     }
 }
 
-
+## HAS_TESTS
 resetDiagInner <- function(object, base, reset) {
     reset <- checkAndTidyReset(reset)
     .Data <- object@.Data

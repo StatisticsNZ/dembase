@@ -3,15 +3,21 @@
 \name{datesToAgeGroups}
 \alias{datesToAgeGroups}
 \alias{datesToAgeGroups}
+\alias{datesToCohorts}
 \alias{datesToPeriods}
 \alias{datesToTriangles}
-\title{Calculate ages and Lexis triangles from dates.}
+\title{Calculate ages, periods, cohorts, and Lexis triangles from dates.}
 \usage{
 datesToAgeGroups(date, dob, step = "1 year", lastOpen = TRUE)
 
-datesToPeriods(date, step = "1 year", start = as.Date("1970-01-01"))
+datesToCohorts(dob, step = "years", monthStart = "January",
+  yearStart = 2000)
 
-datesToTriangles(date, dob, step = "1 year", start = as.Date("1970-01-01"))
+datesToPeriods(date, step = "years", monthStart = "January",
+  yearStart = 2000)
+
+datesToTriangles(date, dob, step = "years", monthStart = "January",
+  yearStart = 2000)
 }
 \arguments{
 \item{date}{A vector of class \code{\link[base]{Date}}.  All elements of
@@ -24,15 +30,18 @@ of \code{dob}.}
 
 \item{lastOpen}{Whether last age interval is open on the right.}
 
-\item{start}{A single \code{\link[base]{Date}}, giving the first day
-of one of the time intervals.}
+\item{monthStart}{The English name of a month (as defined by
+\code{\link{month.name}}.  Can be abbreviated.}
+
+\item{yearStart}{An integer. Controls the start date of multi-year
+periods.}
 }
 \value{
 A factor.
 }
 \description{
-Calculates ages in completed years, or Lexis triangles, from a vector of dates, and
-a vector of dates of birth.
+Calculates ages in completed years, periods, birth cohorts,
+or Lexis triangles from dates.
 }
 \details{
 If \code{date} and \code{dob} are different lengths, the shorter
@@ -40,28 +49,26 @@ vector is recycled.
 
 By default, age-time steps are assumed to be equal to one year. However,
 alternative lengths can be specified, via the \code{step} argument.
-Typical alternative values are \code{"5 years"}, \code{"month"}, 
-\code{"quarter"}, and \code{"6 months"}.  Integers are rounded down,
-so that, for instance, \code{"5.999 years"} is equivalent to \code{"5 years"}.
-Negative values are not allowed.  If a step length is less than 1 year,
-it must divide the year without leaving a remainder.  Thus, for example,
-\code{"4 months"} is a valid value for \code{step}, but \code{"5 months"}
-is not.
+The steps are described as multiples of years, quarters or months.
+If no multiple is provided, it is assumed to equal one.
+Typical values are \code{"5 years"}, \code{"month"}, 
+\code{"quarter"}, and \code{"6 months"}.  If a step length is less than 1
+year,  then it must divide the year without leaving a remainder.
+Thus, for example, \code{"4 months"} is a valid value for \code{step},
+but \code{"5 months"} is not.
 
-By default, the first time interval is assumed to start on 1 January.  Thus,
-for example, one-year intervals might start on 1 January 2000, 1 January 2001,
-1 January 2002, etc, and one-quarter intervals might start on 1 January 2000,
-1 April 2000, 1 July 2000, etc.
+By default, periods of one year are assumed to start on 1 January.
+Other starting months can be specified via \code{monthStart}.
+See below for examples.
 
-Sometimes, however, intervals need to start on a different date.
-To do this, use \code{start} argument to specify the start date
-for a typical period.  For instance,  "years to June"
-(ie intervals running from 1 July 2000 - 30 June 2001,
-1 July 2001 - 30 June 2000, etc), can be obtained by setting
-\code{start} to \code{as.Date("2000-07-01")}.  See below for examples.
+Multi-year periods are assumed to start on years beginning with 0 or 5.
+Other values can be specified via \code{yearStart}.  See below for examples.
 
-If \code{step} is less than one year, then \code{start} must belong to
-the series 1 January, 1 January + step, 1 January + 2 * step, ...
+These functions handle leap years differently from \code{\link{seq.Date}}.
+Like most people, but unlike \code{\link{seq.Date}}, they treat 29 February
+as if it was 28 February.  For instance, with \code{datesToAge}, a
+person who was born on 29 February 2000 reaches age 1 on 28 February 2001.
+With \code{seq.Date}, they reach age 1 on 1 March 2001.
 }
 \examples{
 date <- as.Date(c("2005-07-05", "2006-06-30", "2008-07-05"))
@@ -72,14 +79,18 @@ datesToAgeGroups(date = date, dob = dob, step = "2 years")
 datesToAgeGroups(date = date, dob = dob, step = "quarter")
 datesToAgeGroups(date = date, dob = dob, step = "month")
 datesToPeriods(date = date)
+datesToPeriods(date = date, monthStart = "July")
+datesToPeriods(date = date, step = "2 years", yearStart = 2001)
 datesToPeriods(date = date, step = "quarter")
+datesToCohorts(dob)
+datesToCohorts(dob, step = "2 quarters")
 datesToTriangles(date = date, dob = dob)
 datesToTriangles(date = date, dob = dob, step = "2 years")
-datesToTriangles(date = date, dob = dob, start = as.Date("2000-07-01"))
+datesToTriangles(date = date, dob = dob, monthStart = "April")
 
 ## 'date' must be later than 'dob'
 \dontrun{
-datesToAgeGroups(date = as.Date("2010-01-01"), dob = as.Date("2000-01-01"))
+datesToAgeGroups(date = as.Date("2000-01-01"), dob = as.Date("2005-01-01"))
 }
 }
 \seealso{
