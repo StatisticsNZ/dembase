@@ -482,7 +482,40 @@ setGeneric("accession",
 
 setGeneric("addBreaks",
            function(object, dimension, breaks, weights, ...)
-           standardGeneric("addBreaks"))
+               standardGeneric("addBreaks"))
+
+
+#' Add a "destination" dimension to an object.
+#'
+#' Add a dimension with \code{\link{dimtype}} \code{"destination"}
+#' to an object of class \code{\linkS4class{DemographicArray}}.
+#' This is useful mainly when constructing an exposure measure
+#' to use when measuring or modelling origin-destination
+#' rates.
+#' 
+#' The new "destination" dimension uses the same categories as one of the
+#' existing dimensions, which becomes the "origin" dimension.  The original
+#' data is replicated once for each category within the destination
+#' dimensions.  This means that in a model of origin-destination
+#' rates, each destination has the same exposures.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicArray}}.
+#' @param base The name of an existing dimension.  This dimension
+#' must have \code{\link{dimtype}} \code{"state"} or \code{"sex"}.
+#'
+#' @return A modified version of \code{object}
+#'
+#' @seealso To add a dimension that does not have dimtype \code{"destination"},
+#' use function \code{\link{addDimension}}.
+#'
+#' @examples
+#' population <- CountsOne(10:12, labels = c("A", "B", "C"), name = "region")
+#' exposure <- addDest(population, base = "region")
+#' exposure
+#' @export
+setGeneric("addDest",
+           function(object, base)
+               standardGeneric("addDest"))
 
 #' Add one or more dimensions to a demographic array.
 #'
@@ -526,7 +559,9 @@ setGeneric("addBreaks",
 #'
 #' @return Modified version of \code{object}
 #'
-#' @seealso \code{\link{collapseDimension}}
+#' @seealso \code{\link{collapseDimension}}.  To add a dimension with
+#' dimtype \code{"destination"}, use function \code{\link{addDest}}.
+#' 
 #' @examples
 #' ## Add a time dimension to some population counts
 #' population <- CountsOne(c(10, 12), labels = c("A", "B"), name = "region")

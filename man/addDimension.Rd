@@ -123,5 +123,6 @@ exposure
 admissions / exposure
 }
 \seealso{
-\code{\link{collapseDimension}}
+\code{\link{collapseDimension}}.  To add a dimension with
+dimtype \code{"destination"}, use function \code{\link{addDest}}.
 }

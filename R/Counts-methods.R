@@ -170,71 +170,76 @@ setMethod("Ops",
               methods::callGeneric(e1 = e1, e2 = e2)
           })
 
-addDest <- function(object, base) {
-    .Data <- object@.Data
-    is.integer <- is.integer(.Data)
-    dim <- dim(.Data)
-    names <- names(object)
-    dimtypes <- dimtypes(object, use.names = FALSE)
-    DimScales <- DimScales(object, use.names = FALSE)
-    s <- seq_along(dim)
-    n.dim <- length(dim)
-    if (is.missing(base))
-        stop(gettextf("argument '%s' is missing, with no default",
-                      "base"))
-    if (!identical(length(base), 1L))
-        stop(gettextf("'%s' does not have length %d",
-                      "base", 1L))
-    if (is.na(base))
-        stop(gettextf("'%s' is missing",
-                      "base"))
-    i.base <- match(base, names, nomatch = 0L)
-    has.base <- i.base > 0L
-    if (!has.base)
-        stop(gettextf("'%s' outside valid range",
-                      "base"))
-    name.base <- names[i.base]
-    dimtype.base <- dimtypes[i.base]
-    DimScale.base <- DimScales[[i.base]]
-    if (!(dimtype.base %in% c("sex", "state")))
-        stop(gettextf("dimension \"%s\" has %s \"%s\"",
-                      name.base, "dimtype", dimtype.base))
-    names.new <- replace(names
-                         list = i.base,
-                         values = paste(name.base, "orig", sep = "_"))
-    dimtypes.new <- replace(dimtypes,
-                            list = i.base,
-                            values = "origin")
-    if (dimtype.base == "sex") {
-        DimScale.base <- as(DimScale.base, "Categories")
-        DimScales.new <- replace(DimScales,
-                                 list = i.base,
-                                 values = list(DimScale.base))
-    }
-    names.new <- append(names.new,
-                        values = paste(name.base, "dest", sep = "_"))
-    dimtypes.new <- append(dimtypes.new,
-                           values = "destination")
-    DimScales.new <- append(DimScales.new,
-                            values = list(DimScale.base))
-    metadata.new <- new("MetaData",
-                        nms = names.new,
-                        dimtypes = dimtypes.new,
-                        DimScales = DimScales.new)
-    .Data.new <- array(.Data,
-                       dim = dim(metadata.new),
-                       dimnames = dimnames(metadata.new))
-    ans <- methods::new("Counts",
-                        .Data.new = .Data.new,
-                        metadata.new = metadata.new)
-    n.dim <- length(names.new)
-    s <- seq_len(n.dim - 1L)
-    perm <- append(s,
-                   values = n.dim,
-                   after = i.base)
-    aperm(ans,
-          perm = perm)
-}
+## HAS_TESTS
+#' @rdname addDest
+#' @export
+setMethod("addDest",
+          signature(object = "Counts"),
+          function(object, base) {
+              .Data <- object@.Data
+              dim <- dim(.Data)
+              names <- names(object)
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              DimScales <- DimScales(object, use.names = FALSE)
+              s <- seq_along(dim)
+              n.dim <- length(dim)
+              if (missing(base))
+                  stop(gettextf("argument '%s' is missing, with no default",
+                                "base"))
+              if (!identical(length(base), 1L))
+                  stop(gettextf("'%s' does not have length %d",
+                                "base", 1L))
+              if (is.na(base))
+                  stop(gettextf("'%s' is missing",
+                                "base"))
+              i.base <- match(base, names, nomatch = 0L)
+              has.base <- i.base > 0L
+              if (!has.base)
+                  stop(gettextf("'%s' outside valid range",
+                                "base"))
+              name.base <- names[i.base]
+              dimtype.base <- dimtypes[i.base]
+              DimScale.base <- DimScales[[i.base]]
+              if (!(dimtype.base %in% c("sex", "state")))
+                  stop(gettextf("dimension \"%s\" has %s \"%s\"",
+                                name.base, "dimtype", dimtype.base))
+              names.new <- replace(names,
+                                   list = i.base,
+                                   values = paste(name.base, "orig", sep = "_"))
+              dimtypes.new <- replace(dimtypes,
+                                      list = i.base,
+                                      values = "origin")
+              if (dimtype.base == "sex") {
+                  DimScale.base <- as(DimScale.base, "Categories")
+                  DimScales.new <- replace(DimScales,
+                                           list = i.base,
+                                           values = list(DimScale.base))
+              }
+              else
+                  DimScales.new <- DimScales
+              names.new <- append(names.new,
+                                  values = paste(name.base, "dest", sep = "_"))
+              dimtypes.new <- append(dimtypes.new,
+                                     values = "destination")
+              DimScales.new <- append(DimScales.new,
+                                      values = list(DimScale.base))
+              metadata.new <- methods::new("MetaData",
+                                           nms = names.new,
+                                           dimtypes = dimtypes.new,
+                                           DimScales = DimScales.new)
+              .Data.new <- array(.Data,
+                                 dim = dim(metadata.new),
+                                 dimnames = dimnames(metadata.new))
+              ans <- methods::new("Counts",
+                                  .Data = .Data.new,
+                                  metadata = metadata.new)
+              s <- seq_len(n.dim)
+              perm <- append(s,
+                             values = n.dim + 1L,
+                             after = i.base)
+              aperm(ans,
+                    perm = perm)
+          })
 
         
 ## HAS_TESTS
