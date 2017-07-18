@@ -486,12 +486,11 @@ setGeneric("addBreaks",
 
 #' Add one or more dimensions to a demographic array.
 #'
-#' Add one or more dimensions to an object of class \code{\linkS4class{DemographicArray}}
-#'
-#' If \code{object} has class \code{\linkS4class{Counts}}, then the new dimension(s)
-#' must have length 1.  If \code{object} has class \code{\linkS4class{Values}},
-#' then the new dimensions can be longer than 1, in which case the \code{scale}
-#' argument becomes relevant.
+#' Add one or more dimensions to an object of class
+#' \code{\linkS4class{DemographicArray}}.  The new dimension(s) can have
+#' length 1.  If the new dimension(s) have length greater than 1,
+#' then by default they simply repeat the contents of the array.
+#' The default can be overrided via the \code{scale} argument.
 #'
 #' \code{labels}, \code{scale}, \code{dimtype}, and \code{dimscale} are
 #' all recycled where appropriate.  For instance, if \code{scale} is shorter than
@@ -500,14 +499,23 @@ setGeneric("addBreaks",
 #' but \code{labels} is a single vector, then the same \code{labels}
 #' vector is used for both dimensions.
 #'
+#' Adding dimensions of length greater than 1 generally makes more
+#' sense with \code{\linkS4class{Values}} objects than with
+#' \code{\linkS4class{Counts}} objects.  One case where it does
+#' make sense add a dimension of length > 1 to a Counts object
+#' is when the Counts object represents exposure to some sort of risk,
+#' and the exposure is the same for each category within the new
+#' dimension.  See below for an example.
+#' 
 #' @param object Object of class \code{\linkS4class{DemographicArray}}
-#' @param name Character vector with name of dimension (or names of dimensions) to be added.
+#' @param name Character vector with the name of the dimension (or names of
+#' the dimensions) to be added.
 #' @param labels Character vector with labels to be used by new dimension - or,
 #' if several dimensions are being added, and each dimension has different labels,
 #' a list of character vectors.
-#' @param scale Optional numeric vector of scaling factors - or, if several dimensions
-#' are being added, and each dimension is scaled differently, a list of numeric vectors.
-#' Can only be used if \code{object} has class \code{\linkS4class{Values}}.
+#' @param scale Optional numeric vector of scaling factors - or, if several
+#' dimensions are being added, and each dimension is scaled differently,
+#' a list of numeric vectors.
 #' @param after Name or index of a dimension of \code{object}.  The new dimension
 #'  will be added after this dimension.
 #' @param dimtype Optional character with dimtype of new dimension
@@ -520,10 +528,15 @@ setGeneric("addBreaks",
 #'
 #' @seealso \code{\link{collapseDimension}}
 #' @examples
+#' ## Add a time dimension to some population counts
+#' population <- CountsOne(c(10, 12), labels = c("A", "B"), name = "region")
+#' population
+#' addDimension(population, name = "year", labels = "2000", dimscale = "Points")
+#' 
 #' library(demdata)
 #' deaths <- Values(VADeaths2)
 #' deaths
-#'## assume that Democrats and Republicans have the same death rates
+#' ## assume that Democrats and Republicans have the same death rates
 #'addDimension(deaths,
 #'             name = "party",
 #'             labels = c("Democrat", "Republican"))
@@ -557,6 +570,20 @@ setGeneric("addBreaks",
 #'             name = c("residence_orig", "residence_dest"),
 #'             labels = c("Urban", "Rural"),
 #'             scale = list(c(1.1, 0.9), 1))
+#'
+#' ## When calculating hospital admissions from different causes,
+#' ## use the same population counts as exposure for each
+#' ## cause.
+#' admissions <- Counts(array(c(0, 1, 3, 2),
+#'                           dim = c(2, 2),
+#'                           dimnames = list(sex = c("Female", "Male"),
+#'                                           cause = c("Accidents", "Infectious Disease"))))
+#' population <- CountsOne(4:5, labels = c("Female", "Male"), name = "sex")
+#' exposure <- addDimension(population,
+#'                          name = "cause",
+#'                          labels = c("Accidents", "Infectious Disease"))
+#' exposure
+#' admissions / exposure
 #' @export
 setGeneric("addDimension",
            function(object, name, labels, after = length(dim(object)),
@@ -1673,6 +1700,7 @@ setGeneric("e1IsFirstDimScale",
 setGeneric("exposure",
           function(object, triangles = FALSE)
               standardGeneric("exposure"))
+
 
 #' @rdname exported-not-api
 #' @export

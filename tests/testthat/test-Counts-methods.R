@@ -314,6 +314,14 @@ test_that("addDimension works", {
                       dimnames = list(age = c("0-4", "5+"), reg = "a", eth = "b", sex = c("f", "m"))))
     expect_identical(addDimension(x, name = c("reg", "eth"), labels = list("a", "b"), after = 1),
                      y)
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(age = c("0-4", "5+"), sex = c("f", "m"))))
+    ans.obtained <- addDimension(x, name = "reg", labels = c("a", "b"))
+    ans.expected <- Counts(array(c(1:4, 1:4),
+                                 dim = c(2, 2, 2),
+                                 dimnames = list(age = c("0-4", "5+"), sex = c("f", "m"), reg = c("a", "b"))))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("as.data.frame works", {
@@ -1947,6 +1955,44 @@ test_that("exposure throws appropriate errors", {
     expect_error(exposure(x),
                  "dimension with dimtype \"age\" has length 0")
 })
+
+## test_that("exposureOrigDest works", {
+##     x <- Counts(array(1:4,
+##                       dim = c(2, 2),
+##                       dimnames = list(reg_orig = 1:2, reg_dest = 1:2)))
+##     ans.obtained <- exposureOrigDest(x)
+##     ans.expected <- Counts(array(c(4L, 6L),
+##                                  dim = c(2, 2),
+##                                  dimnames = list(reg_orig = 1:2, reg_dest = 1:2)))
+##     expect_identical(ans.obtained, ans.expected)
+##     x <- Counts(array(1:8,
+##                       dim = c(2, 2, 2),
+##                       dimnames = list(reg_dest = 1:2, sex = c("f", "m"), reg_orig = 1:2)))
+##     ans.obtained <- exposureOrigDest(x)
+##     ans.expected <- Counts(array(rep(apply(x@.Data, 2:3, sum), each = 2),
+##                                  dim = c(2, 2, 2),
+##                                  dimnames = list(reg_dest = 1:2, sex = c("f", "m"), reg_orig = 1:2)))
+##     expect_identical(ans.obtained, ans.expected)
+##     x <- Counts(array(1:16,
+##                       dim = c(2, 2, 2, 2),
+##                       dimnames = list(reg_orig = 1:2, reg_dest = 1:2,
+##                                       eth_orig = c("b", "a"), eth_dest = c("a", "b"))))
+##     ans.obtained <- exposureOrigDest(x, base = "eth")
+##     ans.expected <- Counts(array(apply(x@.Data, 1:3, sum),
+##                                  dim = dim(x),
+##                                  dimnames = dimnames(x)))
+##     expect_identical(ans.obtained, ans.expected)
+##     ans.obtained <- exposureOrigDest(x)
+##     ans.expected <- array(apply(x@.Data, 1:3, sum),
+##                           dim = dim(x),
+##                           dimnames = dimnames(x))
+##     ans.expected <- aperm(Counts(array(apply(aperm(ans.expected, c(2, 1, 3, 4)), 2:4, sum),
+##                                        dim = dim(x),
+##                                        dimnames = dimnames(x)[c(1, 3, 4, 2)])),
+##                           perm = c(1, 4, 2, 3))
+##     expect_identical(ans.obtained, ans.expected)
+## })
+
 
 test_that("growth works when 'within' is NULL", {
     a <- array(1:12,

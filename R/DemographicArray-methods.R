@@ -275,6 +275,107 @@ setMethod("DimScales",
               methods::callGeneric()
           })
 
+
+## HAS_TESTS
+#' @rdname addDimension
+#' @export
+setMethod("addDimension",
+          signature(object = "DemographicArray"),
+          function(object, name, labels, after = length(dim(object)),
+                   dimtype = NULL, dimscale = NULL, scale = 1L) {
+              class <- if (methods::is(object, "Counts")) "Counts" else "Values"
+              n.name <- length(name)
+              n.dim <- length(dim(object))
+              if (is.list(labels)) {
+                  if (length(labels) > n.name)
+                      stop(gettextf("'%s' has more elements than '%s'",
+                                    "labels", "name"))
+              }
+              else
+                  labels <- list(labels)
+              labels <- rep(labels, length.out = n.name)
+              labels <- lapply(labels, as.character)
+              if (!identical(length(after), 1L))
+                  stop(gettextf("'%s' does not have length %d", "after", 1L))
+              if (is.character(after))
+                  after <- match(after, names(object), nomatch = -1L)
+              if (!(after %in% seq.int(from = 0, to = n.dim)))
+                  stop(gettextf("'%s' outside valid range", "after"))
+              if (is.list(scale)) {
+                  if (length(scale) > n.name)
+                      stop(gettextf("'%s' has more elements than '%s'",
+                                    "scale", "name"))
+              }
+              else
+                  scale <- list(scale)
+              scale <- rep(scale, length.out = n.name)
+              for (i in seq_len(n.name)) {
+                  n.scale <- length(scale[[i]])
+                  n.labels <- length(labels[[i]])
+                  if (n.scale < n.labels)
+                      scale[[i]] <- rep(scale[[i]], length.out = n.labels)
+                  else if (n.scale > n.labels)
+                      stop(gettextf("'%s' has more elements than '%s'",
+                                    "scale", "labels"))
+              }
+              if (is.null(dimtype))
+                  dimtype <- inferDimtypes(name)
+              else {
+                  n.dimtype <- length(dimtype)
+                  if (n.dimtype < n.name)
+                      dimtype <- rep(dimtype, length.out = n.name)
+                  else if (n.dimtype > n.name)
+                      stop(gettextf("'%s' has more elements than '%s'",
+                                    "dimtype", "name"))
+              }
+              if (is.null(dimscale))
+                  dimscale <- list(NULL)
+              else {
+                  n.dimscale <- length(dimscale)
+                  if (n.dimscale < n.name)
+                      dimscale <- rep(dimscale, length.out = n.name)
+                  else if (n.dimscale > n.name)
+                      stop(gettextf("'%s' has more elements than '%s'",
+                                    "dimscale", "name"))
+              }
+              DimScale <- mapply(inferDimScale,
+                                 dimtype = dimtype,
+                                 dimscale = dimscale,
+                                 labels = labels,
+                                 name = name,
+                                 SIMPLIFY = FALSE,
+                                 USE.NAMES = FALSE)
+              nms <- c(names(object), name)
+              dimtypes <- c(dimtypes(object, use.names = FALSE), unlist(dimtype))
+              DimScales <- c(DimScales(object, use.names = FALSE), DimScale)
+              metadata <- methods::new("MetaData",
+                                       nms = nms,
+                                       dimtypes = dimtypes,
+                                       DimScales = DimScales)
+              .Data <- c(object@.Data)
+              all.integer <- all(sapply(scale, is.integer))
+              scale <- Reduce("%o%", scale)
+              if (all.integer)
+                  scale <- as.integer(scale)
+              scale <- rep(scale, each = length(.Data))
+              .Data <- scale * .Data
+              .Data <- array(.Data,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              permute <- !identical(after, n.dim)
+              if (permute) {
+                  old <- seq_len(n.dim)
+                  new <- seq.int(from = n.dim + 1L, length.out = length(name))
+                  perm <- append(old, values = new, after = after)
+                  .Data <- aperm(.Data, perm = perm)
+                  metadata <- metadata[perm]
+              }
+              methods::new(class,
+                           .Data = .Data,
+                           metadata = metadata)
+          })
+
+
 ## HAS_TESTS
 #' @rdname ageMinMax
 #' @export

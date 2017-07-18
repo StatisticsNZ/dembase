@@ -170,87 +170,73 @@ setMethod("Ops",
               methods::callGeneric(e1 = e1, e2 = e2)
           })
 
-## HAS_TESTS
-#' @rdname addDimension
-#' @export
-setMethod("addDimension",
-          signature(object = "Counts", scale = "missing"),
-          function(object, name, labels, after = length(dim(object)),
-                   dimtype = NULL, dimscale = NULL) {
-              n.name <- length(name)
-              n.dim <- length(dim(object))
-              if (is.list(labels)) {
-                  if (length(labels) > n.name)
-                      stop(gettextf("'%s' has more elements than '%s'",
-                                    "labels", "name"))
-              }
-              else
-                  labels <- list(labels)
-              labels <- rep(labels, length.out = n.name)
-              labels <- lapply(labels, as.character)
-              if (!identical(length(after), 1L))
-                  stop(gettextf("'%s' does not have length %d", "after", 1L))
-              if (is.character(after))
-                  after <- match(after, names(object), nomatch = -1L)
-              if (!(after %in% seq.int(from = 0, to = n.dim)))
-                  stop(gettextf("'%s' outside valid range", "after"))
-              if (is.null(dimtype))
-                  dimtype <- inferDimtypes(name)
-              else {
-                  n.dimtype <- length(dimtype)
-                  if (n.dimtype < n.name)
-                      dimtype <- rep(dimtype, length.out = n.name)
-                  else if (n.dimtype > n.name)
-                      stop(gettextf("'%s' has more elements than '%s'",
-                                    "dimtype", "name"))
-              }
-              if (is.null(dimscale))
-                  dimscale <- list(NULL)
-              else {
-                  n.dimscale <- length(dimscale)
-                  if (n.dimscale < n.name)
-                      dimscale <- rep(dimscale, length.out = n.name)
-                  else if (n.dimscale > n.name)
-                      stop(gettextf("'%s' has more elements than '%s'",
-                                    "dimscale", "name"))
-              }
-              not.iteration <- dimtype != "iteration"
-              length.dim <- sapply(labels, length)
-              too.long <- not.iteration & (length.dim > 1L)
-              n.too.long <- sum(too.long)
-              if (n.too.long > 0L)
-                  stop(sprintf(ngettext(n.too.long,
-                                        "new dimension not of length 1 [%s]",
-                                        "new dimensions not of length 1 [%s]"),
-                               paste(dQuote(name[too.long]), collapse = ", ")))
-              DimScale <- mapply(inferDimScale,
-                                 dimtype = dimtype,
-                                 dimscale = dimscale,
-                                 labels = labels,
-                                 name = name,
-                                 SIMPLIFY = FALSE,
-                                 USE.NAMES = FALSE)
-              nms <- c(names(object), name)
-              dimtypes <- c(dimtypes(object, use.names = FALSE), unlist(dimtype))
-              DimScales <- c(DimScales(object, use.names = FALSE), DimScale)
-              metadata <- methods::new("MetaData",
-                              nms = nms,
-                              dimtypes = dimtypes,
-                              DimScales = DimScales)
-              .Data <- array(object@.Data,
-                             dim = dim(metadata),
-                             dimnames = dimnames(metadata))
-              permute <- !identical(after, n.dim)
-              if (permute) {
-                  old <- seq_len(n.dim)
-                  new <- seq.int(from = n.dim + 1L, length.out = length(name))
-                  perm <- append(old, values = new, after = after)
-                  .Data <- aperm(.Data, perm = perm)
-                  metadata <- metadata[perm]
-              }
-              methods::new("Counts", .Data = .Data, metadata = metadata)
-          })
+addDest <- function(object, base) {
+    .Data <- object@.Data
+    is.integer <- is.integer(.Data)
+    dim <- dim(.Data)
+    names <- names(object)
+    dimtypes <- dimtypes(object, use.names = FALSE)
+    DimScales <- DimScales(object, use.names = FALSE)
+    s <- seq_along(dim)
+    n.dim <- length(dim)
+    if (is.missing(base))
+        stop(gettextf("argument '%s' is missing, with no default",
+                      "base"))
+    if (!identical(length(base), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "base", 1L))
+    if (is.na(base))
+        stop(gettextf("'%s' is missing",
+                      "base"))
+    i.base <- match(base, names, nomatch = 0L)
+    has.base <- i.base > 0L
+    if (!has.base)
+        stop(gettextf("'%s' outside valid range",
+                      "base"))
+    name.base <- names[i.base]
+    dimtype.base <- dimtypes[i.base]
+    DimScale.base <- DimScales[[i.base]]
+    if (!(dimtype.base %in% c("sex", "state")))
+        stop(gettextf("dimension \"%s\" has %s \"%s\"",
+                      name.base, "dimtype", dimtype.base))
+    names.new <- replace(names
+                         list = i.base,
+                         values = paste(name.base, "orig", sep = "_"))
+    dimtypes.new <- replace(dimtypes,
+                            list = i.base,
+                            values = "origin")
+    if (dimtype.base == "sex") {
+        DimScale.base <- as(DimScale.base, "Categories")
+        DimScales.new <- replace(DimScales,
+                                 list = i.base,
+                                 values = list(DimScale.base))
+    }
+    names.new <- append(names.new,
+                        values = paste(name.base, "dest", sep = "_"))
+    dimtypes.new <- append(dimtypes.new,
+                           values = "destination")
+    DimScales.new <- append(DimScales.new,
+                            values = list(DimScale.base))
+    metadata.new <- new("MetaData",
+                        nms = names.new,
+                        dimtypes = dimtypes.new,
+                        DimScales = DimScales.new)
+    .Data.new <- array(.Data,
+                       dim = dim(metadata.new),
+                       dimnames = dimnames(metadata.new))
+    ans <- methods::new("Counts",
+                        .Data.new = .Data.new,
+                        metadata.new = metadata.new)
+    n.dim <- length(names.new)
+    s <- seq_len(n.dim - 1L)
+    perm <- append(s,
+                   values = n.dim,
+                   after = i.base)
+    aperm(ans,
+          perm = perm)
+}
 
+        
 ## HAS_TESTS
 ## Have method for Counts to avoid method for arrays being selected
 #' @method as.data.frame Counts
@@ -1391,39 +1377,6 @@ setMethod("exposure",
 ##     }
 ##     DimScale.time.new <- intervalsBetweenPoints(DimScale.time)
 ## }
-
-
-
-## exposureOrigDest <- function(object, base = NULL) {
-##     .Data <- object@.Data
-##     dim <- dim(.Data)
-##     names <- names(object)
-##     dimtypes <- dimtypes(object, use.names = FALSE)
-##     DimScales <- DimScales(object, use.names = FALSE)
-##     s <- seq_along(dim)
-##     n.dim <- length(dim)
-##     if (is.null(base)) {
-##         is.orig <- dimtypes == "origin"
-##         if (!any(is.orig))
-##             stop(gettextf("no dimensions with dimtypes \"%s\" or \"%s\"",
-##                           "origin", "destination"))
-##         base <- removeSuffixes(names[is.orig])
-##     }
-##     i.orig <- match(sprintf("%s_orig", base), names, nomatch = 0L)
-##     if (any(i.orig == 0L))
-##         stop(gettextf("'%s' outside valid range", "base"))
-##     i.dest <- match(sprintf("%s_dest", base), names)
-##     for (i in seq_along(i.orig)) {
-##         i.dim.orig <- i.orig[i]
-##         i.dim.dest <- i.dest[i]
-##         perm <- c(i.dim.dest, s[-i.dim.dest])
-##         .Data <- aperm(.Data, perm = perm)
-##         .Data <- colSums(.Data, ndim = n.dim)
-##         .Data <- array(.Data, dim = dim)
-##         perm <- match(s, perm)
-##         .Data <- aperm(.Data, perm = perm)
-##     }
-## }    
 
 
 ## HAS_TESTS
