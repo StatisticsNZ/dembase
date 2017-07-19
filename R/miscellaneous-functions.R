@@ -674,7 +674,8 @@ monthStartNum <- function(monthStart) {
 ## HAS_TESTS
 #' @rdname exported-not-api
 #' @export
-checkAndTidyAlong <- function(along, metadata, numericDimScales) {
+checkAndTidyAlong <- function(along, metadata, numericDimScales,
+                              checkNumericDimscales = TRUE) {
     names <- names(metadata)
     dimtypes <- dimtypes(metadata, use.names = FALSE)
     DimScales <- DimScales(metadata, use.names = FALSE)
@@ -706,7 +707,7 @@ checkAndTidyAlong <- function(along, metadata, numericDimScales) {
         if (identical(dimtype.along, "iteration"))
             stop(gettextf("'along' dimension [\"%s\"] has dimtype \"%s\"",
                           name.along, "iteration"))
-        if (numericDimScales) {
+        if (numericDimScales && checkNumericDimscales) {
             DimScale.along <- DimScales[[along]]
             if (!(methods::is(DimScale.along, "Points") || methods::is(DimScale.along, "Intervals")))
                 stop(gettextf("'along' dimension [\"%s\"] has dimscale \"%s\"",
