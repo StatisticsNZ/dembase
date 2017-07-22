@@ -133,7 +133,8 @@ stepLengths(object)
 
 \S4method{extend}{array,ExtendTransform}(object, transform)
 
-checkAndTidyAlong(along, metadata, numericDimScales)
+checkAndTidyAlong(along, metadata, numericDimScales,
+  checkNumericDimscales = TRUE)
 
 iFemale(DimScale)
 

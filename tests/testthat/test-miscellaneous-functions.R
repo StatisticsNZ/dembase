@@ -2423,39 +2423,36 @@ test_that("ageMinMaxRemplace throws appropriate errors", {
                  "replacement value less than or equal to lower limit of last age group")
 })
 
-
-
-
-test_that("makeLabelsForClosedIntervals works", {
-    makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
-    expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10)),
-                     c("0-4", "5-9"))
-    expect_identical(makeLabelsForClosedIntervals(c(2000, 2005, 2010)),
-                     c("2001-2005", "2006-2010"))
-    expect_identical(makeLabelsForClosedIntervals(1:4),
-                     c("1", "2", "3"))
-    expect_identical(makeLabelsForClosedIntervals(c(1:4, 5.1)),
-                     c("1-2", "2-3", "3-4", "4-5.1"))
-    expect_identical(makeLabelsForClosedIntervals(c(0.01, 1.01, 2.01)),
-                     c("0.01-1.01", "1.01-2.01"))
-    expect_identical(makeLabelsForClosedIntervals(c(0.1, 5, 10)),
-                     c("0.1-5", "5-10"))
-    expect_identical(makeLabelsForClosedIntervals(c(-10, -5, 0)),
-                     c("-10--6", "-5--1"))
-    expect_identical(makeLabelsForClosedIntervals(c(-10, -5, 0),
-                                                  intervalSeparator = " to "),
-                     c("-10 to -6", "-5 to -1"))
-    expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10),
-                                                  limitPrintLower = -Inf),
-                     c("1-5", "6-10"))
-    expect_identical(makeLabelsForClosedIntervals(numeric()),
-                     character())
-    expect_identical(makeLabelsForClosedIntervals(2000:2004),
-                     as.character(2001:2004))
-    expect_identical(makeLabelsForClosedIntervals(c(2000:2004, 2005.1)),
-                     c("2000-2001", "2001-2002", "2002-2003", "2003-2004",
-                       "2004-2005.1"))
-})
+## test_that("makeLabelsForClosedIntervals works", {
+##     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
+##     expect_identical(makeLabelsForClosedIntervals2(c(0, 5, 10)),
+##                      c("0-4", "5-9"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(2000, 2005, 2010)),
+##                      c("2000-2005", "2005-2010"))
+##     expect_identical(makeLabelsForClosedIntervals2(1:4),
+##                      c("1", "2", "3"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(1:4, 5.1)),
+##                      c("1", "2", "3", "4-5.1"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(0.01, 1.01, 2.01)),
+##                      c("0.01-1.01", "1.01-2.01"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(0.1, 5, 10)),
+##                      c("0.1-5", "5-10"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(-10, -5, 0)),
+##                      c("-10--6", "-5--1"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(-10, -5, 0),
+##                                                   intervalSeparator = " to "),
+##                      c("-10 to -6", "-5 to -1"))
+##     expect_identical(makeLabelsForClosedIntervals2(c(0, 5, 10),
+##                                                   limitPrintLower = -Inf),
+##                      c("0-5", "5-10"))
+##     expect_identical(makeLabelsForClosedIntervals2(numeric()),
+##                      character())
+##     expect_identical(makeLabelsForClosedIntervals2(2000:2004),
+##                      as.character(2000:2003))
+##     expect_identical(makeLabelsForClosedIntervals2(c(2000:2004, 2005.1)),
+##                      c("2000", "2001", "2002", "2003",
+##                        "2004-2005.1"))
+## })
 
 test_that("makeLabelsForIntervals works", {
   makeLabelsForIntervals <- dembase:::makeLabelsForIntervals

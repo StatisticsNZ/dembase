@@ -1749,6 +1749,35 @@ makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
         character()
 }
 
+## ## HAS_TESTS
+## makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
+##                                          limitPrintLower = NULL) {
+##     kDigits <- 4L
+##     n <- length(dimvalues)
+##     if (n > 0L) {
+##         if (is.null(intervalSeparator))
+##             intervalSeparator <- getIntervalSeparator()
+##         if (is.null(limitPrintLower))
+##             limitPrintLower <- getLimitPrintLower()
+##         is.integer <- dimvalues == as.integer(dimvalues)
+##         ans <- character(length = n - 1L)
+##         is.single.value <- (diff(dimvalues) == 1) & is.integer[-n]
+##         single.labels <- dimvalues[-n][is.single.value]
+##         ans[is.single.value] <-  single.labels
+##         lower <- dimvalues[-n][ans == ""]
+##         upper <- dimvalues[-1L][ans == ""]
+##         reduce.upper <- all(is.integer) && (max(dimvalues) < limitPrintLower)
+##         if (reduce.upper)
+##             upper <- upper - 1L
+##         lower <- round(lower, kDigits)
+##         upper <- round(upper, kDigits)
+##         ans[ans == ""] <- paste(lower, upper, sep = intervalSeparator)
+##         ans
+##     }
+##     else
+##         character()
+## }
+
 ## HAS_TESTS
 makeLabelsForIntervals <- function(dimvalues, intervalSeparator = NULL,
                                    limitPrintLower = NULL) {
