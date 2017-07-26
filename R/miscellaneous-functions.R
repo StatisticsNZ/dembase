@@ -238,7 +238,7 @@ completedYears <- function(date, dob) {
     diff.year <- year.date - year.dob
     diff.month <- month.date - month.dob
     diff.day <- day.date - day.dob
-    diff.year + ((diff.month > 0L) | ((diff.month == 0L) & (diff.day >= 0L))) - 1L
+    diff.year + ((diff.month > 0L) | ((diff.month == 0L) & (diff.day > 0L))) - 1L
 }
 
 ## HAS_TESTS
@@ -256,8 +256,9 @@ completedMonths <- function(date, dob) {
     diff.year <- year.date - year.dob
     diff.month <- month.date - month.dob
     diff.day <- day.date - day.dob
-    12L * diff.year + diff.month + (diff.day >= 0L) - 1L
+    12L * diff.year + diff.month + (diff.day > 0L) - 1L
 }
+
 
 #' Calculate ages, periods, cohorts, and Lexis triangles from dates.
 #'
