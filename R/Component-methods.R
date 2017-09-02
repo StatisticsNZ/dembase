@@ -517,6 +517,8 @@ setMethod("isCompatibleWithPopn",
 ## isPositiveIncrement #############################################################
 
 ## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
 setMethod("isPositiveIncrement",
           signature(object = "Births"),
           function(object) {
@@ -524,6 +526,8 @@ setMethod("isPositiveIncrement",
           })
 
 ## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
 setMethod("isPositiveIncrement",
           signature(object = "Internal"),
           function(object) {
@@ -531,6 +535,8 @@ setMethod("isPositiveIncrement",
           })
 
 ## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
 setMethod("isPositiveIncrement",
           signature(object = "Entries"),
           function(object) {
@@ -538,6 +544,8 @@ setMethod("isPositiveIncrement",
           })
 
 ## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
 setMethod("isPositiveIncrement",
           signature(object = "Exits"),
           function(object) {
@@ -545,6 +553,8 @@ setMethod("isPositiveIncrement",
           })
 
 ## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
 setMethod("isPositiveIncrement",
           signature(object = "NetMovements"),
           function(object) {

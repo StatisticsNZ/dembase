@@ -1482,10 +1482,10 @@ setMethod("slab",
               indices[[dimension]] <- match(s, elements, nomatch = 0L)
               dim.after <- replace(dim.before, list = dimension, values = length(elements))
               transform <- methods::new("CollapseTransform",
-                               dims = dims,
-                               indices = indices,
-                               dimBefore = dim.before,
-                               dimAfter = dim.after)
+                                        dims = dims,
+                                        indices = indices,
+                                        dimBefore = dim.before,
+                                        dimAfter = dim.after)
               ans <- collapse(object, transform = transform)
               if (drop) {
                   if (length(ans) == 1L) {

@@ -232,8 +232,8 @@ ExitsMovements <- function(exits, template, name) {
 ## checks.
 Exposure <- function(exposure) {
     methods::new("Exposure",
-        .Data = exposure@.Data,
-        metadata = exposure@metadata)
+                 .Data = exposure@.Data,
+                 metadata = exposure@metadata)
 }
 
 ## HAS_TESTS

@@ -1,38 +1,154 @@
+## #' ## Calculations using age-time steps of one quarter.  (Note, incidentally,
+## #' ## that an account does not have to start from age 0 if it does not
+## #' ## include births.)
+## project <- function(initial, births = NULL, internal = NULL,
+##                     entries = list(), exits = list(), net = list(),
+##                     movements = TRUE, adjust = FALSE, scale = 0.1) {
+##     if (!isTRUE(movements))
+##         stop("currently can only deal with movements accounts")
+##     if (!is.null(births))
+##         DS.time.popn <- getDimScaleTimePopn(births,
+##                                             name = "births")
+##     else if (!is.null(internal))
+##         DS.time.popn <- getDimScaleTimePopn(internal,
+##                                             name = "internal")
+##     else if (length(entries) != 0L) {
+##         names.entries <- names(entries)
+##         if (is.null(names.entries))
+##             stop(gettextf("'%s' does not have names",
+##                           "entries"))
+##         DS.time.popn <- getDimScaleTimePopn(entries[[1L]],
+##                                             name = names.entries[1L])
+##     }
+##     else if (length(exits) != 0L) {
+##         names.exits <- names(exits)
+##         if (is.null(names.exits))
+##             stop(gettextf("'%s' does not have names",
+##                           "exits"))
+##         DS.time.popn <- getDimScaleTimePopn(exits[[1L]],
+##                                             name = names.exits[1L])
+##     }
+##     else if (length(net) != 0L) {
+##         names.net <- names(net)
+##         if (is.null(names.net))
+##             stop(gettextf("'%s' does not have names",
+##                           "net"))
+##         DS.time.popn <- getDimScaleTimePopn(net[[1L]],
+##                                             name = names.net[1L])
+##     }
+##     else
+##         stop(gettextf("no values supplied for '%s', '%s', '%s', '%s', or '%s'",
+##                       "births", "internal", "entries", "exits", "net"))
+##     .Data.initial <- initial@.Data
+##     dim.initial <- dim(initial)
+##     names.initial <- names(initial)
+##     dimtypes.initial <- dimtypes(initial,
+##                                  use.names = FALSE)
+##     DimScales.initial <- DimScales(initial,
+##                                    use.names = FALSE)
+##     i.time.initial <- match("time", dimtypes.initial, nomatch = 0L)
+##     has.time.initial <- i.time.initial > 0L
+##     if (has.time.initial) {
+##         DS.time.initial <- DimScales.initial[[i.time.initial]]
+##         if (!methods::is(DS.time.initial, "Points"))
+##             stop(gettextf("dimension of '%s' with %s \"%s\" has dimscale \"%s\"",
+##                           "initial", "dimtype", "time", class(DS.time.initial)))
+##         dv.time.initial <- dimvalues(DS.time.initial)
+##         n.dv.time.initial <- length(dv.time.initial)
+##         if (n.dv.time.initial == 0L)
+##             NULL # ignore
+##         else if (n.dv.time.initial == 1L) {
+##             dv.time.popn <- dimvalues(DS.time.popn)
+##             if (!isTRUE(all.equal(dv.time.initial, dv.time.popn[1L])))
+##                 stop(gettextf("time dimension of '%s' not consistent with time dimension of components",
+##                               "initial"))
+##         }            
+##         else
+##             stop(gettextf("time dimension of '%s' has more than one point",
+##                           "initial"))
+##         dim.time.last <- c(dim.initial[-i.time.initial], length(DS.time.popn))
+##         .Data.population <- array(.Data.initial,
+##                                   dim = dim.time.last) # replicates data
+##         n.dim.initial <- length(dim.initial)
+##         perm <- seq_len(n.dim.initial - 1L)
+##         perm <- append(perm,
+##                        values = n.dim.initial,
+##                        after = i.time.initial - 1L)
+##         .Data.population <- aperm(.Data.population,
+##                                   perm = perm)
+##         DimScales.population <- replace(DimScales.initial,
+##                                         list = i.time.initial,
+##                                         values = list(DS.time.popn))
+##         metadata.population <- methods::new("MetaData",
+##                                             nms = names.initial,
+##                                             dimtypes = dimtypes.initial,
+##                                             DimScales = DimScales.population)
+##         .Data.population <- array(.Data.population,
+##                                   dim = dim(metadata.population),
+##                                   dimnames = dimnames(metadata.population))
+##     }
+##     else {
+##         names.population <- make.unique(c(names.initial, "time"))
+##         dimtypes.population <- c(dimtypes.initial, "time")
+##         DimScales.population <- c(DimScales.initial, list(DS.time.popn))
+##         metadata.population <- new("MetaData",
+##                                    nms = names.population,
+##                                    dimtypes = dimtypes.population,
+##                                    DimScales = DimScales.population)
+##         .Data.population <- array(.Data.initial,
+##                                   dim = dim(metadata.population),
+##                                   dimnames = dimnames(metadata.population)) # replicates data
+##     }
+##     population <- new("Counts",
+##                       .Data = .Data.population,
+##                       metadata = metadata.population)
+##     account <- Movements(population = population,
+##                          births = births,
+##                          internal = internal,
+##                          entries = entries,
+##                          exits = exits,
+##                          net = net)
+##     makeConsistent(object = account,
+##                    adjust = adjust,
+##                    scale = scale)
+## }
 
-## HAS_TESTS
-## assume 'sex' and 'initial' valid
-checkDominant <- function(dominant, sex, initial) {
-    if (is.null(dominant)) {
-        if (is.null(sex))
-            NULL
-        else {
-            i.sex <- match(sex, names(initial))
-            n.sex <- dim(initial)[i.sex]
-            if (n.sex == 1L)
-                NULL
-            else
-                stop(gettextf("'%s' is %s, but '%s' dimension has length %d",
-                              "dominant", "NULL", "sex", n.sex))
-        }
-    }
-    else {
-        if (!is.character(dominant))
-            stop(gettextf("'%s' does not have type \"%s\"",
-                          "dominant", "character"))
-        if (!identical(length(dominant), 1L))
-            stop(gettextf("'%s' does not have length %d",
-                          "dominant", 1L))
-        if (is.na(dominant))
-            stop(gettextf("'%s' is missing",
-                          "dominant"))
-        sex.labels <- dimnames(initial)[[sex]]
-        if (!(dominant %in% sex.labels)) {
-            stop(gettextf("'%s' dimension of '%s' does not have category specified by '%s'",
-                          "sex", "initial", "dominant"))
-        }
-        NULL
-    }
-}
+
+
+## ## HAS_TESTS
+## ## assume 'sex' and 'initial' valid
+## checkDominant <- function(dominant, sex, initial) {
+##     if (is.null(dominant)) {
+##         if (is.null(sex))
+##             NULL
+##         else {
+##             i.sex <- match(sex, names(initial))
+##             n.sex <- dim(initial)[i.sex]
+##             if (n.sex == 1L)
+##                 NULL
+##             else
+##                 stop(gettextf("'%s' is %s, but '%s' dimension has length %d",
+##                               "dominant", "NULL", "sex", n.sex))
+##         }
+##     }
+##     else {
+##         if (!is.character(dominant))
+##             stop(gettextf("'%s' does not have type \"%s\"",
+##                           "dominant", "character"))
+##         if (!identical(length(dominant), 1L))
+##             stop(gettextf("'%s' does not have length %d",
+##                           "dominant", 1L))
+##         if (is.na(dominant))
+##             stop(gettextf("'%s' is missing",
+##                           "dominant"))
+##         sex.labels <- dimnames(initial)[[sex]]
+##         if (!(dominant %in% sex.labels)) {
+##             stop(gettextf("'%s' dimension of '%s' does not have category specified by '%s'",
+##                           "sex", "initial", "dominant"))
+##         }
+##         NULL
+##     }
+## }
 
 ## test_that("checkDominant works", {
 ##     checkDominant <- dembase:::checkDominant

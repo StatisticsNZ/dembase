@@ -6,18 +6,25 @@
 \alias{components,DemographicAccount-method}
 \title{Extract one or more components from a demographic account.}
 \usage{
-components(object, names = NULL)
+components(object, names = NULL, simplify = FALSE)
 
-\S4method{components}{DemographicAccount}(object, names = NULL)
+\S4method{components}{DemographicAccount}(object, names = NULL,
+  simplify = TRUE)
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicAccount}}.}
 
 \item{names}{Names of the components.  If omitted all components
 are returned.}
+
+\item{simplify}{Logical. If \code{simplify} is \code{TRUE} (the default),
+and if only one component is requested, then the return value for
+\code{components} is the Counnts object itself, rather than a
+named list of length 1.}
 }
 \value{
-A named list of \code{\linkS4class{Counts}} objects.
+A single \code{\linkS4class{Counts}} object, or a named
+list of Counts objects.
 }
 \description{
 A \code{\link[=DemographicAccount-class]{demographic account}} contains
@@ -43,7 +50,8 @@ account <- Movements(population = population,
                      exits = list(deaths = deaths))
 
 components(account)
-components(account, names = "births")
+components(account, names = "births") ## Counts object
+components(account, names = "births", simplify = FALSE) ## named list
 components(account, names = c("deaths", "births"))
 }
 \seealso{

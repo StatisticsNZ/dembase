@@ -982,6 +982,19 @@ test_that("collapse works", {
                      dimAfter = 2:1)
     expect_identical(collapse(x, transform = transform),
                      y)
+    x <- Counts(array(1:2,
+                      dim = c(2, 2),
+                      dimnames = list(region = c("a", "b"), sex = c("Female", "Male"))))
+    y <- Counts(array(1:2,
+                      dim = c(2, 1),
+                      dimnames = list(region = c("a", "b"), sex = "Female")))
+    transform <- new("CollapseTransform",
+                     dims = 1:2,
+                     indices = list(1:2, c(1L, 0L)),
+                     dimBefore = c(2L, 2L),
+                     dimAfter = 2:1)
+    expect_identical(collapse(x, transform = transform),
+                     y)
 })
 
 test_that("canMakeSharedDimScalesCompatible works", {

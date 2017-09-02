@@ -48,7 +48,8 @@
 #' @param mx Mortality rates.
 #' @param ax Separation factors.
 #' @param value Replacement value.
-#' 
+#' @param checkNumericDimscales Whether to require 'along' dimension
+#' to have a numeric dimscale.
 #' @name exported-not-api
 NULL
 

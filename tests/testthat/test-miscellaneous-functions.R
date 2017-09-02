@@ -196,7 +196,7 @@ test_that("checkLastOpen works", {
 test_that("completedYears works", {
     completedYears <- dembase:::completedYears
     ans.obtained <- completedYears(date = as.Date("2001-04-03"),
-                                         dob = as.Date("2001-01-01"))
+                                   dob = as.Date("2001-01-01"))
     ans.expected <- 0L
     expect_identical(ans.obtained, ans.expected)
     date <- as.Date(c("2000-01-31", "2000-02-01", "2000-12-31", "2001-01-01"))

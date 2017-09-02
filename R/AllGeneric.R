@@ -1222,8 +1222,13 @@ setGeneric("collapseOrigDest",
 #' @param object An object of class \code{\linkS4class{DemographicAccount}}.
 #' @param names Names of the components.  If omitted all components
 #' are returned.
+#' @param simplify Logical. If \code{simplify} is \code{TRUE} (the default),
+#' and if only one component is requested, then the return value for
+#' \code{components} is the Counnts object itself, rather than a
+#' named list of length 1.
 #'
-#' @return A named list of \code{\linkS4class{Counts}} objects.
+#' @return A single \code{\linkS4class{Counts}} object, or a named
+#' list of Counts objects.
 #'
 #' @seealso Population counts can be extracted using function
 #' \code{\link{population}}.
@@ -1246,11 +1251,12 @@ setGeneric("collapseOrigDest",
 #'                      exits = list(deaths = deaths))
 #'
 #' components(account)
-#' components(account, names = "births")
+#' components(account, names = "births") ## Counts object
+#' components(account, names = "births", simplify = FALSE) ## named list
 #' components(account, names = c("deaths", "births"))
 #' @export
 setGeneric("components",
-           function(object, names = NULL)
+           function(object, names = NULL, simplify = FALSE)
                standardGeneric("components"))
 
 #' Get or set the names of components of a demographic account.
@@ -2156,6 +2162,8 @@ setGeneric("isConsistent",
            function(object)
                standardGeneric("isConsistent"))
 
+#' @rdname exported-not-api
+#' @export
 setGeneric("isPositiveIncrement",
            function(object)
                standardGeneric("isPositiveIncrement"))

@@ -25,7 +25,16 @@ setMethod("DimScales",
 #' @export
 setMethod("components",
           signature(object = "DemographicAccount"),
-          function(object, names = NULL) {
+          function(object, names = NULL, simplify = TRUE) {
+              if (!identical(length(simplify), 1L))
+                  stop(gettextf("'%s' does not have length %d",
+                                "simplify", 1L))
+              if (!is.logical(simplify))
+                  stop(gettextf("'%s' does not have type \"%s\"",
+                                "simplify", "logical"))
+              if (is.na(simplify))
+                  stop(gettextf("'%s' is missing",
+                                "simplify"))
               components <- object@components
               names.components <- object@namesComponents
               if (is.null(names)) {
@@ -55,7 +64,10 @@ setMethod("components",
                   ans[[i]] <- new("Counts",
                                   .Data = ans[[i]]@.Data,
                                   metadata = ans[[i]]@metadata)
-              ans
+              if ((length(ans) == 1L) && simplify)
+                  ans[[1L]]
+              else
+                  ans
           })
 
 ## HAS_TESTS

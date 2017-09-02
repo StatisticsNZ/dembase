@@ -17,6 +17,8 @@ test_that("components works", {
     expect_identical(components(x),
                      list(births = births, deaths = deaths))
     expect_identical(components(x, names = "deaths"),
+                     deaths)
+    expect_identical(components(x, names = "deaths", simplify = FALSE),
                      list(deaths = deaths))
     expect_error(components(x, names = character()),
                  "'names' has length 0")
