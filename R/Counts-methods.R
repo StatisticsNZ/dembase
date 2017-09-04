@@ -1434,6 +1434,30 @@ setMethod("exposureBirths",
                                       metadata = metadata.exp.new)
                   }
               }
+              i.orig.vec <- grep("origin", dimtypes.births)
+              for (i.orig in i.orig.vec) {
+                  nm.births <- names.births[i.orig]
+                  nm.exp <- sub("_orig$", "", nm.births)
+                  i.nm.exp <- match(nm.exp, names(exposure), nomatch = 0L)
+                  if (i.nm.exp == 0L)
+                      stop(gettextf("'%s' has a dimension called \"%s\" but '%s' does not have a dimension called \"%s\"",
+                                    "births", nm.births, "object", nm.exp))
+                  exposure <- addPair(exposure,
+                                      base = nm.exp,
+                                      dimtype = "destination")
+              }
+              i.parent.vec <- grep("parent", dimtypes.births)
+              for (i.parent in i.parent.vec) {
+                  nm.births <- names.births[i.parent]
+                  nm.exp <- sub("_parent$", "", nm.births)
+                  i.nm.exp <- match(nm.exp, names(exposure), nomatch = 0L)
+                  if (i.nm.exp == 0L)
+                      stop(gettextf("'%s' has a dimension called \"%s\" but '%s' does not have a dimension called \"%s\"",
+                                    "births", nm.births, "object", nm.exp))
+                  exposure <- addPair(exposure,
+                                      base = nm.exp,
+                                      dimtype = "child")
+              }
               ans <- tryCatch(makeCompatible(x = exposure,
                                              y = births,
                                              subset = TRUE,

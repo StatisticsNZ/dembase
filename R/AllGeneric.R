@@ -1792,6 +1792,10 @@ setGeneric("exposure",
 #' is still determined by \code{dominant} argument, and the same
 #' exposure is used for female and male births.
 #'
+#' If \code{births} contains origin-destination or parent-child dimensions
+#' exposures are repeated once for each value of the destination or
+#' child dimension(s).
+#'
 #' @inheritParams exposure
 #' @param births A \code{\linkS4class{DemographicArray}} object giving
 #' birth counts or rates.
@@ -1830,6 +1834,19 @@ setGeneric("exposure",
 #'
 #' ## distinguish sex of births
 #' exposureBirths(popn, births = births)
+#'
+#' ## origin-destination - same exposure for each destination
+#' popn <- Counts(array(11:14,
+#'                      dim = c(2, 2),
+#'                      dimnames = list(time = c(2010, 2020),
+#'                                      region = c("A", "B"))))
+#' births <- Values(array(c(0.3, 0.2, 0.5, 0.4),
+#'                        dim = c(2, 2, 1),
+#'                        dimnames = list(region_orig = c("A", "B"),
+#'                                        region_dest = c("A", "B"),
+#'                                        time = "2011-2020")))
+#' exposureBirths(popn, births = births)
+#' 
 #' @export
 setGeneric("exposureBirths",
            function(object, triangles = FALSE, births = NULL, dominant = c("Female", "Male"))

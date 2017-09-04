@@ -2047,7 +2047,7 @@ test_that("exposure throws appropriate errors", {
                  "dimension with dimtype \"age\" has length 0")
 })
 
-test_that("exposureBirths works", {
+test_that("exposureBirths works - no origin, parent dimensions", {
     ## population has sex; births does not
     population <- Counts(array(1:24,
                                dim = 2:4,
@@ -2156,6 +2156,76 @@ test_that("exposureBirths works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("exposureBirths works - with origin, parent dimensions", {
+    ## origin dimension
+    population <- Counts(array(1:48,
+                               dim = c(2:4, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"),
+                                               reg = c("a", "b"))))
+    births <- Counts(array(1:16,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"),
+                                           reg_orig = c("a", "b"),
+                                           reg_dest = c("a", "b"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    ans.expected <- Counts(array(ans.expected,
+                                 dim = dim(births),
+                                 dimnames = dimnames(births)))
+    expect_identical(ans.obtained, ans.expected)
+    ## parent dimension
+    population <- Counts(array(1:48,
+                               dim = c(2:4, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"),
+                                               reg = c("a", "b"))))
+    births <- Counts(array(1:16,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"),
+                                           reg_parent = c("a", "b"),
+                                           reg_child = c("a", "b"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    ans.expected <- Counts(array(ans.expected,
+                                 dim = dim(births),
+                                 dimnames = dimnames(births)))
+    expect_identical(ans.obtained, ans.expected)
+    ## orig and parent dimensions
+    population <- Counts(array(1:96,
+                               dim = c(2:4, 2, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"),
+                                               eth = c("e", "f"),
+                                               reg = c("a", "b"))))
+    births <- Counts(array(1:64,
+                           dim = c(2, 2, 2, 2, 2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"),
+                                           eth_parent = c("e", "f"),
+                                           eth_child = c("e", "f"),
+                                           reg_orig = c("a", "b"),
+                                           reg_dest = c("a", "b"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    ans.expected <- as.numeric(ans.expected)
+    ans.expected <- rep(c(rep(ans.expected[1:8], times = 2),
+                          rep(ans.expected[9:16], times = 2)),
+                        times = 2)
+    ans.expected <- Counts(array(rep(ans.expected),
+                                 dim = dim(births),
+                                 dimnames = dimnames(births)))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("exposureBirths throws appropriate errors", {
     ## population has two sex dimensions
     population <- Counts(array(1:8,
@@ -2203,6 +2273,34 @@ test_that("exposureBirths throws appropriate errors", {
                                                time = c(2000, 2005))))
     expect_error(exposureBirths(population),
                  "'object' has class \"Counts\" but 'births' is NULL")
+    ## population does not have base dimension - origin
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:16,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"),
+                                           reg_orig = c("a", "b"),
+                                           reg_dest = c("a", "b"))))
+    expect_error(exposureBirths(population, births = births),
+                 "'births' has a dimension called \"reg_orig\" but 'object' does not have a dimension called \"reg\"")    
+    ## population does not hvae base dimension - parent
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:16,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"),
+                                           reg_parent = c("a", "b"),
+                                           reg_child = c("a", "b"))))
+    expect_error(exposureBirths(population, births = births),
+                 "'births' has a dimension called \"reg_parent\" but 'object' does not have a dimension called \"reg\"")    
 })
 
 test_that("growth works when 'within' is NULL", {
