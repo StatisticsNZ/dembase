@@ -171,11 +171,22 @@ setMethod("Ops",
           })
 
 ## HAS_TESTS
-#' @rdname addDest
+#' @rdname addPair
 #' @export
-setMethod("addDest",
+setMethod("addPair",
           signature(object = "Counts"),
-          function(object, base) {
+          function(object, base, dimtype = c("destination", "child")) {
+              dimtype <- match.arg(dimtype)
+              if (dimtype == "destination") {
+                  suffix.first <- "orig"
+                  suffix.second <- "dest"
+                  dimtype.first <- "origin"
+              }
+              else {
+                  suffix.first <- "parent"
+                  suffix.second <- "child"
+                  dimtype.first <- "parent"
+              }
               .Data <- object@.Data
               dim <- dim(.Data)
               names <- names(object)
@@ -205,10 +216,10 @@ setMethod("addDest",
                                 name.base, "dimtype", dimtype.base))
               names.new <- replace(names,
                                    list = i.base,
-                                   values = paste(name.base, "orig", sep = "_"))
+                                   values = paste(name.base, suffix.first, sep = "_"))
               dimtypes.new <- replace(dimtypes,
                                       list = i.base,
-                                      values = "origin")
+                                      values = dimtype.first)
               if (dimtype.base == "sex") {
                   DimScale.base <- as(DimScale.base, "Categories")
                   DimScales.new <- replace(DimScales,
@@ -218,9 +229,9 @@ setMethod("addDest",
               else
                   DimScales.new <- DimScales
               names.new <- append(names.new,
-                                  values = paste(name.base, "dest", sep = "_"))
+                                  values = paste(name.base, suffix.second, sep = "_"))
               dimtypes.new <- append(dimtypes.new,
-                                     values = "destination")
+                                     values = dimtype)
               DimScales.new <- append(DimScales.new,
                                       values = list(DimScale.base))
               metadata.new <- methods::new("MetaData",
@@ -1333,55 +1344,106 @@ setMethod("exposure",
               else 
                   exposureNoTriangles(object)
           })
-        
 
-
-
-
-
-## exposureBirths <- function(object, triangles = FALSE, minAge, maxAge,
-##                            sex = c("sex", "gender"),
-##                            dominant = c("female", "females")) {
-                                                                                                    
-
-
-
-## exposureBirths <- function(object, triangles = FALSE, periodCohort = FALSE, minAgeRepr = NULL, maxAgeRepr = NULL,
-##                      dominant = NULL) {
-##     i.time <- match("time", dimtypes(object), nomatch = 0L)
-##     has.time <- i.time > 0L
-##     if (!has.time)
-##         stop(gettextf("no dimension with dimtype \"%s\"",
-##                       "time"))
-##     DimScale.time <- DimScales(object)[[i.time]]
-##     if (!methods::is(DimScale.time, "Points"))
-##         stop(gettextf("dimension with dimtype \"%s\" has dimscale \"%s\"",
-##                       "time", class(DimScale.time)))
-##     n.time.points <- length(DimScale.time)
-##     if (n.time.points < 2L)
-##         stop(gettextf("only %d time points", n.time.points))
-##     has.age <- "age" %in% dimtypes
-##     has.triangles <- "triangles" %in% dimtypes(object)
-##     .Data <- object@.Data
-##     index.time <- slice.index(.Data, MARGIN = i.time)
-##     n.time <- length(DimScale.time)
-##     if (!periodCohort) {
-##         time.step <- stepLengths(DimScale.time)
-##         each <- prod(c(1L, dim.before[seq_len(n.time)]))
-##         multiplier <- 0.5 * rep(time.step, each = each)
-##         .Data.new <-  multiplier * (.Data[index.time != n.time] + .Data[index.time != 1L])
-##     }
-##     else {
-##         is.regular <- tryCatch(hasRegularAgeTime(object),
-##                                error = function(e) e)
-##         if (!isTRUE(is.regular))
-##             stop(gettext("cannot calculate exposure for period-cohorts if age-time plan is not regular"))
-##         time.step <- ageTimeStep(object)
-##         multiplier <- 0.5 * time.step
-##         .Data.new <- array(dim = replace(dim(object), list = i.time, value = n.time - 1L))
-##     }
-##     DimScale.time.new <- intervalsBetweenPoints(DimScale.time)
-## }
+## HAS_TESTS
+#' @rdname exposureBirths
+#' @export
+setMethod("exposureBirths",
+          signature(object = "Counts"),
+          function(object, triangles = FALSE, births = NULL, dominant = c("Female", "Male")) {
+              if (is.null(births))
+                  stop(gettextf("'%s' has class \"%s\" but '%s' is %s",
+                                "object", class(object), "births", "NULL"))
+              exposure <- exposure(object = object,
+                                   triangles = triangles)
+              dominant <- match.arg(dominant)
+              i.triangle.births <- match("triangle", dimtypes(births), nomatch = 0L)
+              births.has.triangles <- i.triangle.births > 0L
+              if (triangles) {
+                  if (!births.has.triangles)
+                      births <- splitTriangles(births)
+              }
+              else {
+                  if (births.has.triangles)
+                      births <- collapseDimension(births,
+                                                  dimension = i.triangle.births)
+              }
+              names.births <- names(births)
+              names.exp <- names(exposure)
+              dimtypes.exp <- dimtypes(exposure, use.names = FALSE)
+              dimtypes.births <- dimtypes(births, use.names = FALSE)
+              DimScales.exp <- DimScales(exposure, use.names = FALSE)
+              DimScales.births <- DimScales(births, use.names = FALSE)
+              if (sum(dimtypes.exp == "sex") > 1L)
+                  stop(gettextf("'%s' has more than one dimension with dimtype \"%s\"",
+                                "object", "sex"))
+              if (sum(dimtypes.births == "sex") > 1L)
+                  stop(gettextf("'%s' has more than one dimension with dimtype \"%s\"",
+                                "births", "sex"))
+              i.sex.exp <- match("sex", dimtypes.exp, nomatch = 0L)
+              i.sex.births <- match("sex", dimtypes.births, nomatch = 0L)
+              has.sex.exp <- i.sex.exp > 0L
+              has.sex.births <- i.sex.births > 0L
+              if (has.sex.exp) {
+                  DimScale.sex.exp <- DimScales.exp[[i.sex.exp]]
+                  if (dominant == "Female")
+                      i.dominant.exp <- iFemale(DimScale.sex.exp)
+                  else
+                      i.dominant.exp <- iMale(DimScale.sex.exp)
+                  exposure <- slab(exposure,
+                                   dimension = i.sex.exp,
+                                   elements = i.dominant.exp,
+                                   drop = FALSE)
+                  if (has.sex.births) {
+                      name.sex.births <- names.births[i.sex.births]
+                      DimScale.sex.births <- DimScales.births[[i.sex.births]]
+                      names.exp.new <- c(names.exp[-i.sex.exp], name.sex.births)
+                      dimtypes.exp.new <- c(dimtypes.exp[-i.sex.exp], "sex")
+                      DimScales.exp.new <- c(DimScales.exp[-i.sex.exp], list(DimScale.sex.births))
+                      metadata.exp.new <- new("MetaData",
+                                              nms = names.exp.new,
+                                              dimtypes = dimtypes.exp.new,
+                                              DimScales = DimScales.exp.new)
+                  }
+                  else {
+                      metadata.exp.new <- exposure@metadata[-i.sex.exp]
+                  }
+                  .Data.exp.new <- array(exposure@.Data, # replicates if has.sex.births is TRUE
+                                         dim = dim(metadata.exp.new),
+                                         dimnames = dimnames(metadata.exp.new))
+                  exposure <- new("Counts",
+                                  .Data = .Data.exp.new,
+                                  metadata = metadata.exp.new)
+              }
+              else {
+                  if (has.sex.births) {
+                      name.sex.births <- names.births[i.sex.births]
+                      DimScale.sex.births <- DimScales.births[[i.sex.births]]
+                      names.exp.new <- c(names.exp, name.sex.births)
+                      dimtypes.exp.new <- c(dimtypes.exp, "sex")
+                      DimScales.exp.new <- c(DimScales.exp, list(DimScale.sex.births))
+                      metadata.exp.new <- new("MetaData",
+                                              nms = names.exp.new,
+                                              dimtypes = dimtypes.exp.new,
+                                              DimScales = DimScales.exp.new)
+                      .Data.exp.new <- array(exposure@.Data, # replicates
+                                             dim = dim(metadata.exp.new),
+                                             dimnames = dimnames(metadata.exp.new))
+                      exposure <- new("Counts",
+                                      .Data = .Data.exp.new,
+                                      metadata = metadata.exp.new)
+                  }
+              }
+              ans <- tryCatch(makeCompatible(x = exposure,
+                                             y = births,
+                                             subset = TRUE,
+                                             check = TRUE),
+                              error = function(e) e)
+              if (is(ans, "error"))
+                  stop(gettextf("'%s' created from '%s' not compatible with '%s' : %s",
+                                "exposure", "object",  "births", ans$message))
+              ans
+          })
 
 
 ## HAS_TESTS

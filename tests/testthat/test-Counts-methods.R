@@ -297,9 +297,15 @@ test_that("Ops works with tables and xtabs", {
     expect_identical(x > tab, x > as(tab, "array"))
 })
 
-test_that("addDest works", {
+test_that("addPair works - dimtype is destination", {
     x <- CountsOne(1:2, labels = c("f", "m"), name = "sex")
-    ans.obtained <- addDest(x, base = "sex")
+    ans.obtained <- addPair(x, base = "sex")
+    ans.expected <- Counts(array(c(1:2, 1:2),
+                                 dim = c(2, 2),
+                                 dimnames = list(sex_orig = c("f", "m"), sex_dest = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    x <- CountsOne(1:2, labels = c("f", "m"), name = "sex")
+    ans.obtained <- addPair(x, base = "sex", dimtype = "dest")
     ans.expected <- Counts(array(c(1:2, 1:2),
                                  dim = c(2, 2),
                                  dimnames = list(sex_orig = c("f", "m"), sex_dest = c("f", "m"))))
@@ -307,7 +313,7 @@ test_that("addDest works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(sex = c("f", "m"), reg = 1:2)))
-    ans.obtained <- addDest(x, base = "reg")
+    ans.obtained <- addPair(x, base = "reg")
     ans.expected <- Counts(array(c(1:4, 1:4),
                                  dim = c(2, 2, 2),
                                  dimnames = list(sex = c("f", "m"), reg_orig = 1:2, reg_dest = 1:2)))
@@ -315,7 +321,7 @@ test_that("addDest works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(sex = c("f", "m"), reg = 1:2)))
-    ans.obtained <- addDest(x, base = "reg")
+    ans.obtained <- addPair(x, base = "reg")
     ans.expected <- Counts(array(1:4,
                                  dim = c(2, 2, 2),
                                  dimnames = list(sex = c("f", "m"), reg_orig = 1:2, reg_dest = 1:2)))
@@ -323,11 +329,49 @@ test_that("addDest works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(sex = c("f", "m"), reg = 1:2)))
-    ans.obtained <- addDest(x, base = "sex")
+    ans.obtained <- addPair(x, base = "sex")
     ans.expected <- Counts(array(c(1:2, 1:2, 3:4, 3:4),
                                  dim = c(2, 2, 2),
-                                 dimnames = list(sex_orig = c("f", "m"), sex_dest = c("f", "m"), reg = 1:2)),
-                           )
+                                 dimnames = list(sex_orig = c("f", "m"), sex_dest = c("f", "m"), reg = 1:2)))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("addPair works - dimtype is child", {
+    x <- CountsOne(1:2, labels = c("f", "m"), name = "sex")
+    ans.obtained <- addPair(x, base = "sex", dimtype = "child")
+    ans.expected <- Counts(array(c(1:2, 1:2),
+                                 dim = c(2, 2),
+                                 dimnames = list(sex_parent = c("f", "m"), sex_child = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    x <- CountsOne(1:2, labels = c("f", "m"), name = "sex")
+    ans.obtained <- addPair(x, base = "sex", dimtype = "ch")
+    ans.expected <- Counts(array(c(1:2, 1:2),
+                                 dim = c(2, 2),
+                                 dimnames = list(sex_parent = c("f", "m"), sex_child = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("f", "m"), reg = 1:2)))
+    ans.obtained <- addPair(x, base = "reg", dimtype = "ch")
+    ans.expected <- Counts(array(c(1:4, 1:4),
+                                 dim = c(2, 2, 2),
+                                 dimnames = list(sex = c("f", "m"), reg_parent = 1:2, reg_child = 1:2)))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("f", "m"), reg = 1:2)))
+    ans.obtained <- addPair(x, base = "reg", dimtype = "ch")
+    ans.expected <- Counts(array(1:4,
+                                 dim = c(2, 2, 2),
+                                 dimnames = list(sex = c("f", "m"), reg_parent = 1:2, reg_child = 1:2)))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("f", "m"), reg = 1:2)))
+    ans.obtained <- addPair(x, base = "sex", dimtype = "ch")
+    ans.expected <- Counts(array(c(1:2, 1:2, 3:4, 3:4),
+                                 dim = c(2, 2, 2),
+                                 dimnames = list(sex_parent = c("f", "m"), sex_child = c("f", "m"), reg = 1:2)))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2001,6 +2045,164 @@ test_that("exposure throws appropriate errors", {
                 dimscales = c(age = "Points"))
     expect_error(exposure(x),
                  "dimension with dimtype \"age\" has length 0")
+})
+
+test_that("exposureBirths works", {
+    ## population has sex; births does not
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    expect_identical(ans.obtained, ans.expected)
+    ## population has sex; births has sex
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(sex = c("f", "m"),
+                                           time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    ans.expected <- dbind(f = ans.expected, m = ans.expected, along = "sex")
+    ans.expected <- Counts(ans.expected, dimtypes = c(sex = "sex"))
+    ans.expected <- aperm(ans.expected, perm = c("sex", "time", "age"))
+    expect_identical(ans.obtained, ans.expected)
+    ## population does not have sex; births has sex
+    population <- Counts(array(1:12,
+                               dim = 3:4,
+                               dimnames = list(time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(sex = c("f", "m"),
+                                           time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15)
+    ans.expected <- dbind(f = ans.expected, m = ans.expected, along = "sex")
+    ans.expected <- Counts(ans.expected, dimtypes = c(sex = "sex"))
+    ans.expected <- aperm(ans.expected, perm = c("sex", "time", "age"))
+    expect_identical(ans.obtained, ans.expected)
+    ## population does not have sex; births does not have sex
+    population <- Counts(array(1:12,
+                               dim = 3:4,
+                               dimnames = list(time = c(2000, 2001, 2005),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:4,
+                           dim = c(2, 2),
+                           dimnames = list(time = c("2001", "2002-2005"),
+                                           age = c("5-9", "10-14"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15)
+    expect_identical(ans.obtained, ans.expected)
+    ## triangles = TRUE, births has triangles
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2005, 2010),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                                           age = c("5-9", "10-14"),
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- exposureBirths(population, triangles = TRUE, births = births)
+    ans.expected <- exposure(population, triangles = TRUE)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    expect_identical(ans.obtained, ans.expected)
+    ## triangles = TRUE, births does not have triangles
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2005, 2010),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2),
+                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                                           age = c("5-9", "10-14"))))
+    ans.obtained <- exposureBirths(population, triangles = TRUE, births = births)
+    ans.expected <- exposure(population, triangles = TRUE)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    expect_identical(ans.obtained, ans.expected)
+    ## triangles = FALSE, births has triangles
+    population <- Counts(array(1:24,
+                               dim = 2:4,
+                               dimnames = list(sex = c("f", "m"),
+                                               time = c(2000, 2005, 2010),
+                                               age = c("0-4", "5-9", "10-14", "15+"))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2),
+                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                                           age = c("5-9", "10-14"),
+                                           triangle = c("TL", "TU"))))
+    ans.obtained <- exposureBirths(population, births = births)
+    ans.expected <- exposure(population, triangles = FALSE)
+    ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("exposureBirths throws appropriate errors", {
+    ## population has two sex dimensions
+    population <- Counts(array(1:8,
+                               dim = c(2, 2, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               gender = c("f", "m"),
+                                               time = c(2000, 2005))))
+    births <- Counts(array(1:2,
+                           dim = 2:1,
+                           dimnames = list(sex = c("f", "m"),
+                                           time = c("2001-2005"))))
+    expect_error(exposureBirths(population, births = births),
+                 "'object' has more than one dimension with dimtype \"sex\"")
+    ## births has two sex dimensions
+    population <- Counts(array(1:8,
+                               dim = c(2, 2, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               reg = c("a", "b"),
+                                               time = c(2000, 2005))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 1),
+                           dimnames = list(sex = c("f", "m"),
+                                           gender = c("f", "m"),
+                                           time = "2001-2005")))
+    expect_error(exposureBirths(population, births = births),
+                 "'births' has more than one dimension with dimtype \"sex\"")
+    ## births has dimension not in population
+    population <- Counts(array(1:8,
+                               dim = c(2, 2, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               reg = c("a", "b"),
+                                               time = c(2000, 2005))))
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 1),
+                           dimnames = list(sex = c("f", "m"),
+                                           ethnicity = c("a", "b"),
+                                           time = "2001-2005")))
+    expect_error(exposureBirths(population, births = births),
+                 "'exposure' created from 'object' not compatible with 'births'")
+    ## births argument supplied
+    population <- Counts(array(1:8,
+                               dim = c(2, 2, 2),
+                               dimnames = list(sex = c("f", "m"),
+                                               reg = c("a", "b"),
+                                               time = c(2000, 2005))))
+    expect_error(exposureBirths(population),
+                 "'object' has class \"Counts\" but 'births' is NULL")
 })
 
 test_that("growth works when 'within' is NULL", {

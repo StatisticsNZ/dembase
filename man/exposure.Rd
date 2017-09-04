@@ -41,3 +41,29 @@ separately for lower and upper Lexis triangles.  \code{triangles}
 can only by \code{TRUE} if  \code{object} has dimensions with
 \code{\link{dimtype}} \code{"time"} and \code{"age"}.
 }
+\examples{
+## prepare data
+library(demdata)
+popn <- demdata::nz.popn.reg
+popn <- Counts(popn, dimscales = c(year = "Points"))
+popn <- subarray(popn, year \%in\% c(1996, 2001, 2006, 2011, 2016))
+popn <- collapseDimension(popn, dimension = "region")
+
+## no triangles
+exposure(popn)
+
+## with triangles
+exposure(popn, triangles = TRUE)
+
+## cohort
+popn <- Counts(array(4:1,
+                     dim = c(1, 4),
+                     dimnames = list(cohort = "2001-2005",
+                                     age = c(0, 5, 10, 15))))
+exposure(popn)
+}
+\seealso{
+To calculate exposure for births, see \code{\link{exposureBirths}}
+To calculate exposure for origin-destination or parent-child
+arrays, see \code{\link{addPair}}.
+}

@@ -485,37 +485,40 @@ setGeneric("addBreaks",
                standardGeneric("addBreaks"))
 
 
-#' Add a "destination" dimension to an object.
+#' Add a "destination" or "child" dimension to an object.
 #'
 #' Add a dimension with \code{\link{dimtype}} \code{"destination"}
-#' to an object of class \code{\linkS4class{DemographicArray}}.
+#' or \code{"child"} to an object of class
+#' \code{\linkS4class{DemographicArray}}.
 #' This is useful mainly when constructing an exposure measure
 #' to use when measuring or modelling origin-destination
-#' rates.
+#' or parent-child rates.
 #' 
-#' The new "destination" dimension uses the same categories as one of the
-#' existing dimensions, which becomes the "origin" dimension.  The original
-#' data is replicated once for each category within the destination
-#' dimensions.  This means that in a model of origin-destination
-#' rates, each destination has the same exposures.
+#' The new dimension uses the same categories as one of the
+#' existing dimensions, which becomes the "origin" or "parent" dimension.
+#' The original data is replicated once for each category
+#' within the new dimension.  This means that in a model of origin-destination
+#' rates, each destination has the same exposures, and in a model
+#' or parent-child rates each child category has the same exposures.
 #'
 #' @param object An object of class \code{\linkS4class{DemographicArray}}.
 #' @param base The name of an existing dimension.  This dimension
 #' must have \code{\link{dimtype}} \code{"state"} or \code{"sex"}.
+#' @param dimtype Either "destination" (the default) or "child".
 #'
 #' @return A modified version of \code{object}
 #'
 #' @seealso To add a dimension that does not have dimtype \code{"destination"},
-#' use function \code{\link{addDimension}}.
+#' or \code{"child"}, use function \code{\link{addDimension}}.
 #'
 #' @examples
 #' population <- CountsOne(10:12, labels = c("A", "B", "C"), name = "region")
-#' exposure <- addDest(population, base = "region")
-#' exposure
+#' addPair(population, base = "region")
+#' addPair(population, base = "region", dimtype = "child")
 #' @export
-setGeneric("addDest",
-           function(object, base)
-               standardGeneric("addDest"))
+setGeneric("addPair",
+           function(object, base, dimtype = c("destination", "child"))
+               standardGeneric("addPair"))
 
 #' Add one or more dimensions to a demographic array.
 #'
@@ -560,7 +563,7 @@ setGeneric("addDest",
 #' @return Modified version of \code{object}
 #'
 #' @seealso \code{\link{collapseDimension}}.  To add a dimension with
-#' dimtype \code{"destination"}, use function \code{\link{addDest}}.
+#' dimtype \code{"destination"}, use function \code{\link{addPair}}.
 #' 
 #' @examples
 #' ## Add a time dimension to some population counts
@@ -1737,11 +1740,100 @@ setGeneric("e1IsFirstDimScale",
 #' Defaults to \code{FALSE}.
 #'
 #' @return An object of class \code{\linkS4class{Counts}}.
+#'
+#' @seealso To calculate exposure for births, see \code{\link{exposureBirths}}
+#' To calculate exposure for origin-destination or parent-child
+#' arrays, see \code{\link{addPair}}.
+#'
+#' @examples
+#' ## prepare data
+#' library(demdata)
+#' popn <- demdata::nz.popn.reg
+#' popn <- Counts(popn, dimscales = c(year = "Points"))
+#' popn <- subarray(popn, year %in% c(1996, 2001, 2006, 2011, 2016))
+#' popn <- collapseDimension(popn, dimension = "region")
+#'
+#' ## no triangles
+#' exposure(popn)
+#'
+#' ## with triangles
+#' exposure(popn, triangles = TRUE)
+#'
+#' ## cohort
+#' popn <- Counts(array(4:1,
+#'                      dim = c(1, 4),
+#'                      dimnames = list(cohort = "2001-2005",
+#'                                      age = c(0, 5, 10, 15))))
+#' exposure(popn)
 #' @export
 setGeneric("exposure",
           function(object, triangles = FALSE)
               standardGeneric("exposure"))
 
+#' Calculate exposure to use for modelling births.
+#'
+#' In models of births, the relevant exposure term is usually the person-years
+#' lived by women of reproductive age.  \code{exposureBirths} makes it easy to
+#' calculate this term in typical cases.
+#'
+#' The \code{births} argument is a tabulation of births or birth rates, typically
+#' including the age of mothers. Minimum and maxium ages for exposure are taken
+#' from this tabulation.
+#'
+#' Fertility models are almost always "female dominant", that is, they
+#' only take account of the number of reproductive-age females, and ignore
+#' the number of reproductive age-males.  By default, if \code{object}
+#' has two sexes, then \code{exposureBirths} only includes females.
+#' However, if \code{dominant} is set to "Male", it will only include
+#' males.
+#'
+#' \code{births} can contain a sex dimension.  However, this dimension
+#' describes the sex of the child, not the parent.  The sex of the parent
+#' is still determined by \code{dominant} argument, and the same
+#' exposure is used for female and male births.
+#'
+#' @inheritParams exposure
+#' @param births A \code{\linkS4class{DemographicArray}} object giving
+#' birth counts or rates.
+#' @param dominant \code{"Female"} (the default) or \code{"Male"}.
+#' Whether to use the number of potential mothers or potential
+#' fathers when calculating exposures.
+#'
+#' @return A \code{\linkS4class{Counts}} object, with the same
+#' dimensions as \code{births}.
+#'
+#' @seealso To calculate exposure for quantities other than births,
+#' see \code{\link{exposure}} (and, for origin-destination or parent-child
+#' arrays, possibly also \code{\link{addPair}}). To tidy fertility data,
+#' see \code{\link{reallocateToEndAges}}.
+#'
+#' @examples
+#' ## prepare data
+#' library(demdata)
+#' popn <- demdata::nz.popn.reg
+#' births <- demdata::nz.births.reg
+#' popn <- Counts(popn, dimscales = c(year = "Points"))
+#' births <- Counts(births, dimscales = c(year = "Intervals"))
+#' popn <- subarray(popn, year %in% c(1996, 2001, 2006, 2011, 2016))
+#' births <- collapseDimension(births, dimension = "region")
+#' births <- collapseIntervals(births, dimension = "year", width = 5)
+#' births.nosex <- collapseDimension(births, dimension = "sex")
+#'
+#' ## no triangles
+#' exposureBirths(popn, births = births.nosex)
+#'
+#' ## with triangles
+#' exposureBirths(popn, triangles = TRUE, births = births.nosex)
+#' 
+#' ## dominant
+#' exposureBirths(popn, births = births.nosex, dominant = "Male")
+#'
+#' ## distinguish sex of births
+#' exposureBirths(popn, births = births)
+#' @export
+setGeneric("exposureBirths",
+           function(object, triangles = FALSE, births = NULL, dominant = c("Female", "Male"))
+               standardGeneric("exposureBirths"))
 
 #' @rdname exported-not-api
 #' @export
