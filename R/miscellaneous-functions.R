@@ -2413,10 +2413,13 @@ haveNamesInCommon <- function(e1, e2, ignoreIterations = TRUE) {
     if (n.names.in.common == 0L)
         stop(gettext("no dimensions in common"))
     if (n.names.in.common == 1L && ignoreIterations) {
-        dimtype <- dimtypes(e1, use.names = TRUE)[[names.in.common]]
-        if (identical(dimtype, "iteration"))
-            stop(gettextf("no dimensions in common (apart from dimension with dimtype \"%s\")",
-                          "iteration"))
+        both.one.dim <- (length(names(e1)) == 1L) && (length(names(e2)) == 1L)
+        if (!both.one.dim) {
+            dimtype <- dimtypes(e1, use.names = TRUE)[[names.in.common]]
+            if (identical(dimtype, "iteration"))
+                stop(gettextf("no dimensions in common (apart from dimension with dimtype \"%s\")",
+                              "iteration"))
+        }
     }
     TRUE
 }
