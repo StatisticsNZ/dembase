@@ -986,6 +986,83 @@ setMethod("impute",
               object
           })
 
+#' @rdname intervalScore
+setMethod("intervalScore",
+          signature(values = "DemographicArray",
+                     truth = "DemographicArray"),
+          function(values, truth, alpha = NULL) {
+              dimtypes.val <- dimtypes(values, use.names = FALSE)
+              dimtypes.tr <- dimtypes(truth, use.names = FALSE)
+              for (dimtype in c("iteration", "quantile")) {
+                  if (dimtype %in% dimtypes.tr)
+                      stop(gettextf("'%s' has dimension with %s \"%s\"",
+                                    "truth", "dimtype", dimtype))
+              }
+              i.iter <- match("iteration", dimtypes.val, nomatch = 0L)
+              i.quant <- match("quantile", dimtypes.val, nomatch = 0L)
+              has.iter <- i.iter > 0L
+              has.quant <- i.quant > 0L
+              if (!has.iter && !has.quant)
+                  stop(gettextf("'%s' does not have a dimension with %s \"%s\" or \"%s\"",
+                                "values", "dimtype", "iteration", "quantile"))
+              if (has.iter)
+                  one.slice <- slab(values, dimension = i.iter, elements = 1L)
+              else
+                  one.slice <- slab(values, dimension = i.quant, elements = 1L)
+              truth <- tryCatch(makeCompatible(x = truth,
+                                               y = one.slice,
+                                               subset = TRUE,
+                                               check = TRUE),
+                                error = function(e) e)
+              if (is(truth, "error"))
+                  stop(gettextf("'%s' and '%s' not compatible : %s",
+                                "truth", "values", truth$message))
+              if (has.iter) {
+                  if (is.null(alpha))
+                      stop(gettextf("'%s' has dimension with %s \"%s\" but '%s' is %s",
+                                    "values", "dimtype", "iteration", "alpha", "NULL"))
+                  if (!is.numeric(alpha))
+                      stop(gettextf("'%s' is non-numeric",
+                                    "alpha"))
+                  if (!identical(length(alpha), 1L))
+                      stop(gettextf("'%s' does not have length %d",
+                                    "alpha", 1L))
+                  if (is.na(alpha))
+                      stop(gettextf("'%s' is missing",
+                                    "alpha"))
+                  if ((alpha <= 0) || (0.5 <= alpha))
+                      stop(gettextf("'%s' must be greater than 0 and less than 0.5",
+                                    "alpha"))
+                  values <- collapseIterations(object = values,
+                                               FUN = quantile,
+                                               prob = c(alpha / 2, 1 - alpha / 2))
+                  lower <- slab(values, dimension = i.iter, elements = 1L)
+                  upper <- slab(values, dimension = i.iter, elements = 2L)
+              }
+              else {
+                  if (!is.null(alpha))
+                      warning(gettextf("'%s' has dimension with %s \"%s\" but '%s' is not %s",
+                                       "values", "dimtype", "quantile", "alpha", "NULL"))
+                  dim.val <- dim(values)
+                  if (!identical(dim.val[i.quant], 2L))
+                      stop(gettextf("'%s' does not have %d quantiles",
+                                    "values", 2L))
+                  DimScales.val <- DimScales(values, use.names = FALSE)
+                  DS.quant <- DimScales.val[[i.quant]]
+                  dv.quant <- dimvalues(DS.quant)
+                  alpha <- dv.quant[1L] * 2
+                  if (!isTRUE(all.equal(dv.quant[2L], 1 - alpha / 2)))
+                      stop(gettextf("quantiles for '%s' not symmetric",
+                                    "values"))
+                  lower <- slab(values, dimension = i.quant, elements = 1L)
+                  upper <- slab(values, dimension = i.quant, elements = 2L)
+              }
+              width <- upper - lower
+              penalty.below.lower <- (2 / alpha) * (lower - truth) * (truth < lower)
+              penalty.above.upper <- (2 / alpha) * (truth - upper) * (truth > upper)
+              width + penalty.below.lower + penalty.above.upper
+          })
+
 
 ## NO_TESTS
 #' @rdname limits
@@ -1176,6 +1253,32 @@ setMethod("midpoints",
               dimension <- which(dimscales(object) == "Intervals")
               methods::callGeneric(object = object, dimension = dimension)
           })
+
+
+
+MSE <- function(point, truth) {
+    dimtypes.pt <- dimtypes(point, use.names = FALSE)
+    dimtypes.tr <- dimtypes(truth, use.names = FALSE)
+    for (dimtype in c("iteration", "quantile")) {
+        if (dimtype %in% dimtypes.val)
+            stop(gettextf("'%s' has dimension with %s \"%s\"",
+                          "point", "dimtype", dimtype))
+        if (dimtype %in% dimtypes.tr)
+            stop(gettextf("'%s' has dimension with %s \"%s\"",
+                          "truth", "dimtype", dimtype))
+    }
+    truth <- tryCatch(makeCompatible(x = truth,
+                                     y = point,
+                                     subset = TRUE,
+                                     check = TRUE),
+                      error = function(e) e)
+    if (is(truth, "error"))
+        stop(gettextf("'%s' and '%s' not compatible : %s",
+                      "truth", "point", truth$message))
+    (point - truth)^2
+}
+
+
 
 #' Get or set dimension names
 #' 

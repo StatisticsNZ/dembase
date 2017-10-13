@@ -2198,7 +2198,12 @@ setGeneric("incrementUpperTri",
 
 setGeneric("inferDimvalues",
            function(DimScale, labels, ...)
-           standardGeneric("inferDimvalues"))
+               standardGeneric("inferDimvalues"))
+
+#' @export
+setGeneric("intervalScore",
+           function(values, truth, alpha = NULL)
+               standardGeneric("intervalScore"))
 
 setGeneric("InternalMovements",
            function(internal, template)

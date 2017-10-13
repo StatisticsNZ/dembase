@@ -1030,6 +1030,139 @@ test_that("impute works", {
                  "'max' has missing values")
 })
 
+test_that("intervalScore works when 'values' has iterations dimension", {
+    ## 'truth' has same dimension as 'values'
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    truth <- Counts(array(rnorm(2),
+                          dim = 2,
+                          dimnames = list(sex = c("f", "m"))))
+    alpha <- 0.1
+    ans.obtained <- intervalScore(values = values,
+                                  truth = truth,
+                                  alpha = alpha)
+    ul <- collapseIterations(values, prob = c(0.05, 0.95))
+    u <- ul[,2]
+    l <- ul[,1]
+    ans.expected <- (u-l) + 20*(l-truth)*(truth<l) + 20*(truth-u)*(truth>u)
+    expect_identical(ans.obtained, ans.expected)
+    ## 'truth' needs to be collapsed
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    truth <- Counts(array(rnorm(4),
+                          dim = c(2, 2),
+                          dimnames = list(sex = c("f", "m"),
+                                          reg = c("a", "b"))))
+    alpha <- 0.1
+    ans.obtained <- intervalScore(values = values,
+                                  truth = truth,
+                                  alpha = alpha)
+    ul <- collapseIterations(values, prob = c(0.05, 0.95))
+    u <- ul[,2]
+    l <- ul[,1]
+    tt <- collapseDimension(truth, dim = "reg")
+    ans.expected <- (u-l) + 20*(l-tt)*(tt<l) + 20*(tt-u)*(tt>u)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("intervalScore works when 'values' has quantile dimension", {
+    ## 'truth' has same dimension as 'values'
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    values <- collapseIterations(values, prob = c(0.1, 0.9))
+    truth <- Counts(array(rnorm(2),
+                          dim = 2,
+                          dimnames = list(sex = c("f", "m"))))
+    ans.obtained <- intervalScore(values = values,
+                                  truth = truth)
+    u <- values[,2]
+    l <- values[,1]
+    ans.expected <- (u-l) + 10*(l-truth)*(truth<l) + 10*(truth-u)*(truth>u)
+    expect_identical(ans.obtained, ans.expected)
+    ## 'truth' needs to be collapsed
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    values <- collapseIterations(values, prob = c(0.1, 0.9))
+    truth <- Counts(array(rnorm(4),
+                          dim = c(2, 2),
+                          dimnames = list(sex = c("f", "m"),
+                                          reg = c("a", "b"))))
+    ans.obtained <- intervalScore(values = values,
+                                  truth = truth)
+    u <- values[,2]
+    l <- values[,1]
+    tt <- collapseDimension(truth, dim = "reg")
+    ans.expected <- (u-l) + 10*(l-tt)*(tt<l) + 10*(tt-u)*(tt>u)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("intervalScore throws appropriate errors", {
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    truth <- Counts(array(rnorm(2),
+                          dim = 2,
+                          dimnames = list(sex = c("f", "m"))))
+    alpha <- 0.1
+    expect_error(intervalScore(values = truth,
+                               truth = truth,
+                               alpha = alpha),
+                 "'values' does not have a dimension with dimtype \"iteration\" or \"quantile\"")
+    values.wrong  <- Counts(array(rnorm(200),
+                                  dim = c(2, 100),
+                                  dimnames = list(reg = c("a", "n"),
+                                                  iter = 1:100)))
+    expect_error(intervalScore(values = values.wrong,
+                               truth = truth,
+                               alpha = alpha),
+                 "'truth' and 'values' not compatible")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = NULL),
+                 "'values' has dimension with dimtype \"iteration\" but 'alpha' is NULL")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = "1"),
+                 "'alpha' is non-numeric")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = c(0.1, 0.1)),
+                 "'alpha' does not have length 1")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = as.numeric(NA)),
+                 "'alpha' is missing")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = 0.5),
+                 "'alpha' must be greater than 0 and less than 0.5")
+    values.q <- collapseIterations(values,
+                                   prob = c(0.1, 0.9))
+    expect_warning(intervalScore(values = values.q,
+                                 truth = truth,
+                                 alpha = 0.5),
+                   "'values' has dimension with dimtype \"quantile\" but 'alpha' is not NULL")
+    values.wrong <- collapseIterations(values,
+                                       prob = c(0.1, 0.5, 0.8))
+    expect_error(intervalScore(values = values.wrong,
+                               truth = truth),
+                 "'values' does not have 2 quantiles")
+    values.wrong <- collapseIterations(values,
+                                       prob = c(0.1, 0.8))
+    expect_error(intervalScore(values = values.wrong,
+                               truth = truth),
+                 "quantiles for 'values' not symmetric")
+})
+    
 test_that("limits works", {
     x <- Values(array(1:6,
                       dim = c(3, 2),
