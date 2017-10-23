@@ -989,8 +989,8 @@ setMethod("impute",
 #' @rdname intervalScore
 setMethod("intervalScore",
           signature(values = "DemographicArray",
-                     truth = "DemographicArray"),
-          function(values, truth, alpha = NULL) {
+                    truth = "DemographicArray"),
+          function(values, truth, alpha = NULL, na.rm = FALSE) {
               dimtypes.val <- dimtypes(values, use.names = FALSE)
               dimtypes.tr <- dimtypes(truth, use.names = FALSE)
               for (dimtype in c("iteration", "quantile")) {
@@ -1033,9 +1033,25 @@ setMethod("intervalScore",
                   if ((alpha <= 0) || (0.5 <= alpha))
                       stop(gettextf("'%s' must be greater than 0 and less than 0.5",
                                     "alpha"))
+                  val.has.na <- any(is.na(values))
+                  if (val.has.na) {
+                      if (!is.logical(na.rm))
+                          stop(gettextf("'%s' does not have type \"%s\"",
+                                        "na.rm", "logical"))
+                      if (!identical(length(na.rm), 1L))
+                          stop(gettextf("'%s' does not have length %d",
+                                        "na.rm", 1L))
+                      if (is.na(na.rm))
+                          stop(gettextf("'%s' is missing",
+                                        "na.rm"))
+                      if (!na.rm)
+                          stop(gettextf("'%s' is %s but '%s' contains missing values",
+                                        "na.rm", "FALSE", "values"))
+                  }
                   values <- collapseIterations(object = values,
                                                FUN = quantile,
-                                               prob = c(alpha / 2, 1 - alpha / 2))
+                                               prob = c(alpha / 2, 1 - alpha / 2),
+                                               na.rm = na.rm)
                   lower <- slab(values, dimension = i.iter, elements = 1L)
                   upper <- slab(values, dimension = i.iter, elements = 2L)
               }

@@ -1067,6 +1067,25 @@ test_that("intervalScore works when 'values' has iterations dimension", {
     tt <- collapseDimension(truth, dim = "reg")
     ans.expected <- (u-l) + 20*(l-tt)*(tt<l) + 20*(tt-u)*(tt>u)
     expect_identical(ans.obtained, ans.expected)
+    ## 'values' has missing value
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    values[1] <- NA
+    truth <- Counts(array(rnorm(2),
+                          dim = 2,
+                          dimnames = list(sex = c("f", "m"))))
+    alpha <- 0.1
+    ans.obtained <- intervalScore(values = values,
+                                  truth = truth,
+                                  alpha = alpha,
+                                  na.rm = TRUE)
+    ul <- collapseIterations(values, prob = c(0.05, 0.95), na.rm = TRUE)
+    u <- ul[,2]
+    l <- ul[,1]
+    ans.expected <- (u-l) + 20*(l-truth)*(truth<l) + 20*(truth-u)*(truth>u)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("intervalScore works when 'values' has quantile dimension", {
@@ -1103,6 +1122,7 @@ test_that("intervalScore works when 'values' has quantile dimension", {
     ans.expected <- (u-l) + 10*(l-tt)*(tt<l) + 10*(tt-u)*(tt>u)
     expect_identical(ans.obtained, ans.expected)
 })
+
 
 test_that("intervalScore throws appropriate errors", {
     values <- Counts(array(rnorm(200),
@@ -1161,6 +1181,31 @@ test_that("intervalScore throws appropriate errors", {
     expect_error(intervalScore(values = values.wrong,
                                truth = truth),
                  "quantiles for 'values' not symmetric")
+    values <- Counts(array(rnorm(200),
+                           dim = c(2, 100),
+                           dimnames = list(sex = c("f", "m"),
+                                           iter = 1:100)))
+    values[1] <- NA
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = 0.2,
+                               na.rm = 1),
+                 "'na.rm' does not have type \"logical\"")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = 0.2,
+                               na.rm = c(TRUE, FALSE)),
+                 "'na.rm' does not have length 1")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = 0.2,
+                               na.rm = NA),
+                 "'na.rm' is missing")
+    expect_error(intervalScore(values = values,
+                               truth = truth,
+                               alpha = 0.2,
+                               na.rm = FALSE),
+                 "'na.rm' is FALSE but 'values' contains missing values")
 })
     
 test_that("limits works", {
