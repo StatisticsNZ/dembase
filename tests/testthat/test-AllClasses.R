@@ -1122,6 +1122,15 @@ test_that("validity tests for Population inherited from AtLeastTwoAge work", {
                  "dimension with dimtype \"age\" has length 1")
 })
 
+test_that("validity tests for Population inherited from AtMostOneSex work", {
+    x <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("f", "m"),
+                                      gender = c("f", "m"))))
+    expect_error(new("Population", x),
+                 "2 dimensions with dimtype \"sex\"")
+})
+
 test_that("validity tests for Population inherited from FirstAgeIntervalClosed work", {
     x <- Counts(array(1:18,
                       dim = c(3, 2, 3),

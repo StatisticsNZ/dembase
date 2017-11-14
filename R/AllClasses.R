@@ -978,6 +978,18 @@ setClass("AtLeastTwoAge",
          })
 
 ## HAS_TESTS
+setClass("AtMostOneSex",
+         contains = "VIRTUAL",
+         validity = function(object) {
+             dimtypes <- dimtypes(object, use.names = FALSE)
+             n.sex <- sum(dimtypes == "sex")
+             if (n.sex > 1L)
+                 return(gettextf("%d dimensions with %s \"%s\"",
+                                 n.sex, "dimtype", "sex"))
+             TRUE
+         })
+
+## HAS_TESTS
 setClass("FirstAgeIntervalClosed",
          contains = "VIRTUAL",
          validity = function(object) {
@@ -1377,6 +1389,7 @@ setClass("Population",
                       "HasTime",
                       "AgeIsIntervals",
                       "AtLeastTwoAge",
+                      "AtMostOneSex",
                       "FirstAgeIntervalClosed",
                       "LastAgeIntervalOpen",
                       "NoCohort",
@@ -1409,6 +1422,7 @@ setClass("Component",
                       "HasTime",
                       "IsInteger",
                       "AgeIsIntervals",
+                      "AtMostOneSex",
                       "FirstAgeIntervalClosed",
                       "IsRegular",
                       "NoCohort",

@@ -2941,8 +2941,10 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
     else
         i.births <- 0L
     has.internal <- any(is.internal)
-    if (has.internal)
+    if (has.internal) {
         i.internal <- which(is.internal)
+        is.orig.dest <- methods::is(components[[i.internal]], "HasOrigDest")
+    }
     else
         i.internal <- 0L
     i.comp <- seq_len(n.comp)
@@ -3039,13 +3041,15 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                     popn.end <- popn.end + diff.ag
                 }
                 else if (ic == i.internal) {
-                    multiplier <- stats::runif(n = 1L,
-                                        min = max(0.1, 1 - scale),
-                                        max = 1)
-                    increment.old <- incrementInteger(slices.comp.a.low[[ic]])
-                    slices.comp.a.low[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.low[[ic]]@.Data)
-                    increment.new <- incrementInteger(slices.comp.a.low[[ic]])
-                    popn.end <- popn.end + increment.new - increment.old
+                    if (is.orig.dest) {
+                        multiplier <- stats::runif(n = 1L,
+                                                   min = max(0.1, 1 - scale),
+                                                   max = 1)
+                        increment.old <- incrementInteger(slices.comp.a.low[[ic]])
+                        slices.comp.a.low[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.low[[ic]]@.Data)
+                        increment.new <- incrementInteger(slices.comp.a.low[[ic]])
+                        popn.end <- popn.end + increment.new - increment.old
+                    }
                 }
                 else {
                     multiplier <- ifelse(popn.end < 0L, scale, 0)
@@ -3098,13 +3102,15 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                 ic <- safeSample1(i.comp.not.births)
                 updated.comp[ic] <- TRUE
                 if (ic == i.internal) {
-                    multiplier <- stats::runif(n = 1L,
-                                        min = max(0.1, 1 - scale),
-                                        max = 1)
-                    increment.old <- incrementInteger(slices.comp.a.up[[ic]])
-                    slices.comp.a.up[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.up[[ic]]@.Data)
-                    increment.new <- incrementInteger(slices.comp.a.up[[ic]])
-                    accession <- accession + increment.new - increment.old
+                    if (is.orig.dest) {
+                        multiplier <- stats::runif(n = 1L,
+                                                   min = max(0.1, 1 - scale),
+                                                   max = 1)
+                        increment.old <- incrementInteger(slices.comp.a.up[[ic]])
+                        slices.comp.a.up[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.up[[ic]]@.Data)
+                        increment.new <- incrementInteger(slices.comp.a.up[[ic]])
+                        accession <- accession + increment.new - increment.old
+                    }
                 }
                 else {
                     multiplier <- ifelse(accession < 0L, scale, 0)
