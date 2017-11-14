@@ -2824,7 +2824,6 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
     n.comp <- length(components)
     is.internal <- sapply(components, methods::is, "Internal")
     is.births <- sapply(components, methods::is, "Births")
-    i.internal <- which(is.internal)
     has.births <- any(is.births)
     if (has.births) {
         i.births <- which(is.births)
@@ -2834,7 +2833,13 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
     }
     else
         i.births <- 0L
-    i.comp.not.internal <- setdiff(seq_len(n.comp), i.internal)
+    has.internal <- any(is.internal)
+    if (has.internal) {
+        i.internal <- which(is.internal)
+        is.orig.dest <- methods::is(components[[i.internal]], "HasOrigDest")
+    }
+    else
+        i.internal <- 0L
     dim.popn <- dim(population)
     i.time.popn <- match("time", dimtypes(population))
     i.time.comps <- sapply(components, function(x) match("time", dimtypes(x)))
@@ -2868,7 +2873,7 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
             stop(gettext("population has negative values"))
         updated.comp <- rep(FALSE, times = n.comp)
         while (any(popn.end < 0L)) {
-            ic <- safeSample1(i.comp.not.internal)
+            ic <- safeSample1(seq_len(n.comp))
             updated.comp[ic] <- TRUE
             if (ic == i.births) {
                 multiplier <- ifelse(popn.end < 0L, scale, 0)
@@ -2883,11 +2888,17 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
                 popn.end <- popn.end + diff.ag
             }
             else if (ic == i.internal) {
-                multiplier <- stats::runif(n = 1L,
-                                    min = max(0.1, 1 - 2 * scale),
-                                    max = 1)
-                increment.old <- incrementInteger(slices.comp[[ic]])
-                slices.comp[[ic]]@.Data[] <- as.integer(multiplier * slices.comp[[ic]]@.Data)
+                if (is.orig.dest) {
+                    increment.old <- incrementInteger(slices.comp[[ic]])
+                    multiplier <- stats::runif(n = 1L,
+                                               min = max(0.1, 1 - 2 * scale),
+                                               max = 1)
+                    slices.comp[[ic]]@.Data[] <- as.integer(multiplier * slices.comp[[ic]]@.Data)
+                }
+                else {
+                    if (runif(n = 1L) < scale)
+                        slices.comp[[ic]]@.Data[] <- 0L
+                }
                 increment.new <- incrementInteger(slices.comp[[ic]])
                 popn.end <- popn.end + increment.new - increment.old
             }
@@ -2930,7 +2941,6 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
     n.comp <- length(components)
     is.internal <- sapply(components, methods::is, "Internal")
     is.births <- sapply(components, methods::is, "Births")
-    i.internal <- which(is.internal)
     has.births <- any(is.births)
     if (has.births) {
         i.births <- which(is.births)
@@ -3041,15 +3051,19 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                     popn.end <- popn.end + diff.ag
                 }
                 else if (ic == i.internal) {
+                    increment.old <- incrementInteger(slices.comp.a.low[[ic]])
                     if (is.orig.dest) {
                         multiplier <- stats::runif(n = 1L,
                                                    min = max(0.1, 1 - scale),
                                                    max = 1)
-                        increment.old <- incrementInteger(slices.comp.a.low[[ic]])
                         slices.comp.a.low[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.low[[ic]]@.Data)
-                        increment.new <- incrementInteger(slices.comp.a.low[[ic]])
-                        popn.end <- popn.end + increment.new - increment.old
                     }
+                    else {
+                        if (runif(n = 1L) < scale)
+                            slices.comp.a.low[[ic]]@.Data[] <- 0L
+                    }
+                    increment.new <- incrementInteger(slices.comp.a.low[[ic]])
+                    popn.end <- popn.end + increment.new - increment.old
                 }
                 else {
                     multiplier <- ifelse(popn.end < 0L, scale, 0)
@@ -3102,15 +3116,19 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                 ic <- safeSample1(i.comp.not.births)
                 updated.comp[ic] <- TRUE
                 if (ic == i.internal) {
+                    increment.old <- incrementInteger(slices.comp.a.up[[ic]])
                     if (is.orig.dest) {
                         multiplier <- stats::runif(n = 1L,
                                                    min = max(0.1, 1 - scale),
                                                    max = 1)
-                        increment.old <- incrementInteger(slices.comp.a.up[[ic]])
                         slices.comp.a.up[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.up[[ic]]@.Data)
-                        increment.new <- incrementInteger(slices.comp.a.up[[ic]])
-                        accession <- accession + increment.new - increment.old
                     }
+                    else {
+                        if (runif(n = 1L) < scale)
+                            slices.comp.a.up[[ic]]@.Data[] <- 0L
+                    }
+                    increment.new <- incrementInteger(slices.comp.a.up[[ic]])
+                    accession <- accession + increment.new - increment.old
                 }
                 else {
                     multiplier <- ifelse(accession < 0L, scale, 0)
