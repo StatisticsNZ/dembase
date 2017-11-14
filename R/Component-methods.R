@@ -627,6 +627,8 @@ setMethod("slab",
               class <- class(object)
               iBetween <- object@iBetween
               iDirection <- object@iDirection
+              names.between <- names[iBetween]
+              name.direction <- names[iDirection]
               object <- new("Counts",
                             .Data = object@.Data,
                             metadata = object@metadata)
@@ -634,15 +636,67 @@ setMethod("slab",
                                          nDim = length(names),
                                          names = names)
               ans <- callGeneric()
-              if (identical(dimension, iDirection))
+              ans.is.vector <- is.null(dim(ans))
+              if (ans.is.vector)
                   ans
-              else
-                  new(class,
-                      .Data = ans@.Data,
-                      metadata = ans@metadata,
-                      iBetween = iBetween,
-                      iDirection = iDirection)
+              else if (dimension == iDirection)
+                  ans
+              else {
+                  names.ans <- names(ans)
+                  i.between.new <- match(names.between, names.ans, nomatch = 0L)
+                  i.direction.new <- match(name.direction, names.ans, nomatch = 0L)
+                  has.between <- i.between.new > 0L
+                  has.direction <- i.direction.new > 0L
+                  if (any(has.between) && has.direction) {
+                      i.between.new <- i.between.new[i.between.new > 0L]
+                      new(class,
+                          .Data = ans@.Data,
+                          metadata = ans@metadata,
+                          iBetween = i.between.new,
+                          iDirection = i.direction.new)
+                  }
+                  else
+                      ans
+              }
           })
+
+## HAS_TESTS
+#' @rdname slab
+#' @export
+setMethod("slab",
+          signature(object = "InternalMovementsNet"),
+          function(object, dimension, elements, drop = TRUE) {
+              names <- names(object)
+              class <- class(object)
+              iBetween <- object@iBetween
+              names.between <- names[iBetween]
+              object <- new("Counts",
+                            .Data = object@.Data,
+                            metadata = object@metadata)
+              dimension <- tidySubscript(subscript = dimension,
+                                         nDim = length(names),
+                                         names = names)
+              ans <- callGeneric()
+              ans.is.vector <- is.null(dim(ans))
+              if (ans.is.vector)
+                  ans
+              else {
+                  names.ans <- names(ans)
+                  i.between.new <- match(names.between, names.ans, nomatch = 0L)
+                  has.between <- i.between.new > 0L
+                  if (any(has.between)) {
+                      i.between.new <- i.between.new[i.between.new > 0L]
+                      new(class,
+                          .Data = ans@.Data,
+                          metadata = ans@metadata,
+                          iBetween = i.between.new)
+                  }
+                  else
+                      ans
+              }
+          })
+
+
 
 
 ## setMethod("addToPopnEnd",

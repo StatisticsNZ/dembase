@@ -1183,4 +1183,54 @@ test_that("slab works with InternalMovementsPool", {
                         iDirection = 5L,
                         iBetween = 4L)
     expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- slab(component,
+                         dimension = "direction",
+                         elements = "Out",
+                         drop = TRUE)
+    ans.expected <- Counts(component@.Data[,,,,"Out"])
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- slab(component,
+                         dimension = "reg",
+                         elements = "a",
+                         drop = TRUE)
+    ans.expected <- Counts(component@.Data[,,,1,])
+    expect_identical(ans.obtained, ans.expected)
 })
+
+test_that("slab works with InternalMovementsNet", {
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg = c("a", "b"))))
+    component <- collapseOrigDest(component, to = "net")
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    ans.obtained <- slab(component,
+                         dimension = "age",
+                         elements = "0-4",
+                         drop = FALSE)
+    ans.expected <- as(component, "Counts")
+    ans.expected <- subarray(ans.expected, age == "0-4", drop = FALSE)
+    ans.expected <- new("InternalMovementsNet",
+                        .Data = ans.expected@.Data,
+                        metadata = ans.expected@metadata,
+                        iBetween = 4L)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- slab(component,
+                         dimension = "reg",
+                         elements = "a",
+                         drop = TRUE)
+    ans.expected <- Counts(component@.Data[,,,1])
+    expect_identical(ans.obtained, ans.expected)
+})
+
