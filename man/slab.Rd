@@ -9,6 +9,7 @@
 \alias{slab,Component-method}
 \alias{slab,Births-method}
 \alias{slab,InternalMovementsPool-method}
+\alias{slab,InternalMovementsNet-method}
 \alias{slab,DemographicArray-method}
 \alias{slab<-,DemographicArray-method}
 \title{Extract or replace a slab from a demographic array.}
@@ -22,6 +23,9 @@ slab(object, dimension, elements, drop = TRUE) <- value
 \S4method{slab}{Births}(object, dimension, elements, drop = TRUE)
 
 \S4method{slab}{InternalMovementsPool}(object, dimension, elements,
+  drop = TRUE)
+
+\S4method{slab}{InternalMovementsNet}(object, dimension, elements,
   drop = TRUE)
 
 \S4method{slab}{DemographicArray}(object, dimension, elements, drop = TRUE)

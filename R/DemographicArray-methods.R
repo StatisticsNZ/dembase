@@ -1272,27 +1272,27 @@ setMethod("midpoints",
 
 
 
-MSE <- function(point, truth) {
-    dimtypes.pt <- dimtypes(point, use.names = FALSE)
-    dimtypes.tr <- dimtypes(truth, use.names = FALSE)
-    for (dimtype in c("iteration", "quantile")) {
-        if (dimtype %in% dimtypes.val)
-            stop(gettextf("'%s' has dimension with %s \"%s\"",
-                          "point", "dimtype", dimtype))
-        if (dimtype %in% dimtypes.tr)
-            stop(gettextf("'%s' has dimension with %s \"%s\"",
-                          "truth", "dimtype", dimtype))
-    }
-    truth <- tryCatch(makeCompatible(x = truth,
-                                     y = point,
-                                     subset = TRUE,
-                                     check = TRUE),
-                      error = function(e) e)
-    if (is(truth, "error"))
-        stop(gettextf("'%s' and '%s' not compatible : %s",
-                      "truth", "point", truth$message))
-    (point - truth)^2
-}
+## MSE <- function(point, truth) {
+##     dimtypes.pt <- dimtypes(point, use.names = FALSE)
+##     dimtypes.tr <- dimtypes(truth, use.names = FALSE)
+##     for (dimtype in c("iteration", "quantile")) {
+##         if (dimtype %in% dimtypes.val)
+##             stop(gettextf("'%s' has dimension with %s \"%s\"",
+##                           "point", "dimtype", dimtype))
+##         if (dimtype %in% dimtypes.tr)
+##             stop(gettextf("'%s' has dimension with %s \"%s\"",
+##                           "truth", "dimtype", dimtype))
+##     }
+##     truth <- tryCatch(makeCompatible(x = truth,
+##                                      y = point,
+##                                      subset = TRUE,
+##                                      check = TRUE),
+##                       error = function(e) e)
+##     if (is(truth, "error"))
+##         stop(gettextf("'%s' and '%s' not compatible : %s",
+##                       "truth", "point", truth$message))
+##     (point - truth)^2
+## }
 
 
 
@@ -1427,6 +1427,53 @@ setMethod("prop.table",
                   stop(gettextf("'%s' outside valid range", "margin"))
               methods::callGeneric()
           })
+
+
+## HAS_TESTS
+#' @rdname round3
+#' @export
+setMethod("round3",
+          signature(object = "DemographicArray"),
+          function(object) {
+              metadata <- object@metadata
+              .Data <- object@.Data
+              is.type.integer <- is.integer(.Data)
+              all.integers <- is.type.integer || all(round(.Data) == .Data)
+              if (!all.integers)
+                  stop(gettextf("'%s' has non-integer values",
+                                "object"))
+              mod.3 <- as.integer(.Data) %% 3L
+              n <- length(.Data)
+              p <- stats::runif(n = n)
+              ## deal with NAs - leave untouched
+              has.been.processed <- is.na(.Data)
+              ## deal with values divisible by 3 - leave untouched
+              is.mod.0 <- !has.been.processed & (mod.3 == 0L)
+              has.been.processed <- has.been.processed | is.mod.0
+              ## deal with mod 1 - 2/3 chance of rounding down, 1/3 chance of rounding up
+              is.mod.1 <- !has.been.processed & (mod.3 == 1L)
+              round.down <- is.mod.1 & (p < 2/3)
+              round.up <- is.mod.1 & (p >= 2/3)
+              .Data[round.down] <- .Data[round.down] - 1L
+              .Data[round.up] <- .Data[round.up] + 2L
+              has.been.processed <- has.been.processed | is.mod.1
+              ## deal with mod 2 - 1/3 chance of rounding down, 2/3 chance of rounding up
+              is.mod.2 <- !has.been.processed
+              round.down <- is.mod.2 & (p < 1/3)
+              round.up <- is.mod.2 & (p >= 1/3)
+              .Data[round.down] <- .Data[round.down] - 2L
+              .Data[round.up] <- .Data[round.up] + 1L
+              ## coerce back to numeric if was originally numeric and is now integer
+              if (!is.type.integer && is.integer(.Data))
+                  .Data <- array(as.numeric(.Data),
+                                 dim = dim(.Data),
+                                 dimnames = dimnames(.Data))
+              ## recreate object to trigger validity tests
+              new(class(object),
+                  .Data = .Data,
+                  metadata = metadata)
+          })
+
 
 ## ## NO_TESTS
 ## setMethod("relabelCategories",

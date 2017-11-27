@@ -2896,7 +2896,7 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
                     slices.comp[[ic]]@.Data[] <- as.integer(multiplier * slices.comp[[ic]]@.Data)
                 }
                 else {
-                    if (runif(n = 1L) < scale)
+                    if (stats::runif(n = 1L) < scale)
                         slices.comp[[ic]]@.Data[] <- 0L
                 }
                 increment.new <- incrementInteger(slices.comp[[ic]])
@@ -3059,7 +3059,7 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                         slices.comp.a.low[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.low[[ic]]@.Data)
                     }
                     else {
-                        if (runif(n = 1L) < scale)
+                        if (stats::runif(n = 1L) < scale)
                             slices.comp.a.low[[ic]]@.Data[] <- 0L
                     }
                     increment.new <- incrementInteger(slices.comp.a.low[[ic]])
@@ -3124,7 +3124,7 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                         slices.comp.a.up[[ic]]@.Data[] <- as.integer(multiplier * slices.comp.a.up[[ic]]@.Data)
                     }
                     else {
-                        if (runif(n = 1L) < scale)
+                        if (stats::runif(n = 1L) < scale)
                             slices.comp.a.up[[ic]]@.Data[] <- 0L
                     }
                     increment.new <- incrementInteger(slices.comp.a.up[[ic]])

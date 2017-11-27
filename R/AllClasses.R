@@ -1618,7 +1618,9 @@ setClass("Exposure",
 setClass("DemographicAccount",
          slots = c(population = "Population",
                    components = "list",
-                   namesComponents = "character"),
+                   namesComponents = "character",
+                   slotsToExtract = "character"),
+         prototype = prototype(slotsToExtract = c("population", "components")),
          contains = "VIRTUAL",
          validity = function(object) {
              population <- object@population

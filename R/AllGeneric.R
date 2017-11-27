@@ -2921,6 +2921,36 @@ setGeneric("resetDiag",
            function(object, base = NULL, reset = NULL)
                standardGeneric("resetDiag"))
 
+#' Randomly round a dataset to base 3.
+#'
+#' Confidentialise counts data by randomly rounding it to multiples of three.
+#'
+#' Randomly rounding to base three is a popular confidentialisation technique
+#' at statistical agencies.  It only works with data consisting entirely of
+#' integers, though negative integers are allows.
+#'
+#' A value is rounded as follows:
+#' \itemize{
+#'   \item{If the value is  divisible by 3, leave it unchanged.}
+#'   \item{If there is a remainder of 1 after dividing by 3, round down (ie subtract 1)
+#' with probability 2/3, and round up (ie add 2) with probability 1/3.}
+#'   \item{If there is a remainder of 2 after dividing by 3, round down (ie subtract 2)
+#' with probability 1/3, and round up (ie add 1) with probability 2/3.}
+#' }
+#' Missing values are permitted, and are left unchanged.
+#'
+#' @param object An object of class \code{\linkS4class{DemographicArray}}.
+#'
+#' @return An object with the same class as \code{object}.
+#'
+#' @examples
+#' x <- CountsOne(0:10, labels = letters[1:11], name = "region")
+#' round3(x)
+#' round3(x)
+setGeneric("round3",
+           function(object)
+               standardGeneric("round3"))
+
 
 #' @rdname ageMinMax
 #' @export
