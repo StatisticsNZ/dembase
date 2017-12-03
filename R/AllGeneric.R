@@ -1887,6 +1887,25 @@ setGeneric("expandCategories",
                standardGeneric("expandCategories"))
 
 
+#' Split wide intervals into narrower ones
+#'
+#' Split a dimension with \code{\link{dimscale}} \code{"Intervals"} into smaller
+#' units, and redistribute counts within these smaller units.
+#'
+#' NOTE - THIS FUNCTION IS INCOMPLETE, AND WILL BE MODIFIED TO INCLUDE
+#' ADDITIONAL ARGUMENTS.
+#' 
+#' @inheritParams collapseIntervals
+#' @param means If \code{FALSE} (the default) the allocation is done randomly;
+#' if \code{TRUE}, values are set equal to their means.
+#' @export
+setGeneric("expandIntervals",
+           function(object, dimension, breaks = NULL,
+                    width = NULL, old = NULL, weights,
+                    means = FALSE)
+               standardGeneric("expandIntervals"))
+
+
 setGeneric("extendDimScale",
            function(object, index)
            standardGeneric("extendDimScale"))
@@ -3022,10 +3041,6 @@ setGeneric("slab",
 setGeneric("slab<-",
            function(object, dimension, elements, drop = TRUE, value)
            standardGeneric("slab<-"))
-
-setGeneric("splitCategory",
-           function(object, dimension, old, new, weights, ...)
-           standardGeneric("splitCategory"))
 
 #' @rdname exported-not-api
 #' @export

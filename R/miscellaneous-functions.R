@@ -5039,6 +5039,21 @@ resetDiagInner <- function(object, base, reset) {
                  metadata = metadata)
 }
 
+uniformWeightsForExpandIntervals <- function(breaks, dimension, metadata) {
+    dim <- dim(metadata)
+    DimScales <- DimScales(metadata, use.names = FALSE)
+    DimScale <- DimScales[[dimension]]
+    s <- seq_along(dim)
+    s.perm <- c(dimension, s[-dimension])
+    dim.permuted <- dim[s.perm]
+    widths <- diff(breaks)
+    widths[is.infinite(widths)] <- 1
+    dim.permuted[1L] <- length(widths)
+    ans <- array(widths, dim = dim.permuted)
+    perm <- match(s, s.perm)
+    ans <- aperm(ans, perm = perm)
+    ans
+}
 
 
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################

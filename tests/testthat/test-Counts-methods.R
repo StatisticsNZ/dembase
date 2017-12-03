@@ -1918,6 +1918,58 @@ test_that("expandCategories method for Counts works with concordances when means
                  y)
 })
 
+test_that("expandIntervals method for Counts works when means is FALSE", {
+    object <- Counts(array(c(4L, 2L, 10L, 5L),
+                           dim = c(2, 2),
+                           dimnames = list(age = c("0-4", "5-9"),
+                                           sex = c("m", "f"))))
+    for (i in 1:5) {
+        ans.obtained <- expandIntervals(object,
+                                        dimension = "age",
+                                        breaks = c(0, 5, 6, 10))
+        expect_identical(collapseIntervals(ans.obtained,
+                                           dimension = "age",
+                                           breaks = 5),
+                         object)
+    }
+    for (i in 1:5) {
+        ans.obtained <- expandIntervals(object,
+                                        dimension = "age",
+                                        width = 1)
+        expect_identical(collapseIntervals(ans.obtained,
+                                           dimension = "age",
+                                           breaks = 5),
+                         object)
+    }
+})
+
+test_that("expandIntervals method for Counts works when means is TRUE", {
+    object <- Counts(array(c(4L, 2L, 10L, 5L),
+                           dim = c(2, 2),
+                           dimnames = list(sex = c("m", "f"),
+                                           age = c("0-4", "5+"))))
+    for (i in 1:5) {
+        ans.obtained <- expandIntervals(object,
+                                        dimension = "age",
+                                        breaks = c(0, 1, 5),
+                                        means = TRUE)
+        expect_equal(collapseIntervals(ans.obtained,
+                                       dimension = "age",
+                                       width = 5),
+                     object)
+    }
+    for (i in 1:5) {
+        ans.obtained <- expandIntervals(object,
+                                        dimension = "age",
+                                        width = 2.5,
+                                        means = TRUE)
+        expect_equal(collapseIntervals(ans.obtained,
+                                       dimension = "age",
+                                       width = 5),
+                     object)
+    }
+})
+
 test_that("exposure works when 'triangles' is FALSE", {
     ## object has time and age; not regular
     x <- Counts(array(1:24,

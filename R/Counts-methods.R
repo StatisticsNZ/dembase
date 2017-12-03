@@ -1260,6 +1260,151 @@ setMethod("expandCategories",
               methods::new("Counts", .Data = .Data.ans, metadata = metadata.ans)
           })
 
+
+## HAS_TESTS
+#' @rdname expandIntervals
+#' @export
+setMethod("expandIntervals",
+          signature(object = "Counts",
+                    dimension = "ANY",
+                    breaks = "numeric",
+                    width = "missing",
+                    old = "missing",
+                    weights = "missing"),
+          function(object, dimension, breaks = NULL, width = NULL, old = NULL,
+                   weights, means = FALSE) {
+              if (!identical(length(dimension), 1L))
+                  stop(gettextf("'%s' does not have length %d",
+                                "dimension", 1L))
+              metadata <- metadata(object)
+              dim <- dim(object)
+              names <- names(object)
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              DimScales <- DimScales(object, use.names = FALSE)
+              dimension <- tidySubscript(subscript = dimension,
+                                         nDim = length(names),
+                                         names = names)
+              DimScale <- DimScales[[dimension]]
+              if (!methods::is(DimScale, "Intervals"))
+                  stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
+                                names[dimension], class(DimScale)))
+              if (length(DimScale) == 0L)
+                  stop(gettextf("dimension '%s' has length %d",
+                                names[dimension], 0L))
+              if (any(is.na(breaks)))
+                  stop(gettextf("'%s' has missing values",
+                                "breaks"))
+              if (!all(diff(breaks) > 0))
+                  stop(gettextf("'%s' not increasing",
+                                "breaks"))
+              checkMeans(means)
+              breaks.old <- dimvalues(DimScale)
+              finite.breaks <- breaks[is.finite(breaks)]
+              finite.breaks.old <- breaks.old[is.finite(breaks.old)]
+              if (any(finite.breaks < min(finite.breaks.old)))
+                  stop(gettextf("'%s' has elements smaller than smallest existing break",
+                                "breaks"))
+              if (any(finite.breaks > max(finite.breaks.old)))
+                  stop(gettextf("'%s' has elements larger than largest existing break",
+                                "breaks"))
+              if (is.infinite(min(breaks.old)) && is.finite(min(breaks)))
+                  breaks <- c(-Inf, breaks)
+              if (is.infinite(max(breaks.old)) && is.finite(max(breaks)))
+                  breaks <- c(breaks, Inf)
+              invalid.breaks <- setdiff(breaks.old, breaks)
+              n.invalid.breaks <- length(invalid.breaks)
+              if (n.invalid.breaks > 0L)
+                  stop(sprintf(ngettext(n.invalid.breaks,
+                                        "'%s' does not include existing break at value %s",
+                                        "'%s' does not include existing breaks at values %s"),
+                               "breaks", paste(invalid.breaks, collapse = ", ")))
+              index <- findInterval(x = breaks[-length(breaks)], vec = breaks.old)
+              dimBefore <- replace(dim,
+                                   list = dimension,
+                                   values = length(breaks) - 1L)
+              dims <- seq_along(dim)
+              indices <- lapply(dimBefore, seq_len)
+              indices[[dimension]] <- index
+              transform <- methods::new("CollapseTransform",
+                                        dims = dims,
+                                        indices = indices,
+                                        dimBefore = dimBefore,
+                                        dimAfter = dim)
+              transform <- makeCollapseTransformExtra(transform)
+              DimScale.new <- new("Intervals", dimvalues = breaks)
+              DimScales.new <- replace(DimScales,
+                                       list = dimension,
+                                       values = list(DimScale.new))
+              metadata.new <- new("MetaData",
+                                  nms = names,
+                                  dimtypes = dimtypes,
+                                  DimScales = DimScales.new)
+              weights <- uniformWeightsForExpandIntervals(breaks = breaks,
+                                                          dimension = dimension,
+                                                          metadata = metadata)
+              if (means)
+                  .Data.new <- redistributeInnerMeans(counts = object@.Data,
+                                                      weights = weights,
+                                                      transform = transform,
+                                                      useC = TRUE)
+              else
+                  .Data.new <- redistributeInnerDistn(counts = object@.Data,
+                                                      weights = weights,
+                                                      transform = transform,
+                                                      useC = TRUE)
+              .Data.new <- array(.Data.new,
+                                 dim = dim(metadata.new),
+                                 dimnames = dimnames(metadata.new))
+              methods::new("Counts",
+                           .Data = .Data.new,
+                           metadata = metadata.new)
+          })
+
+## NO_TESTS
+#' @rdname expandIntervals
+#' @export
+setMethod("expandIntervals",
+          signature(object = "Counts",
+                    dimension = "ANY",
+                    breaks = "missing",
+                    width = "numeric",
+                    old = "missing",
+                    weights = "missing"),
+          function(object, dimension, breaks = NULL, width = NULL, old = NULL, weights) {
+              if (!identical(length(dimension), 1L))
+                  stop(gettextf("'%s' does not have length %d",
+                                "dimension", 1L))
+              names <- names(object)
+              DimScales <- DimScales(object, use.names = FALSE)
+              dimension <- tidySubscript(subscript = dimension,
+                                         nDim = length(names),
+                                         names = names)
+              DimScale <- DimScales[[dimension]]
+              if (!methods::is(DimScale, "Intervals"))
+                  stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
+                                names[dimension], class(DimScale)))
+              if (!identical(length(width), 1L))
+                  stop(gettextf("'%s' does not have length %d", "width", 1L))
+              if (width <= 0)
+                  stop(gettextf("'%s' is non-positive", "width"))
+              breaks.old <- dimvalues(DimScale)
+              finite <- is.finite(breaks.old)
+              if (sum(finite) <= 1L)
+                  breaks <- breaks.old
+              else {
+                  range <- range(breaks.old[finite])
+                  if (diff(range) %% width != 0)
+                      stop(gettextf("'%s' [%s] is not a divisor of difference between lowest and highest finite breaks [%s]",
+                                    "width", width, diff(range)))
+                  breaks <- seq(from = range[1L], to = range[2L], by = width)
+              }
+              methods::callGeneric(object = object,
+                                   dimension = dimension,
+                                   breaks = breaks)
+          })
+
+
+
 #' @rdname exposure
 #' @export
 setMethod("exposure",

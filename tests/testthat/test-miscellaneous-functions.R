@@ -5905,6 +5905,35 @@ test_that("resetDiagInner throws appropriate errors", {
 })
 
 
+test_that("uniformWeightsForExpandIntervals works", {
+    uniformWeightsForExpandIntervals <- dembase:::uniformWeightsForExpandIntervals
+    metadata <- new("MetaData",
+                    nms = c("sex", "age"),
+                    dimtypes = c("sex", "age"),
+                    DimScales = list(new("Sexes", dimvalues = c("Female", "Male")),
+                                     new("Intervals", dimvalues = c(0, 5, 10, Inf))))
+    breaks <- c(0, 1, 5, 10, Inf)
+    dimension <- 2L
+    ans.obtained <- uniformWeightsForExpandIntervals(breaks = breaks,
+                                                     dimension = dimension,
+                                                     metadata = metadata)
+    ans.expected <- matrix(c(1, 4, 5, 1), nrow = 2, ncol = 4, byrow = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 5, 10))))
+    breaks <- c(0, 1, 5, 9, 10)
+    dimension <- 1L
+    ans.obtained <- uniformWeightsForExpandIntervals(breaks = breaks,
+                                                     dimension = dimension,
+                                                     metadata = metadata)
+    ans.expected <- array(c(1, 4, 4, 1), dim = 4)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
 ## FUNCTIONS RELATED TO LIFE TABLES ##################################################
 
 test_that("expandAx works", {
