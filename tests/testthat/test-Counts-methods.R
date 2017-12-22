@@ -1365,6 +1365,20 @@ test_that("collapseDimension works", {
                       quantile = c("1%", "50%", "99%"))))
     expect_error(collapseDimension(x, dimension = "sex"),
                  "dimension with dimtype \"quantile\"")
+    x <- Counts(array(c(NA, as.numeric(1:5)),
+                dim = c(3, 2),
+                dimnames = list(age = c("0-4", "5-9", "10+"),
+                sex = c("Male", "Female"))))
+    ans.obtained <- collapseDimension(x, dimension = "sex")
+    ans.expected <- Counts(array(c(NA, 5, 7),
+                                 dim = 3,
+                                 dimnames = list(age = c("0-4", "5-9", "10+"))))
+    expect_identical(ans.obtained, ans.expected)
+   ans.obtained <- collapseDimension(x, dimension = "sex", na.rm = TRUE)
+    ans.expected <- Counts(array(c(3, 5, 7),
+                                 dim = 3,
+                                 dimnames = list(age = c("0-4", "5-9", "10+"))))
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("collapseDimension works like aperm when all dims in 'margin'", {

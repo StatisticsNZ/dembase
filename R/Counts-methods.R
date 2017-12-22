@@ -634,7 +634,7 @@ setMethod("collapseDimension",
                     dimension = "ANY",
                     margin = "ANY",
                     weights = "missing"),
-          function(object, dimension = NULL, margin = NULL, weights) {
+          function(object, dimension = NULL, margin = NULL, weights, na.rm = FALSE) {
               .Data <- object@.Data
               names <- names(object)
               dim <- dim(object)
@@ -664,7 +664,7 @@ setMethod("collapseDimension",
                       margin <- tidySubscript(subscript = margin, nDim = n.dim, names = names)
                       if (has.iter && !any(margin == i.iter))
                           margin <- c(margin, i.iter)
-                          dimension <- invertSubscript(subscript = margin, nDim = n.dim)
+                      dimension <- invertSubscript(subscript = margin, nDim = n.dim)
                   }
                   else
                       stop(gettextf("no '%s' or '%s' arguments", "dimension", "margin"))
@@ -681,9 +681,9 @@ setMethod("collapseDimension",
                   names.margin[lost.pair] <- removeSuffixes(names = names.margin[lost.pair])
                   dimtypes.margin[lost.pair] <- "state"
                   metadata <- methods::new("MetaData",
-                                  nms = names.margin,
-                                  dimtypes = dimtypes.margin,
-                                  DimScales = DimScales.margin)
+                                           nms = names.margin,
+                                           dimtypes = dimtypes.margin,
+                                           DimScales = DimScales.margin)
                   ## make .Data
                   dims <- match(seq_len(n.dim), margin, nomatch = 0L)
                   indices <- vector(length = n.dim, mode = "list")
@@ -691,18 +691,34 @@ setMethod("collapseDimension",
                   indices[dimension] <- lapply(dim[dimension], function(x) rep(1L, x))
                   dim.after <- dim[margin]
                   transform <- methods::new("CollapseTransform",
-                                   dims = dims,
-                                   indices = indices,
-                                   dimBefore = dim,
-                                   dimAfter = dim.after)
+                                            dims = dims,
+                                            indices = indices,
+                                            dimBefore = dim,
+                                            dimAfter = dim.after)
+                  if (any(is.na(.Data))) {
+                      ## na.rm has length 1
+                      if (!identical(length(na.rm), 1L))
+                          stop(gettextf("'%s' does not have length %d",
+                                        "na.rm", 1L))
+                      ## na.rm is logical
+                      if (!is.logical(na.rm))
+                          stop(gettextf("'%s' does not have type \"%s\"",
+                                        "na.rm", "logical"))
+                      ## na.rm is not missing
+                      if (is.na(na.rm))
+                          stop(gettextf("'%s' is missing",
+                                        "na.rm"))
+                      if (na.rm)
+                          .Data[is.na(.Data)] <- 0L
+                  }
                   .Data <- collapse(.Data, transform = transform)
                   .Data <- array(.Data,
                                  dim = dim(metadata),
                                  dimnames = dimnames(metadata))
                   ## return object
                   methods::new("Counts",
-                      .Data = .Data,
-                      metadata = metadata)
+                               .Data = .Data,
+                               metadata = metadata)
               }
           })
 
@@ -714,7 +730,7 @@ setMethod("collapseDimension",
                     dimension = "ANY",
                     margin = "ANY",
                     weights = "Counts"),
-          function(object, dimension = NULL, margin = NULL, weights) {
+          function(object, dimension = NULL, margin = NULL, weights, na.rm = FALSE) {
               stop(gettextf("weights cannot be used when '%s' has class \"%s\"",
                             "object", class(object)))
           })

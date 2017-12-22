@@ -971,6 +971,8 @@ setGeneric("collapseCategories",
 #' \code{weights} can only be used if \code{object} has class
 #' \code{\linkS4class{Values}}.  It must have at least as much detail as
 #' \code{object}.
+#' @param na.rm A logical value indicating whether NA values should be
+#' stripped before the computation proceeds.
 #' @param \dots Not currently used.
 #' @return An object of the same class as \code{object}, but with fewer
 #' dimensions, or a single number.
@@ -1003,7 +1005,7 @@ setGeneric("collapseCategories",
 #' collapseDimension(popn, margin = character())
 #' @export
 setGeneric("collapseDimension",
-           function(object, dimension = NULL, margin = NULL, weights, ...)
+           function(object, dimension = NULL, margin = NULL, weights, na.rm = FALSE, ...)
            standardGeneric("collapseDimension"))
 
 setGeneric("collapseDimScale",

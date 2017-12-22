@@ -424,7 +424,7 @@ setMethod("collapseDimension",
                     dimension = "ANY",
                     margin = "ANY",
                     weights = "ANY"),
-          function(object, dimension = NULL, margin = NULL, weights) {
+          function(object, dimension = NULL, margin = NULL, weights, na.rm = FALSE) {
               weights <- checkAndTidyWeights(weights = weights,
                                              target = object,
                                              nameWeights = "weights",
@@ -433,10 +433,12 @@ setMethod("collapseDimension",
               counts <- weights * object
               counts <- collapseDimension(object = counts,
                                           dimension = dimension,
-                                          margin = margin)
+                                          margin = margin,
+                                          na.rm = na.rm)
               weights <- collapseDimension(object = weights,
                                            dimension = dimension,
-                                           margin = margin)
+                                           margin = margin,
+                                           na.rm = na.rm)
               counts / weights
           })
 
@@ -448,7 +450,7 @@ setMethod("collapseDimension",
                     dimension = "ANY",
                     margin = "ANY",
                     weights = "missing"),
-          function(object, dimension = NULL, margin = NULL) {
+          function(object, dimension = NULL, margin = NULL, na.rm = FALSE) {
               names <- names(object)
               n.dim <- length(names)
               has.dimension <- !is.null(dimension)

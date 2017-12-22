@@ -19,9 +19,9 @@ setMethod("[",
               names.after[lost.pair] <- removeSuffixes(names = names.after[lost.pair])
               dimtypes.after[lost.pair] <- "state"
               methods::new("MetaData",
-                  nms = names.after,
-                  dimtypes = dimtypes.after,
-                  DimScales = DimScales.after)
+                           nms = names.after,
+                           dimtypes = dimtypes.after,
+                           DimScales = DimScales.after)
           })
 
 ## HAS_TESTS
