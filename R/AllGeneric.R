@@ -2960,7 +2960,8 @@ setGeneric("resetDiag",
 #' }
 #' Missing values are permitted, and are left unchanged.
 #'
-#' @param object An object of class \code{\linkS4class{DemographicArray}}.
+#' @param object An object of class \code{\linkS4class{DemographicArray}},
+#' an ordinary array, or a numeric vector.
 #'
 #' @return An object with the same class as \code{object}.
 #'

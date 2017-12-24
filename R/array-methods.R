@@ -34,4 +34,24 @@ setMethod("extend",
           })
 
 
+## HAS_TESTS
+#' @rdname round3
+#' @export
+setMethod("round3",
+          signature(object = "array"),
+          function(object) {
+              dim <- dim(object)
+              dimnames <- dimnames(object)
+              if (is.integer(object))
+                  object <- as.integer(object)
+              else
+                  object <- as.numeric(object)
+              object <- round3(object)
+              array(object,
+                    dim = dim,
+                    dimnames = dimnames)
+          })
+
+
+
 

@@ -81,6 +81,45 @@ setMethod("redistribute",
           })
 
 
+## HAS_TESTS
+#' @rdname round3
+#' @export
+setMethod("round3",
+          signature(object = "numeric"),
+          function(object) {
+              is.type.integer <- is.integer(object)
+              all.integers <- is.type.integer || all(round(object) == object)
+              if (!all.integers)
+                  stop(gettextf("'%s' has non-integer values",
+                                "object"))
+              mod.3 <- as.integer(object) %% 3L
+              n <- length(object)
+              p <- stats::runif(n = n)
+              ## deal with NAs - leave untouched
+              has.been.processed <- is.na(object)
+              ## deal with values divisible by 3 - leave untouched
+              is.mod.0 <- !has.been.processed & (mod.3 == 0L)
+              has.been.processed <- has.been.processed | is.mod.0
+              ## deal with mod 1 - 2/3 chance of rounding down, 1/3 chance of rounding up
+              is.mod.1 <- !has.been.processed & (mod.3 == 1L)
+              round.down <- is.mod.1 & (p < 2/3)
+              round.up <- is.mod.1 & (p >= 2/3)
+              object[round.down] <- object[round.down] - 1L
+              object[round.up] <- object[round.up] + 2L
+              has.been.processed <- has.been.processed | is.mod.1
+              ## deal with mod 2 - 1/3 chance of rounding down, 2/3 chance of rounding up
+              is.mod.2 <- !has.been.processed
+              round.down <- is.mod.2 & (p < 1/3)
+              round.up <- is.mod.2 & (p >= 1/3)
+              object[round.down] <- object[round.down] - 2L
+              object[round.up] <- object[round.up] + 1L
+              ## coerce back to numeric if was originally numeric and is now integer
+              if (!is.type.integer && is.integer(object))
+                  object <- as.numeric(object)
+              ## recreate object to trigger validity tests
+              object
+          })
+
 #' @rdname coerce-data
 ## HAS_TESTS
 setMethod("toDouble",

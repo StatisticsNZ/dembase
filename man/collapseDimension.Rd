@@ -11,22 +11,23 @@
 \alias{collapseDimension,Values,ANY,ANY,missing-method}
 \title{Collapse one or more dimensions of a demographic array.}
 \usage{
-collapseDimension(object, dimension = NULL, margin = NULL, weights, ...)
+collapseDimension(object, dimension = NULL, margin = NULL, weights,
+  na.rm = FALSE, ...)
 
 \S4method{collapseDimension}{Pool,ANY,ANY,missing}(object, dimension = NULL,
   margin = NULL, weights)
 
 \S4method{collapseDimension}{Counts,ANY,ANY,missing}(object, dimension = NULL,
-  margin = NULL, weights)
+  margin = NULL, weights, na.rm = FALSE)
 
 \S4method{collapseDimension}{Counts,ANY,ANY,Counts}(object, dimension = NULL,
-  margin = NULL, weights)
+  margin = NULL, weights, na.rm = FALSE)
 
 \S4method{collapseDimension}{Values,ANY,ANY,ANY}(object, dimension = NULL,
-  margin = NULL, weights)
+  margin = NULL, weights, na.rm = FALSE)
 
 \S4method{collapseDimension}{Values,ANY,ANY,missing}(object, dimension = NULL,
-  margin = NULL)
+  margin = NULL, na.rm = FALSE)
 }
 \arguments{
 \item{object}{An object of class' \code{\linkS4class{DemographicArray}}.}
@@ -40,6 +41,9 @@ collapsing.}
 \code{weights} can only be used if \code{object} has class
 \code{\linkS4class{Values}}.  It must have at least as much detail as
 \code{object}.}
+
+\item{na.rm}{A logical value indicating whether NA values should be
+stripped before the computation proceeds.}
 
 \item{\dots}{Not currently used.}
 }

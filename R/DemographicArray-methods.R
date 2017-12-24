@@ -1437,37 +1437,7 @@ setMethod("round3",
           function(object) {
               metadata <- object@metadata
               .Data <- object@.Data
-              is.type.integer <- is.integer(.Data)
-              all.integers <- is.type.integer || all(round(.Data) == .Data)
-              if (!all.integers)
-                  stop(gettextf("'%s' has non-integer values",
-                                "object"))
-              mod.3 <- as.integer(.Data) %% 3L
-              n <- length(.Data)
-              p <- stats::runif(n = n)
-              ## deal with NAs - leave untouched
-              has.been.processed <- is.na(.Data)
-              ## deal with values divisible by 3 - leave untouched
-              is.mod.0 <- !has.been.processed & (mod.3 == 0L)
-              has.been.processed <- has.been.processed | is.mod.0
-              ## deal with mod 1 - 2/3 chance of rounding down, 1/3 chance of rounding up
-              is.mod.1 <- !has.been.processed & (mod.3 == 1L)
-              round.down <- is.mod.1 & (p < 2/3)
-              round.up <- is.mod.1 & (p >= 2/3)
-              .Data[round.down] <- .Data[round.down] - 1L
-              .Data[round.up] <- .Data[round.up] + 2L
-              has.been.processed <- has.been.processed | is.mod.1
-              ## deal with mod 2 - 1/3 chance of rounding down, 2/3 chance of rounding up
-              is.mod.2 <- !has.been.processed
-              round.down <- is.mod.2 & (p < 1/3)
-              round.up <- is.mod.2 & (p >= 1/3)
-              .Data[round.down] <- .Data[round.down] - 2L
-              .Data[round.up] <- .Data[round.up] + 1L
-              ## coerce back to numeric if was originally numeric and is now integer
-              if (!is.type.integer && is.integer(.Data))
-                  .Data <- array(as.numeric(.Data),
-                                 dim = dim(.Data),
-                                 dimnames = dimnames(.Data))
+              .Data <- round3(.Data)
               ## recreate object to trigger validity tests
               new(class(object),
                   .Data = .Data,

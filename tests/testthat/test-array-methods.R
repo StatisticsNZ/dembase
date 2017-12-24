@@ -241,3 +241,21 @@ test_that("extend works when array contains NAs", {
                      array(c(1, NA, 1, NA), dim = c(2, 2)))
 })
            
+test_that("round3 works", {
+    for (seed in 1:10) {
+        set.seed(seed)
+        lambda <- runif(n = 1, min = 0.5, max = 10)
+        x <- array(rpois(n = 100, lambda = lambda),
+                   dim = 100,
+                   dimnames = list(reg = 1:100))
+        x.round <- round3(x)
+        expect_true(all(x.round %% 3 == 0))
+        expect_true(all(x[x %% 3 == 0L] == x.round[x %% 3 == 0L]))
+        x.with.na <- array(rpois(n = 100, lambda = lambda),
+                           dim = 100,
+                           dimnames = list(reg = 1:100))
+        x.with.na[sample(100, 10)] <- NA
+        x.round.with.na <- round3(x.with.na)
+        expect_true(all(is.na(x.round.with.na[is.na(x.with.na)])))
+    }
+})
