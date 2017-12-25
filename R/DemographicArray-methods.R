@@ -1429,21 +1429,6 @@ setMethod("prop.table",
           })
 
 
-## HAS_TESTS
-#' @rdname round3
-#' @export
-setMethod("round3",
-          signature(object = "DemographicArray"),
-          function(object) {
-              metadata <- object@metadata
-              .Data <- object@.Data
-              .Data <- round3(.Data)
-              ## recreate object to trigger validity tests
-              new(class(object),
-                  .Data = .Data,
-                  metadata = metadata)
-          })
-
 
 ## ## NO_TESTS
 ## setMethod("relabelCategories",
