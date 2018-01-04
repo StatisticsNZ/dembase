@@ -8,6 +8,7 @@
 #include <Rdefines.h>
 
 SEXP collapse_R(SEXP A, SEXP transform);
+SEXP extend_R(SEXP A, SEXP transform);
 
 #endif
 

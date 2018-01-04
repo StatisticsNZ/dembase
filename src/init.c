@@ -120,6 +120,7 @@ R_init_dembase(DllInfo *info)
   /* register functions as callable from other packages 
    * make sure each of these is in the header file in inst/include. */
   RREGDEF(collapse_R);
+  RREGDEF(extend_R);
   RREGDEF(getIAfter);
   RREGDEF(getIBefore);
   RREGDEF(getIShared);
