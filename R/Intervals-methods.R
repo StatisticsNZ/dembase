@@ -364,6 +364,10 @@ setMethod("inferDimvalues",
               n <- length(labels)
               if (identical(n, 0L))
                   return(numeric())
+              month.dimvalues <- tryCatch(monthLabelsToDimvalues(labels),
+                                          error = function(e) NULL)
+              if (!is.null(month.dimvalues))
+                  return(month.dimvalues)
               labels <- orderLabelsNumerically(labels)
               decoded.labels <- rep(FALSE, n)
               dimvalues <- numeric(n + 1L)

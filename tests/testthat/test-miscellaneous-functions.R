@@ -2423,6 +2423,27 @@ test_that("ageMinMaxRemplace throws appropriate errors", {
                  "replacement value less than or equal to lower limit of last age group")
 })
 
+test_that("dateToFracYear works", {
+    dateToFracYear <- dembase:::dateToFracYear
+    ans.obtained <- dateToFracYear(as.Date(c("2000-12-31", "2018-01-01", "1999-06-30", "2004-01-01")))
+    ans.expected <- c(1,
+                      1/365,
+                      (as.integer(as.Date("1999-06-30") - as.Date("1998-12-31")) /
+                       as.integer(as.Date("1999-12-31") - as.Date("1998-12-31"))),
+                      1/366)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("dimvaluesDefineMonths works", {
+    dimvaluesDefineMonths <- dembase:::dimvaluesDefineMonths
+    expect_false(dimvaluesDefineMonths(2000))
+    expect_false(dimvaluesDefineMonths(c(2000, 2000 + 32/366)))
+    expect_false(dimvaluesDefineMonths(c(2000, 2000 + 30/366)))
+    expect_true(dimvaluesDefineMonths(c(2000, 2000 + 31/366)))
+    expect_true(dimvaluesDefineMonths(c(2000, 2000 + 31/366, 2000 + 60/366)))
+    expect_true(dimvaluesDefineMonths(c(2000 - 31/365, 2000, 2000 + 31/366, 2000 + 60/366)))
+})
+    
 ## test_that("makeLabelsForClosedIntervals works", {
 ##     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
 ##     expect_identical(makeLabelsForClosedIntervals2(c(0, 5, 10)),
@@ -2480,6 +2501,75 @@ test_that("makeLabelsForIntervals works", {
   expect_identical(makeLabelsForIntervals(c(2000:2002, 2004.5)),
                    c("2000-2001", "2001-2002", "2002-2004.5"))
 })
+
+test_that("makeLabelsMonths works", {
+    makeLabelsMonths <- dembase:::makeLabelsMonths
+    monthAndYearToDimvalues <- dembase:::monthAndYearToDimvalues
+    months <- c("Nov", "Dec", base::month.abb, "Jan", "Feb")
+    years <- c(2007L, 2007L, rep(2008L, 12), 2009L, 2009L)
+    dv <- monthAndYearToDimvalues(month = months, year = years)
+    ans.obtained <- makeLabelsMonths(dv)
+    ans.expected <- paste(months, years, sep = "-")
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("monthAndYearToDimvalues works", {
+    monthAndYearToDimvalues <- dembase:::monthAndYearToDimvalues
+    ans.obtained <- monthAndYearToDimvalues(month = c("Dec", base::month.abb, "Jan"),
+                                            year = c(2003L, rep(2004L, 12), 2005L))
+    ans.expected <- c(2003 + (365-31)/365,
+                      2004,
+                      2004 + 31/366,
+                      2004 + (31+29)/366,
+                      2004 + (31+29+31)/366,
+                      2004 + (31+29+31+30)/366,
+                      2004 + (31+29+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31+30)/366,
+                      2005,
+                      2005 + 31/365)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("monthLabelsToDimvalues", {
+    monthLabelsToDimvalues <- dembase:::monthLabelsToDimvalues
+    ans.obtained <- monthLabelsToDimvalues(paste(c("Dec", base::month.abb, "Jan"),
+                                                 c(2003L, rep(2004L, 12), 2005L),
+                                                 sep = "-"))
+    ans.expected <- c(2003 + (365-31)/365,
+                      2004,
+                      2004 + 31/366,
+                      2004 + (31+29)/366,
+                      2004 + (31+29+31)/366,
+                      2004 + (31+29+31+30)/366,
+                      2004 + (31+29+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31+30)/366,
+                      2005,
+                      2005 + 31/365)
+    expect_equal(ans.obtained, ans.expected)
+    ans.obtained <- monthLabelsToDimvalues(c("Dec-01", "Dec-01"))
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- monthLabelsToDimvalues(c("Dec-2001", "Nov-2000"))
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- monthLabelsToDimvalues(c("Dec-2001", "Dec-2001"))
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+
 
 
 ## FUNCTIONS FOR INFERRING DIMVALUES FOR INTERVALS ###################################
@@ -3694,6 +3784,20 @@ test_that("addIterationsToMetadata works", {
              new("Quantiles", dimvalues = c(0.1, 0.5, 0.9))))
     expect_error(addIterationsToMetadata(z, iteration = 1:3),
                  "'object' has dimension with dimtype \"quantile\"")
+})
+
+test_that("incrementDimvaluesMonths works", {
+    incrementDimvaluesMonths <- dembase:::incrementDimvaluesMonths
+    ans.obtained <- incrementDimvaluesMonths(start = 2000,
+                                             forward = TRUE,
+                                             n = 3)
+    ans.expected <- c(2000, 2000 + 31/366, 2000 + 60/366, 2000 + 91/366)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- incrementDimvaluesMonths(start = 2000,
+                                             forward = FALSE,
+                                             n = 3)
+    ans.expected <- c(2000 - 92/365, 2000 - 61/365, 2000 - 31/365, 2000)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("mergeMetadata works", {

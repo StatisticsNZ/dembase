@@ -1715,6 +1715,45 @@ ageMinMaxReplace <- function(object, value, min = TRUE) {
 }
 
 ## HAS_TESTS
+## fraction of year completed at end of day
+dateToFracYear <- function(date) {
+    stopifnot(methods::is(date, "Date"))
+    this.year <- format(date, format = "%Y")
+    this.year <- as.integer(this.year)
+    prev.year <- this.year - 1L
+    date.end.this.year <- sprintf("%d-12-31", this.year)
+    date.end.prev.year <- sprintf("%d-12-31", prev.year)
+    date.end.this.year <- as.Date(date.end.this.year)
+    date.end.prev.year <- as.Date(date.end.prev.year)
+    days.end.this.year <- as.integer(date.end.this.year)
+    days.end.prev.year <- as.integer(date.end.prev.year)
+    days.date <- as.integer(date)
+    (days.date - days.end.prev.year) / (days.end.this.year - days.end.prev.year)
+}
+
+## HAS_TESTS
+dimvaluesDefineMonths <- function(dimvalues) {
+    if (identical(length(dimvalues), 1L))
+        return(FALSE)
+    if (any(is.infinite(dimvalues)))
+        return(FALSE)
+    if (any(diff(dimvalues) > (31 / 365 + 0.00001)))
+        return(FALSE)
+    poss.year.first <- floor(dimvalues[1L])
+    poss.year.last <- floor(dimvalues[length(dimvalues)])
+    poss.years <- seq(from = poss.year.first - 1L, to = poss.year.last + 1L)
+    n.poss.years <- poss.year.last - poss.year.first + 3L
+    month <- rep(base::month.abb, times = n.poss.years)
+    year <- rep(poss.years, each = 12L)
+    poss.dimvalues <- monthAndYearToDimvalues(month = month,
+                                              year = year)
+    i <- match(dimvalues, poss.dimvalues, nomatch = 0L)
+    i.first <- i[1L]
+    s <- seq(from = i.first, along.with = dimvalues)
+    isTRUE(all.equal(i, s))
+}    
+
+## HAS_TESTS
 makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
                                          limitPrintLower = NULL) {
     kDigits <- 4L
@@ -1786,6 +1825,10 @@ makeLabelsForIntervals <- function(dimvalues, intervalSeparator = NULL,
     if (is.null(limitPrintLower))
         limitPrintLower <- getLimitPrintLower()
     if (n > 0L) {
+        if (dimvaluesDefineMonths(dimvalues)) {
+            ans <- makeLabelsMonths(dimvalues)
+            return(ans)
+        }
         first.interval.is.open <- is.infinite(dimvalues[1L])
         final.interval.is.open <- is.infinite(dimvalues[n])
         ans <- character(n - 1L)
@@ -1818,6 +1861,91 @@ makeLabelsForIntervals <- function(dimvalues, intervalSeparator = NULL,
     else
         character()
 }
+
+## HAS_TESTS
+makeLabelsMonths <- function(dimvalues) {
+    n.dv <- length(dimvalues)
+    dv.first <- dimvalues[1L]
+    dv.last <- dimvalues[n.dv]
+    year.first <- floor(dv.first)
+    year.last <- floor(dv.last)
+    n.year <- year.last - year.first + 1L
+    month <- rep(base::month.abb, times = n.year)
+    year <- seq(from = year.first, to = year.last)
+    year <- rep(year, each = 12L)
+    dimvalues.all <- monthAndYearToDimvalues(month = month,
+                                             year = year)
+    i <- match(dimvalues, dimvalues.all, nomatch = 0L)
+    is.invalid <- i == 0L
+    if (any(is.invalid))
+        stop(gettextf("'%s' is not a valid dimvalue for a month",
+                      dimvalues[is.invalid][1L]))
+    ans <- paste(month[i], year[i], sep = "-")
+    ans[-n.dv]
+}
+
+## HAS_TESTS
+monthAndYearToDimvalues <- function(month, year) {
+    n <- length(month)
+    stopifnot(n > 0L)
+    stopifnot(length(year) == n)
+    stopifnot(all(month %in% base::month.abb))
+    stopifnot(is.integer(year))
+    stopifnot(all(diff(year) %in% 0:1))
+    ## assume months are in correct order
+    last.month <- month[n]
+    last.year <- year[n]
+    i.last.month <- match(last.month, base::month.abb)
+    last.month.is.dec <- identical(i.last.month, 12L)
+    if (last.month.is.dec) {
+        extra.month <- "Jan"
+        extra.year <- last.year + 1L
+    }
+    else {
+        extra.month <- base::month.abb[i.last.month + 1L]
+        extra.year <- last.year
+    }
+    year <- c(year, extra.year)
+    month <- c(month, extra.month)
+    month <- match(month, base::month.abb)
+    date.start.month <- sprintf("%d-%d-1", year, month)
+    date.start.month <- as.Date(date.start.month,
+                                format = "%Y-%m-%d")
+    date.end.month <- date.start.month - 1L
+    frac.year <- dateToFracYear(date.end.month)
+    year + frac.year - (frac.year == 1)
+}
+
+## HAS_TESTS
+monthLabelsToDimvalues <- function(x) {
+    m <- regexpr("\\d{4}", x)
+    if (any(m == -1L))
+        return(NULL)
+    obs.years <- regmatches(x, m)
+    obs.years <- as.integer(obs.years)
+    if (any(diff(obs.years) < 0L))
+        return(NULL)
+    min.obs.year <- min(obs.years)
+    max.obs.year <- max(obs.years)
+    max.obs.year.plus.1 <- max.obs.year + 1L
+    poss.years <- seq(from = min.obs.year, to = max.obs.year.plus.1)
+    poss.years <- rep(poss.years, each = 12L)
+    n.year <- max.obs.year.plus.1 - min.obs.year + 1L
+    poss.months <- rep(base::month.abb, times = n.year)
+    poss.labels <- paste(poss.months, poss.years, sep = "-")
+    i <- match(x, poss.labels, nomatch = 0L)
+    i.first <- i[1L]
+    s <- seq(from = i.first, along.with = x)
+    is.valid.months <- isTRUE(all.equal(i, s))
+    if (!is.valid.months)
+        return(NULL)
+    month <- poss.months[i]
+    year <- poss.years[i]
+    monthAndYearToDimvalues(month = month,
+                            year = year)
+}
+
+
 
 ## FUNCTIONS FOR INFERRING DIMVALUES FOR INTERVALS ###################################
 
@@ -2563,6 +2691,29 @@ addIterationsToMetadata <- function(object, iterations) {
         dimtypes = dimtypes,
         DimScales = DimScales)
 }
+
+incrementDimvaluesMonths <- function(start, forward, n) {
+    year.start <- as.integer(start)
+    n.year <- abs(as.integer(n)) %/% 12L + 2L
+    month <- rep(base::month.abb, times = n.year)
+    if (forward)
+        year <- seq.int(from = year.start, by = 1L, length.out = n.year)
+    else
+        year <- seq.int(to = year.start, by = 1L, length.out = n.year)
+    year <- rep(year, each = 12L)
+    dimvalues.poss <- monthAndYearToDimvalues(month = month,
+                                              year = year)
+    i.start <- match(start, dimvalues.poss, nomatch = 0L)
+    if (identical(i.start, 0L))
+        stop(gettextf("'%s' is not a valid dimvalue for a month",
+                      start))
+    if (forward)
+        s <- seq(from = i.start, length.out = n + 1L)
+    else
+        s <- seq(to = i.start, length.out = n + 1L)
+    dimvalues.poss[s]
+}
+
 
 
 ## HAS_TESTS
