@@ -122,6 +122,60 @@ test_that("getValidDimtypes works", {
 
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
+test_that("ageToAgeGroup works", {
+    ans.obtained <- ageToAgeGroup(c(0, 50, 33, 110))
+    ans.expected <- factor(c("0-4", "50-54", "30-34", "100+"),
+                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- ageToAgeGroup(c(0, 50, 33, 99), firstOpen = TRUE, lastOpen = FALSE)
+    ans.expected <- factor(c("0-4", "50-54", "30-34", "95-99"),
+                           levels = c("<0", paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- ageToAgeGroup(c(0, 50, 33, 110), breaks = c(0, 1, seq(5, 90, 5)))
+    ans.expected <- factor(c("0", "50-54", "30-34", "90+"),
+                           levels = c(0, "1-4", paste(seq(5, 85, 5), seq(9, 89, 5), sep = "-"), "90+"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- ageToAgeGroup(as.character(c(0, 50, 33, 110)))
+    ans.expected <- factor(c("0-4", "50-54", "30-34", "100+"),
+                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- ageToAgeGroup(integer())
+    ans.expected <- factor(character(),
+                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- ageToAgeGroup(factor(c(0, 50, 33, 110)))
+    ans.expected <- factor(c("0-4", "50-54", "30-34", "100+"),
+                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("ageToAgeGroup throws appropriate errors", {
+    expect_error(ageToAgeGroup(list("a", "b", "c")),
+                 "'age' has class \"list\"")
+    expect_error(ageToAgeGroup(c("1", NA, "b")),
+                 "value \"b\" from 'age' cannot be coerced to numeric")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = integer()),
+                 "'breaks' has length 0")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = "1"),
+                 "'breaks' is non-numeric")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, NA)),
+                 "'breaks' has missing values")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, 5, 5)),
+                 "'breaks' has duplicates")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, 5, 4)),
+                 "'breaks' is non-increasing")
+    expect_error(ageToAgeGroup(c(0, 1, 10), firstOpen = c(TRUE, FALSE)),
+                 "'firstOpen' does not have length 1")
+    expect_error(ageToAgeGroup(c(0, 1, 10), lastOpen = "TRUE"),
+                 "'lastOpen' has class \"character\"")
+    expect_error(ageToAgeGroup(c(0, 1, 10), firstOpen = NA),
+                 "'firstOpen' is missing")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
+                 "'age' has values less than the lowest value of 'breaks', but 'firstOpen' is FALSE")
+    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, 5), lastOpen = FALSE),
+                 "'age' has values greater than or equal to the highest value of 'breaks', but 'lastOpen' is FALSE")
+})
+
 test_that("checkAndTidyYearStart works", {
     checkAndTidyYearStart <- dembase:::checkAndTidyYearStart
     expect_identical(checkAndTidyYearStart(2000),
@@ -191,6 +245,17 @@ test_that("checkLastOpen works", {
                              "'lastOpen' does not have length 1"))
     expect_error(checkLastOpen(NA),
                  "'lastOpen' is missing")
+})
+
+test_that("cleanAge works", {
+    x <- c("0 Year", "1 to 4 Years", "5 to 9 Years", "10 Years And Over")
+    ans.obtained <- cleanAge(x)
+    ans.expected <- c("0", "1-4", "5-9", "10+")
+    expect_identical(ans.obtained, ans.expected)
+    x <- c("0 yr", "1--4 yrs", "5--9 yrs", "10plus")
+    ans.obtained <- cleanAge(x)
+    ans.expected <- c("0", "1-4", "5-9", "10+")
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("completedYears works", {

@@ -140,6 +140,115 @@ getValidDimtypes <- function()
 
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
+#' Convert exact ages to age groups
+#'
+#' Convert a vector of exact ages to a vector of age groups.
+#' The age groups are formatted in
+#' the way expected by functions such as \code{\link{Counts}} and
+#' \code{\link{Values}}.
+#'
+#' `Exact' ages can be numbers such as \code{6.238} or
+#' \code{77.13}, but are more typically integers
+#' such as \code{6} or \code{77}.
+#'
+#' If \code{age} is a factor, then \code{ageToAgeGroup} will coerce
+#' it to a character vector before trying to coerce it to numeric.
+#' See below for an example.
+#'
+#' By default, \code{ageToAgeGroup} creates 5-year age groups.
+#' See below for examples of other groupings.
+#'
+#' @param age A vector of exact ages. A numeric vector, or a vector
+#' than can be coerced to numeric.
+#' @param breaks A vector of breaks, specifying the end points of the
+#' age groups.
+#' @param firstOpen Logical. Whether the first age group is "open",
+#' i.e. has no lower bound. Defaults to \code{FALSE}.
+#' @param lastOpen Logical. Whether the last age group is "open",
+#' i.e. has no upper bound. Defaults to \code{TRUE}.
+#'
+#' @return A character vector, the same length as \code{age}.
+#'
+#' @seealso \code{\link{seq}} (in combination with \code{\link{c}})
+#' is useful for creating complicated \code{breaks} arguments.
+#'
+#' @examples
+#' age <- c(22, 18, 4, 0, 89, 103, 7)
+#' ## 5-year age groups, 0-4, 5-9, ..., 95-99, 100+
+#' ageToAgeGroup(age)
+#' ## 1-year age groups, 0, 1, ..., 89, 90+
+#' ageToAgeGroup(age, breaks = 0:90)
+#' ## age groups 0, 1-4, 5-9, 10-14, ..., 85+
+#' ageToAgeGroup(age, breaks = c(0, 1, seq(5, 85, 5)))
+#' ## last age group closed
+#' ageToAgeGroup(age = c(0, 17, 14, 3, 9),
+#'                breaks = seq(0, 20, 5),
+#'                lastOpen = FALSE)
+#' @export
+ageToAgeGroup <- function(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
+                          lastOpen = TRUE) {
+    if (!is.numeric(age) && !is.character(age) && !is.factor(age))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "age", class(age)))
+    is.na.original <- is.na(age)
+    if (is.factor(age))
+        age <- as.character(age)
+    x <- suppressWarnings(as.numeric(age))
+    is.new.na <- is.na(x) & !is.na.original
+    if (any(is.new.na))
+        stop(gettextf("value \"%s\" from '%s' cannot be coerced to numeric",
+                      age[is.new.na][[1L]], "age"))
+    if (identical(length(breaks), 0L))
+        stop(gettextf("'%s' has length %d",
+                      "breaks", 0L))
+    if (!is.numeric(breaks))
+        stop(gettextf("'%s' is non-numeric",
+                      "breaks"))
+    if (any(is.na(breaks)))
+        stop(gettextf("'%s' has missing values",
+                      "breaks"))
+    if (any(duplicated(breaks)))
+        stop(gettextf("'%s' has duplicates",
+                      "breaks"))
+    if (any(diff(breaks) < 0))
+        stop(gettextf("'%s' is non-increasing",
+                      "breaks"))
+    for (name in c("firstOpen", "lastOpen")) {
+        value <- get(name)
+        if (!identical(length(value), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          name, 1L))
+        if (!is.logical(value))
+            stop(gettextf("'%s' has class \"%s\"",
+                          name, class(value)))
+        if (is.na(value))
+            stop(gettextf("'%s' is missing",
+                          name))
+    }
+    if (firstOpen) {
+        breaks <- c(-Inf, breaks)
+    }
+    else {
+        if (any(x[!is.na(x)] < breaks[1L]))
+            stop(gettextf("'%s' has values less than the lowest value of '%s', but '%s' is %s",
+                          "age", "breaks", "firstOpen", "FALSE"))
+    }
+    if (lastOpen) {
+        breaks <- c(breaks, Inf)
+    }
+    else {
+        if (any(x[!is.na(x)] >= breaks[length(breaks)]))
+            stop(gettextf("'%s' has values greater than or equal to the highest value of '%s', but '%s' is %s",
+                          "age", "breaks", "lastOpen", "FALSE"))
+    }
+    labels <- makeLabelsForIntervals(breaks)
+    cut(x = x,
+        breaks = breaks,
+        labels = labels,
+        right = FALSE)
+}
+
+
 ## HAS_TESTS
 checkAndTidyYearStart <- function(yearStart) {
     if (!is.numeric(yearStart))
@@ -222,6 +331,24 @@ checkLastOpen <- function(lastOpen) {
                       "lastOpen"))
     NULL
 }
+
+## HAS_TESTS
+cleanAge <- function(age) {
+    age <- tolower(age)
+    age <- sub("year|years|yr|yrs", "", age)
+    age <- sub("and over|plus", "+", age)
+    age <- sub("to|-+|_+", "-", age)
+    age <- gsub(" ", "", age)
+    age
+}
+
+cleanAgeConcordance <- function(age) {
+    age.new <- cleanAge(age)
+    ans <- data.frame(old = age, new = age.new)
+    ans <- unique(ans)
+    classconc::Concordance(ans)
+}
+    
 
 ## HAS_TESTS
 completedYears <- function(date, dob) {
