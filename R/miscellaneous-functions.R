@@ -333,7 +333,60 @@ checkLastOpen <- function(lastOpen) {
 }
 
 ## HAS_TESTS
-cleanAge <- function(age) {
+#' Clean up age group labels
+#'
+#' Reformat a vector of age-group labels, so that it matches the format
+#' expected by functions such as \code{\link{Counts}} and
+#' \code{\link{Values}}.
+#'
+#' \code{cleanAgeGroup} does the reformatting. \code{cleanAgeGroupConc}
+#' constructs a \code{\link[classconc]{Concordance}} between the old and
+#' new age-group labels.
+#'
+#' \code{cleanAgeGroup} is suitable for interactive use, or for
+#' one-off analyses, where the data will not change in future.
+#'
+#' Using \code{cleanAgeGroupConc} may be safer in production
+#' code where the data may change. The workflow is as follows:
+#' \enumerate{
+#'  \item Use a vector of age labels to construct a concordance.
+#'  \item Store the concordance.
+#'  \item When new data arrives, use function
+#' \code{\link[classconc]{translate}}, plus the stored concordance,
+#'   to clean the age data.
+#' }
+#' The advantange of this work flow is that \code{translate}
+#' will throw an error if it strikes an age label that it
+#' does not recognize.
+#'
+#' @param age A vector of age labels.
+#'
+#' @return A character vector of reformatted age labels.
+#'
+#' @seealso \code{\link{ageToAgeGroup}} converts exact
+#' ages into age groups.
+#'
+#' @examples
+#' x1 <- c("0 - 4 years", "90 plus years", "25 - 29 years")
+#' x2 <- c("10 to 19 Yr", "80 years and over")
+#' x3 <- c("5--9", "10plus", "0--4")
+#' x4 <- c("10plus", "10plus", "5--9", "5--9")
+#'
+#' ## Use cleanAgeGroup directly
+#' cleanAgeGroup(x1)
+#' cleanAgeGroup(x2)
+#'
+#' ## Set up concordance and use that
+#' conc <- cleanAgeGroupConc(x3)
+#' classconc::translate(x4, concordance = conc)
+#' 
+#' @name cleanAgeGroup
+NULL
+
+## HAS_TESTS
+#' @rdname cleanAgeGroup
+#' @export
+cleanAgeGroup <- function(age) {
     age <- tolower(age)
     age <- sub("year|years|yr|yrs", "", age)
     age <- sub("and over|plus", "+", age)
@@ -342,13 +395,15 @@ cleanAge <- function(age) {
     age
 }
 
-cleanAgeConcordance <- function(age) {
-    age.new <- cleanAge(age)
+## HAS_TESTS
+#' @rdname cleanAgeGroup
+#' @export
+cleanAgeGroupConc <- function(age) {
+    age.new <- cleanAgeGroup(age)
     ans <- data.frame(old = age, new = age.new)
     ans <- unique(ans)
     classconc::Concordance(ans)
 }
-    
 
 ## HAS_TESTS
 completedYears <- function(date, dob) {

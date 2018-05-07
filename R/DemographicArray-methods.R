@@ -1204,7 +1204,7 @@ setMethod("mean",
 ## HAS_TESTS
 #' @method median DemographicArray
 #' @export
-median.DemographicArray <- function(x, na.rm = FALSE) {
+median.DemographicArray <- function(x, na.rm = FALSE, ...) {
     .Data <- x@.Data
     metadata <- metadata(x)
     dimtypes <- dimtypes(metadata, use.names = FALSE)
@@ -1219,7 +1219,8 @@ median.DemographicArray <- function(x, na.rm = FALSE) {
         .Data.ans <- apply(.Data,
                            MARGIN = i.iter,
                            FUN = stats::median,
-                           na.rm = na.rm)
+                           na.rm = na.rm,
+                           ...)
         .Data.ans <- array(.Data.ans,
                            dim = dim(metadata.ans),
                            dimnames = dimnames(metadata.ans))
@@ -1229,7 +1230,7 @@ median.DemographicArray <- function(x, na.rm = FALSE) {
             metadata = metadata.ans)
     }
     else
-        stats::median(.Data, na.rm = na.rm)
+        stats::median(.Data, na.rm = na.rm, ...)
 }
 
 ## HAS_TESTS

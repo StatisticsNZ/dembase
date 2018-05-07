@@ -16,7 +16,7 @@
 
 \S4method{mean}{DemographicArray}(x, ...)
 
-\S4method{median}{DemographicArray}(x, na.rm = FALSE)
+\S4method{median}{DemographicArray}(x, na.rm = FALSE, ...)
 }
 \arguments{
 \item{x}{Typically an object of class \code{\linkS4class{DemographicArray}}.}
