@@ -2524,7 +2524,7 @@ test_that("dimvaluesDefineMonths works", {
     
 ## test_that("makeLabelsForClosedIntervals works", {
 ##     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
-##     expect_identical(makeLabelsForClosedIntervals2(c(0, 5, 10)),
+##     expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10)),
 ##                      c("0-4", "5-9"))
 ##     expect_identical(makeLabelsForClosedIntervals2(c(2000, 2005, 2010)),
 ##                      c("2000-2005", "2005-2010"))

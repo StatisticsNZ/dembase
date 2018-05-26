@@ -182,8 +182,8 @@ getValidDimtypes <- function()
 #' ageToAgeGroup(age, breaks = c(0, 1, seq(5, 85, 5)))
 #' ## last age group closed
 #' ageToAgeGroup(age = c(0, 17, 14, 3, 9),
-#'                breaks = seq(0, 20, 5),
-#'                lastOpen = FALSE)
+#'               breaks = seq(0, 20, 5),
+#'               lastOpen = FALSE)
 #' @export
 ageToAgeGroup <- function(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
                           lastOpen = TRUE) {
