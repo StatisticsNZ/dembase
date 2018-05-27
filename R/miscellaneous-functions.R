@@ -140,6 +140,7 @@ getValidDimtypes <- function()
 
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
+
 #' Convert exact ages to age groups
 #'
 #' Convert a vector of exact ages to a vector of age groups.
@@ -160,16 +161,16 @@ getValidDimtypes <- function()
 #'
 #' @param age A vector of exact ages. A numeric vector, or a vector
 #' than can be coerced to numeric.
-#' @param breaks A vector of breaks, specifying the end points of the
+#' @param breaks A vector of breaks, specifying the points dividing the
 #' age groups.
 #' @param firstOpen Logical. Whether the first age group is "open",
 #' i.e. has no lower bound. Defaults to \code{FALSE}.
 #' @param lastOpen Logical. Whether the last age group is "open",
 #' i.e. has no upper bound. Defaults to \code{TRUE}.
 #'
-#' @return A character vector, the same length as \code{age}.
+#' @return A factor, the same length as \code{age}.
 #'
-#' @seealso \code{\link{seq}} (in combination with \code{\link{c}})
+#' @seealso \code{\link{yearToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
 #' is useful for creating complicated \code{breaks} arguments.
 #'
 #' @examples
@@ -187,65 +188,11 @@ getValidDimtypes <- function()
 #' @export
 ageToAgeGroup <- function(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
                           lastOpen = TRUE) {
-    if (!is.numeric(age) && !is.character(age) && !is.factor(age))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "age", class(age)))
-    is.na.original <- is.na(age)
-    if (is.factor(age))
-        age <- as.character(age)
-    x <- suppressWarnings(as.numeric(age))
-    is.new.na <- is.na(x) & !is.na.original
-    if (any(is.new.na))
-        stop(gettextf("value \"%s\" from '%s' cannot be coerced to numeric",
-                      age[is.new.na][[1L]], "age"))
-    if (identical(length(breaks), 0L))
-        stop(gettextf("'%s' has length %d",
-                      "breaks", 0L))
-    if (!is.numeric(breaks))
-        stop(gettextf("'%s' is non-numeric",
-                      "breaks"))
-    if (any(is.na(breaks)))
-        stop(gettextf("'%s' has missing values",
-                      "breaks"))
-    if (any(duplicated(breaks)))
-        stop(gettextf("'%s' has duplicates",
-                      "breaks"))
-    if (any(diff(breaks) < 0))
-        stop(gettextf("'%s' is non-increasing",
-                      "breaks"))
-    for (name in c("firstOpen", "lastOpen")) {
-        value <- get(name)
-        if (!identical(length(value), 1L))
-            stop(gettextf("'%s' does not have length %d",
-                          name, 1L))
-        if (!is.logical(value))
-            stop(gettextf("'%s' has class \"%s\"",
-                          name, class(value)))
-        if (is.na(value))
-            stop(gettextf("'%s' is missing",
-                          name))
-    }
-    if (firstOpen) {
-        breaks <- c(-Inf, breaks)
-    }
-    else {
-        if (any(x[!is.na(x)] < breaks[1L]))
-            stop(gettextf("'%s' has values less than the lowest value of '%s', but '%s' is %s",
-                          "age", "breaks", "firstOpen", "FALSE"))
-    }
-    if (lastOpen) {
-        breaks <- c(breaks, Inf)
-    }
-    else {
-        if (any(x[!is.na(x)] >= breaks[length(breaks)]))
-            stop(gettextf("'%s' has values greater than or equal to the highest value of '%s', but '%s' is %s",
-                          "age", "breaks", "lastOpen", "FALSE"))
-    }
-    labels <- makeLabelsForIntervals(breaks)
-    cut(x = x,
-        breaks = breaks,
-        labels = labels,
-        right = FALSE)
+    pointToIntervalInner(vec = age,
+                         breaks = breaks,
+                         firstOpen = firstOpen,
+                         lastOpen = lastOpen,
+                         nameVec = "age")
 }
 
 
@@ -849,6 +796,120 @@ monthStartNum <- function(monthStart) {
         stop(gettextf("invalid value for '%s' : \"%s\" is not a valid month",
                       "monthStart", monthStart))
     i
+}
+
+## HAS_TESTS (via ageToAgeGroup and yearToPeriod)
+pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
+    if (!is.numeric(vec) && !is.character(vec) && !is.factor(vec))
+        stop(gettextf("'%s' has class \"%s\"",
+                      nameVec, class(vec)))
+    is.na.original <- is.na(vec)
+    if (is.factor(vec))
+        vec <- as.character(vec)
+    x <- suppressWarnings(as.numeric(vec))
+    is.new.na <- is.na(x) & !is.na.original
+    if (any(is.new.na))
+        stop(gettextf("value \"%s\" from '%s' cannot be coerced to numeric",
+                      vec[is.new.na][[1L]], nameVec))
+    if (identical(length(breaks), 0L))
+        stop(gettextf("'%s' has length %d",
+                      "breaks", 0L))
+    if (!is.numeric(breaks))
+        stop(gettextf("'%s' is non-numeric",
+                      "breaks"))
+    if (any(is.na(breaks)))
+        stop(gettextf("'%s' has missing values",
+                      "breaks"))
+    if (any(duplicated(breaks)))
+        stop(gettextf("'%s' has duplicates",
+                      "breaks"))
+    if (any(diff(breaks) < 0))
+        stop(gettextf("'%s' is non-increasing",
+                      "breaks"))
+    for (name in c("firstOpen", "lastOpen")) {
+        value <- get(name)
+        if (!identical(length(value), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          name, 1L))
+        if (!is.logical(value))
+            stop(gettextf("'%s' has class \"%s\"",
+                          name, class(value)))
+        if (is.na(value))
+            stop(gettextf("'%s' is missing",
+                          name))
+    }
+    if (firstOpen) {
+        breaks <- c(-Inf, breaks)
+    }
+    else {
+        if (any(x[!is.na(x)] < breaks[1L]))
+            stop(gettextf("'%s' has values less than the lowest value of '%s', but '%s' is %s",
+                          nameVec, "breaks", "firstOpen", "FALSE"))
+    }
+    if (lastOpen) {
+        breaks <- c(breaks, Inf)
+    }
+    else {
+        if (any(x[!is.na(x)] >= breaks[length(breaks)]))
+            stop(gettextf("'%s' has values greater than or equal to the highest value of '%s', but '%s' is %s",
+                          nameVec, "breaks", "lastOpen", "FALSE"))
+    }
+    labels <- makeLabelsForIntervals(breaks)
+    cut(x = x,
+        breaks = breaks,
+        labels = labels,
+        right = FALSE)
+}
+
+
+## HAS TESTS
+#' Convert years to periods
+#'
+#' Convert a vector of years to a vector of periods.
+#' The periods are formatted in the way expected by
+#' functions such as \code{\link{Counts}} and
+#' \code{\link{Values}}.
+#'
+#' The years can be contain decimal fractions such as \code{2000.25} or
+#' \code{2018.633}, but are more typically integers
+#' such as \code{2000} or \code{2018}.
+#'
+#' If \code{year} is a factor, then \code{yearToPeriod} will coerce
+#' it to a character vector before trying to coerce it to numeric.
+#' See below for an example.
+#'
+#' @param year A vector of years. A numeric vector, or a vector
+#' than can be coerced to numeric.
+#' @param breaks A vector of breaks, specifying the points dividing
+#' periods.
+#' @param firstOpen Logical. Whether the first period is "open",
+#' i.e. has no lower bound. Defaults to \code{FALSE}.
+#' @param lastOpen Logical. Whether the last period is "open",
+#' i.e. has no upper bound. Defaults to \code{FALSE}.
+#'
+#' @return A factor, the same length as \code{year}.
+#'
+#' @seealso \code{\link{ageToAgeGroup}}
+#'
+#' @examples
+#' year <- c(2001, 2023, 2000, 2005, 2014, 2013, 2029)
+#' ## 5-year periods, 2000-2005, 2005-2010, ..., 2025-2030
+#' yearToPeriod(year, breaks = seq(2000, 2030, 5))
+#' ## 5-year periods, 2000-2005, 2005-2010, ..., 2045-2050
+#' yearToPeriod(year, breaks = seq(2000, 2050, 5))
+#' ## first period open 
+#' yearToPeriod(year, breaks = seq(2010, 2030, 5), firstOpen = TRUE)
+#' @export
+yearToPeriod <- function(year, breaks, firstOpen = FALSE,
+                         lastOpen = FALSE) {
+    if (missing(breaks))
+        stop(gettextf("argument \"%s\" is missing, with no default",
+                      "breaks"))
+    pointToIntervalInner(vec = year,
+                         breaks = breaks,
+                         firstOpen = firstOpen,
+                         lastOpen = lastOpen,
+                         nameVec = "year")
 }
 
 
