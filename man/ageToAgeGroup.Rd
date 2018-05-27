@@ -11,7 +11,7 @@ ageToAgeGroup(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
 \item{age}{A vector of exact ages. A numeric vector, or a vector
 than can be coerced to numeric.}
 
-\item{breaks}{A vector of breaks, specifying the end points of the
+\item{breaks}{A vector of breaks, specifying the points dividing the
 age groups.}
 
 \item{firstOpen}{Logical. Whether the first age group is "open",
@@ -21,7 +21,7 @@ i.e. has no lower bound. Defaults to \code{FALSE}.}
 i.e. has no upper bound. Defaults to \code{TRUE}.}
 }
 \value{
-A character vector, the same length as \code{age}.
+A factor, the same length as \code{age}.
 }
 \description{
 Convert a vector of exact ages to a vector of age groups.
@@ -51,10 +51,10 @@ ageToAgeGroup(age, breaks = 0:90)
 ageToAgeGroup(age, breaks = c(0, 1, seq(5, 85, 5)))
 ## last age group closed
 ageToAgeGroup(age = c(0, 17, 14, 3, 9),
-               breaks = seq(0, 20, 5),
-               lastOpen = FALSE)
+              breaks = seq(0, 20, 5),
+              lastOpen = FALSE)
 }
 \seealso{
-\code{\link{seq}} (in combination with \code{\link{c}})
+\code{\link{yearToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
 is useful for creating complicated \code{breaks} arguments.
 }
