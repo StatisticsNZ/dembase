@@ -11,6 +11,9 @@ Authors@R: c(
     person(given = "Jenny",
            family = "Harlow",
 	   role = "ctb"),
+    person(given = "Junni L.",
+           family = "Zhang",
+	   role = "ctb"),
     person(given = "Brendon",
            family = "Bycroft",
 	   role = "ctb"))
