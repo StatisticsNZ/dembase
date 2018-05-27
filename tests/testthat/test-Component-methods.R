@@ -2,6 +2,39 @@
 
 context("Component-methods")
 
+## aperm ################################################################
+
+test_that("aperm works with Net", {
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"),
+                                  reg_orig = c("a", "b"),
+                                  reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    ans.obtained <- aperm(net, perm = c("reg", "age", "triangle", "time"))
+    expect_is(ans.obtained, "Net")
+    expect_identical(names(ans.obtained), c("reg", "age", "triangle", "time"))
+})
+
+
+test_that("aperm works with Pool", {
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("TL", "TU"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"),
+                                  reg_orig = c("a", "b"),
+                                  reg_dest = c("a", "b"))))
+    pool <- collapseOrigDest(component, to = "pool")
+    ans.obtained <- aperm(pool, perm = c("reg", "age", "triangle", "direction", "time"))
+    expect_is(ans.obtained, "Pool")
+    expect_identical(names(ans.obtained), c("reg", "age", "triangle", "direction", "time"))
+})
+
+
+
 ## incrementLowerTri ################################################################
 
 test_that("default method of incrementLowerTri works", {

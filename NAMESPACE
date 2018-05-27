@@ -2,6 +2,8 @@
 
 S3method("[",DemographicArray)
 S3method(aperm,DemographicArray)
+S3method(aperm,Net)
+S3method(aperm,Pool)
 S3method(as.array,DemographicArray)
 S3method(as.data.frame,Counts)
 S3method(as.data.frame,Values)
