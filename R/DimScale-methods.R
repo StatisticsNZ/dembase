@@ -207,6 +207,146 @@ setMethod("makeIndices",
                   match(dimvalues(y), dimvalues(x), nomatch = 0L)
           })
 
+
+## makeMissingAgeTimeDimScale ############################################
+
+## Assume no dimensions have length 0, and object
+## has regular age-time plan
+
+## HAS_TESTS
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "DimScale",
+                    time = "DimScale",
+                    cohort = "missing",
+                    triangle = "ANY"),
+          function(age, time) {
+              dv.age <- dimvalues(age)
+              dv.time <- dimvalues(time)
+              dv.cohort.head <- dv.time[1L] - rev(dv.age)
+              dv.cohort.tail <- dv.time[-1L] - dv.age[1L]
+              dv.cohort <- c(dv.cohort.head, dv.cohort.tail)
+              new("Intervals", dimvalues = dv.cohort)
+          })
+
+## HAS_TESTS
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "Intervals",
+                    time = "missing",
+                    cohort = "Intervals",
+                    triangle = "missing"),
+          function(age, cohort) {
+              dv.age <- dimvalues(age)
+              dv.cohort <- dimvalues(cohort)
+              n.age <- length(dv.age)
+              n.cohort <- length(dv.cohort)
+              dv.time <- dv.cohort[-1L] + dv.age[1L]
+              if (n.age > 2L) {
+                  dv.time.last.cohort <- dv.cohort[n.cohort] + dv.age[-c(1L, n.age)]
+                  dv.time <- c(dv.time, dv.time.last.cohort)
+              }
+              new("Points", dimvalues = dv.time)
+          })
+
+## HAS_TESTS
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "Intervals",
+                    time = "missing",
+                    cohort = "Intervals",
+                    triangle = "Triangles"),
+          function(age, cohort, triangle) {
+              dv.age <- dimvalues(age)
+              dv.cohort <- dimvalues(cohort)
+              n.age <- length(dv.age)
+              n.cohort <- length(dv.cohort)
+              dv.time <- dv.cohort + dv.age[1L]
+              dv.time.last.cohort <- dv.cohort[n.cohort] + dv.age[-1L]
+              dv.time <- c(dv.time, dv.time.last.cohort)
+              new("Intervals", dimvalues = dv.time)
+          })
+
+## HAS_TESTS
+## There is no 'with-triangles' version of this
+## method, since age has DimScale "Points"
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "Points",
+                    time = "missing",
+                    cohort = "Intervals",
+                    triangle = "missing"),
+          function(age, cohort) {
+              dv.age <- dimvalues(age)
+              dv.cohort <- dimvalues(cohort)
+              n.age <- length(dv.age)
+              n.cohort <- length(dv.cohort)
+              dv.time <- dv.cohort + dv.age[1L]
+              if (n.age > 1L) {
+                  dv.time.last.cohort <- dv.cohort[n.cohort] + dv.age[-1L]
+                  dv.time <- c(dv.time, dv.time.last.cohort)
+              }
+              new("Intervals", dimvalues = dv.time)
+          })
+
+## HAS_TESTS
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "missing",
+                    time = "Intervals",
+                    cohort = "Intervals",
+                    triangle = "missing"),
+          function(time, cohort) {
+              dv.time <- dimvalues(time)
+              dv.cohort <- dimvalues(cohort)
+              n.time <- length(dv.time)
+              n.cohort <- length(dv.cohort)
+              dv.age <- dv.time[2L] - rev(dv.cohort[-1L])
+              if (n.time > 2L) {
+                  dv.later.periods <- dv.time[2L] - dv.cohort[2L] + dv.time[-(1:2)] - dv.time[2L]
+                  dv.age <- c(dv.age, dv.later.periods)
+              }
+              new("Points", dimvalues = dv.age)
+          })
+
+## HAS_TESTS
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "missing",
+                    time = "Intervals",
+                    cohort = "Intervals",
+                    triangle = "Triangles"),
+          function(time, cohort, triangle) {
+              dv.time <- dimvalues(time)
+              dv.cohort <- dimvalues(cohort)
+              n.time <- length(dv.time)
+              n.cohort <- length(dv.cohort)
+              dv.age <- dv.time[1L] - rev(dv.cohort)
+              dv.age <- dv.age[dv.age >= 0L]
+              dv.later.periods <- dv.time[1L] - dv.cohort[1L] + dv.time[-1L] - dv.time[1L]
+              dv.age <- c(dv.age, dv.later.periods)
+              new("Intervals", dimvalues = dv.age)
+          })
+
+## HAS_TESTS
+## There is no 'with-triangles' version of this
+## method, since time has DimScale "Points"
+setMethod("makeMissingAgeTimeDimScale",
+          signature(age = "missing",
+                    time = "Points",
+                    cohort = "Intervals",
+                    triangle = "missing"),
+          function(time, cohort) {
+              dv.time <- dimvalues(time)
+              dv.cohort <- dimvalues(cohort)
+              n.time <- length(dv.time)
+              dv.cohort.already.born <- dv.cohort[dv.cohort <= dv.time[1L]]
+              n.cohort.already.born <- length(dv.cohort.already.born)
+              dv.age <- dv.time[1L] - rev(dv.cohort.already.born)
+              if (n.time > 1L) {
+                  dv.age.first.cohort <- dv.age[n.cohort.already.born] + (dv.time[-1L] - dv.time[1L])
+                  dv.age <- c(dv.age, dv.age.first.cohort)
+              }
+              new("Intervals", dimvalues = dv.age)
+          })
+
+## makePairIndices ############################################################
+
+
 ## HAS_TESTS
 ## Assume that 'canMakeCompatible' has returned TRUE before function called.
 ## Class "Intervals" has its own method.
@@ -227,6 +367,10 @@ setMethod("makePairIndices",
               list(ans1, ans2)
           })
 
+
+
+## mergeDimScales ############################################################
+
 ## HAS_TESTS
 ## Assume that canMakePairCompatible has returned TRUE, implying that e1 and
 ## e2 have the same class and same dimvalues (possibly in different orders).
@@ -238,6 +382,9 @@ setMethod("mergeDimScales",
               dv12 <- intersect(dv1, dv2)
               methods::new(class(e1), dimvalues = dv12)
           })
+
+
+## stepLengths ##############################################################
 
 ## HAS_TESTS
 #' @rdname exported-not-api

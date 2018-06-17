@@ -1,0 +1,46 @@
+---
+title: "Age, Time, and Cohort"
+author: "John Bryant"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Age, Time, and Cohort}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+| Dimension | Population | Accession | Events |
+|:----------|:----------:|:---------:|:------:|
+| age | Intervals | Points | Intervals |
+| time | Points | Intervals | Intervals |
+| cohort | Intervals | Intervals | Intervals |
+| triangle | [not used] | [not used] | Triangle |
+
+
+## Population and Accession
+
+
+
+
+$a = t - c$
+
+$$
+N_{ij}^{AT} = N_{}
+$$
+
+
+## Events
+
+| Dimension | Population | Accession |
+|:----------|:----------:|:---------:|
+| age | Intervals | Points |
+| time | Points | Intervals |
+| cohort | Intervals | Intervals |

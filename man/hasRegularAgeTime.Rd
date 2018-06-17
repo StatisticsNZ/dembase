@@ -27,8 +27,8 @@ length.  If an object does have a regular age-time plan, then
 \code{ageTimeStep} returns then length of the age and/or time steps.
 }
 \details{
-Functions such as GIVE EXAMPLES can only be applied to objects that are
-"regular".
+Functions such as \code{\link{ageTimeStep}} and \code{\link{rotateAgeTime}}
+can only be applied to objects that have regular age-time plans.
 
 Step lengths equals the widths of the intervals if a dimension has
 \code{\link{dimscale}} \code{"Intervals"}, and the distance between points

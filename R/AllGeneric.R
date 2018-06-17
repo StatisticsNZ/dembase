@@ -2092,8 +2092,8 @@ setGeneric("growth",
 #' length.  If an object does have a regular age-time plan, then
 #' \code{ageTimeStep} returns then length of the age and/or time steps.
 #'
-#' Functions such as GIVE EXAMPLES can only be applied to objects that are
-#' "regular".
+#' Functions such as \code{\link{ageTimeStep}} and \code{\link{rotateAgeTime}}
+#' can only be applied to objects that have regular age-time plans.
 #'
 #' Step lengths equals the widths of the intervals if a dimension has
 #' \code{\link{dimscale}} \code{"Intervals"}, and the distance between points
@@ -2474,6 +2474,10 @@ setGeneric("makeConsistent",
 setGeneric("makeIndices",
            function(x, y, collapse, concordance = NULL)
            standardGeneric("makeIndices"))
+
+setGeneric("makeMissingAgeTimeDimScale",
+           function(age, time, cohort, triangle)
+               standardGeneric("makeMissingAgeTimeDimScale"))
 
 setGeneric("makeOrigDestParentChildCompatible",
            function(x, y, subset = FALSE, check = TRUE)
@@ -2941,6 +2945,72 @@ setGeneric("resetIterations",
 setGeneric("resetDiag",
            function(object, base = NULL, reset = NULL)
                standardGeneric("resetDiag"))
+
+
+
+#' Rotate the age-time plan used by a demographic array
+#'
+#' Convert a \code{\linkS4class{DemographicArray}} between
+#' age-time, age-chort, and time-cohort formats.
+#'
+#' If the array has dimensions with two out of the three
+#' \code{\link{dimtypes}} \code{"age"}, \code{"time"},
+#' \code{"cohort"}, then replace one of these dimensions
+#' with a new dimension with the missing dimtype, and
+#' rearrange the array accordingly. If,
+#' for instance, an array has dimensions with dimtypes
+#' \code{"age"} and \code{"time"}, then replace either
+#' the age or time dimension with a cohort dimension,
+#' and rearrange cells within the array accordingly.
+#'
+#' \code{object} must have a regular age-time plan
+#' (see \code{\link{hasRegularAgeTime}}. Negative ages
+#' are not allowed, and cohorts must not start
+#' later than the last time point or period. \code{object}
+#' must also not contain any "open" age intervals,
+#' time intervals, or cohorts - ie intervals that include
+#' positive or negative infinity.
+#'
+#' The argument \code{to} gives the dimensions used
+#' in the new age-time plan. It can be one of
+#' \code{"age-time"}, \code{"time-age"},
+#' \code{"age-cohort"}, \code{"cohort-age"},
+#' \code{"time-chort"}, or \code{"cohort-time"}.
+#' The abbreviations \code{"at"}, \code{"ta"},
+#' \code{"ac"}, \code{"ca"}, \code{"tc"}, or \code{"ct"}
+#' can also be used. (For production code, however,
+#' the full versions are better, since they
+#' are more self-documenting.) \code{to} is
+#' not case-sensitive, and only enough characters to
+#' uniquely identify the option need to be supplied.
+#'
+#' By default the new dimension is named after the
+#' corresponding dimtype: for instance, if the new
+#' dimension has dimtype \code{"cohort"}, then the
+#' new dimension is named \code{"cohort"}.  However,
+#' an alternative name can be provided via the
+#' \code{name} argument.
+#' 
+#' @param object An object of class \code{\linkS4class{DemographicArray}}.
+#' @param to The dimtypes of \code{object} after the age-time
+#' plan has been rotated. 
+#' @param name The name of the new age, time, or cohort dimension.
+#'
+#' @return An object with the same class as \code{object}.
+#'
+#' @seealso \code{\link{dimtypes}}
+#'
+#' @examples
+#' x <- Counts(array(1:6,
+#'                   dim = c(3, 2),
+#'                   dimnames = list(age = c("0-4", "5-9", "10-14"),
+#'                                   time = c(2000, 2005))))
+#' rotateAgeTime(x, to = "age-cohort")
+#' @export
+setGeneric("rotateAgeTime",
+           function(object, to = NULL, name = NULL)
+               standardGeneric("rotateAgeTime"))
+
 
 #' Randomly round a dataset to base 3.
 #'
