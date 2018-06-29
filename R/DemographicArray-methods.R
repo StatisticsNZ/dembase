@@ -1767,7 +1767,6 @@ setMethod("rotateAgeTime",
               seq.between <- seq_len(n.between) - 1L
               pos.within.old <- rep(seq.within, times = n.along.old * n.between)
               pos.along.old <- rep(rep(seq.along.old, each = n.within), times = n.between)
-              browser()
               pos.along.new <- pos.along.new - min(pos.along.new)
               pos.between.old <- rep(seq.between, each = n.within * n.along.old)
               pos.new <- pos.within.old + n.within * pos.along.new + n.within * n.along.new * pos.between.old

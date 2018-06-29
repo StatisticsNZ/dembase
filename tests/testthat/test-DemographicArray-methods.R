@@ -1632,6 +1632,26 @@ test_that("resetIterations works", {
     expect_identical(resetIterations(x0), x1)
 })
 
+
+test_that("rotateAgeTime works with age-time to age-cohort - no triangles", {
+    x <- Counts(array(1:6,
+                      dim = 2:3,
+                      dimnames = list(age = 0:1,
+                                      time = 2000:2002)),
+                dimscale = c(age = "Intervals", time = "Points"))
+    ans.obtained <- rotateAgeTime(x, to = "ac")
+    ans.expected <- Counts(array(c(NA, 2L, 1L, 4L, 3L, 6L, 5L, NA),
+                                 dim = c(2, 4),
+                                 dimnames = list(age = 0:1,
+                                                 cohort = 1999:2002)),
+                           dimscale = c(age = "Intervals", cohort = "Intervals"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+
+
 test_that("slab works with numeric dimension and elements", {
     x <- Counts(array(rpois(n = 6, lambda = 5),
                       dim = c(3, 2),
