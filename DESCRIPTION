@@ -1,8 +1,8 @@
 Package: dembase
 Type: Package
 Title: Analysing Cross-Classified Data about Populations
-Version: 0.0.0.9231
-Date: 2018-06-17
+Version: 0.0.0.9300
+Date: 2018-06-30
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
@@ -26,7 +26,6 @@ LazyLoad: yes
 LazyData: yes
 Imports:
     MASS,
-    classconc,
     graphics,
     grDevices,
     lattice,

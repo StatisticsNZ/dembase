@@ -1450,7 +1450,7 @@ setMethod("prop.table",
 ##                           stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
 ##                                         names[i], class(DimScale)))
 ##                       codes.old <- dimvalues(DimScale)
-##                       codes.new <- classconc::translate(codes.old, concordance = concordance)
+##                       codes.new <- translate(codes.old, concordance = concordance)
 ##                       DimScale <- methods::new("Categories", dimvalues = codes.new)
 ##                       DimScales[[i]] <- DimScale
 ##                   }

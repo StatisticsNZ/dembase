@@ -28,7 +28,7 @@ number.  Missing values are not permitted.  All values must be non-negative
 integers.}
 
 \item{concordances}{A named list of
-\code{\link[classconc:ManyToOne-class]{ManyToOne}} concordances.}
+\code{\link[=Concordance-class]{ManyToOne}} concordances.}
 }
 \value{
 Object of class \code{\linkS4class{CountsWithSubtotals}}.
@@ -72,7 +72,7 @@ subtotals <- CountsOne(c(10, 11),
                        name = "region")
 conc <- data.frame(from = c("a", "b", "c", "d", "e"),
                    to = c("U", "U", "U", "V", "V"))
-conc <- classconc::Concordance(conc)
+conc <- Concordance(conc)
 attachSubtotals(x,
                 subtotals = subtotals,
                 concordances = list(region = conc))

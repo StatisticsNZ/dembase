@@ -11,7 +11,6 @@ aperm.Net <- function(a, perm, resize = TRUE, keep.class = TRUE, ...) {
         methods::callGeneric(a = a@.Data, perm = perm, resize = resize,
                     keep.class = keep.class, ...)
     else {
-        browser()
         .Data.new <- methods::callGeneric(a = a@.Data, perm = perm)
         metadata.new <- metadata(a)[perm]
         perm <- match(perm, names(a))
