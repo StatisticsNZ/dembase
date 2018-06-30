@@ -1,6 +1,8 @@
 
 ## FUNCTIONS TO OBTAIN CONSTANTS ###################################################
 
+getDigitsRoundDimvaluesTimeUnit <- function() 3
+
 getDefaultSexRatio <- function() 105
 
 ## HAS_TESTS
@@ -1959,42 +1961,55 @@ ageMinMaxReplace <- function(object, value, min = TRUE) {
 }
 
 ## HAS_TESTS
-## fraction of year completed at end of day
+## convert date to decimal fraction of year (including year)
 dateToFracYear <- function(date) {
+    digits.round <- getDigitsRoundDimvaluesTimeUnit()
     stopifnot(methods::is(date, "Date"))
     this.year <- format(date, format = "%Y")
     this.year <- as.integer(this.year)
-    prev.year <- this.year - 1L
-    date.end.this.year <- sprintf("%d-12-31", this.year)
-    date.end.prev.year <- sprintf("%d-12-31", prev.year)
-    date.end.this.year <- as.Date(date.end.this.year)
-    date.end.prev.year <- as.Date(date.end.prev.year)
-    days.end.this.year <- as.integer(date.end.this.year)
-    days.end.prev.year <- as.integer(date.end.prev.year)
+    next.year <- this.year + 1L
+    date.start.this.year <- sprintf("%d-01-01", this.year)
+    date.start.next.year <- sprintf("%d-01-01", next.year)
+    date.start.this.year <- as.Date(date.start.this.year)
+    date.start.next.year <- as.Date(date.start.next.year)
+    days.start.this.year <- as.integer(date.start.this.year)
+    days.start.next.year <- as.integer(date.start.next.year)
     days.date <- as.integer(date)
-    (days.date - days.end.prev.year) / (days.end.this.year - days.end.prev.year)
+    frac <- ((days.date - days.start.this.year)
+        / (days.start.next.year - days.start.this.year))
+    ans <- this.year + frac
+    round(ans, digits.round)
 }
 
 ## HAS_TESTS
-dimvaluesDefineMonths <- function(dimvalues) {
-    if (identical(length(dimvalues), 1L))
-        return(FALSE)
+dimvaluesDescribeTimeUnit <- function(dimvalues, unit = c("day", "month", "quarter"),
+                                      successive = FALSE) {
+    digits.round <- getDigitsRoundDimvaluesTimeUnit()
+    unit <- match.arg(unit)
     if (any(is.infinite(dimvalues)))
         return(FALSE)
-    if (any(diff(dimvalues) > (31 / 365 + 0.00001)))
-        return(FALSE)
+    n <- length(dimvalues)
     poss.year.first <- floor(dimvalues[1L])
-    poss.year.last <- floor(dimvalues[length(dimvalues)])
-    poss.years <- seq(from = poss.year.first - 1L, to = poss.year.last + 1L)
-    n.poss.years <- poss.year.last - poss.year.first + 3L
-    month <- rep(base::month.abb, times = n.poss.years)
-    year <- rep(poss.years, each = 12L)
-    poss.dimvalues <- monthAndYearToDimvalues(month = month,
-                                              year = year)
+    poss.year.last <- floor(dimvalues[n]) + 1L
+    date.from <- as.Date(sprintf("%s-01-01", poss.year.first))
+    date.to <- as.Date(sprintf("%s-01-01", poss.year.last))
+    poss.dimvalues <- seq(from = date.from,
+                          to = date.to,
+                          by = unit)
+    poss.dimvalues <- dateToFracYear(poss.dimvalues)
+    dimvalues <- round(dimvalues, digits.round)
     i <- match(dimvalues, poss.dimvalues, nomatch = 0L)
-    i.first <- i[1L]
-    s <- seq(from = i.first, along.with = dimvalues)
-    isTRUE(all.equal(i, s))
+    all.dimvalues.valid <- all(i > 0L)
+    if (all.dimvalues.valid) {
+        if (successive) {
+            all.successive <- all(diff(i) == 1L)
+            all.successive
+        }
+        else
+            TRUE
+    }
+    else
+        FALSE
 }    
 
 ## HAS_TESTS

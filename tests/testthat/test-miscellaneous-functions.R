@@ -2805,24 +2805,59 @@ test_that("ageMinMaxRemplace throws appropriate errors", {
 
 test_that("dateToFracYear works", {
     dateToFracYear <- dembase:::dateToFracYear
-    ans.obtained <- dateToFracYear(as.Date(c("2000-12-31", "2018-01-01", "1999-06-30", "2004-01-01")))
-    ans.expected <- c(1,
-                      1/365,
-                      (as.integer(as.Date("1999-06-30") - as.Date("1998-12-31")) /
-                       as.integer(as.Date("1999-12-31") - as.Date("1998-12-31"))),
-                      1/366)
+    ans.obtained <- dateToFracYear(as.Date(c("2000-12-31", "2018-01-01", "1999-06-30", "2004-03-01")))
+    ans.expected <- round(c(2000 + 364/365,
+                            2018 + 0,
+                            1999 + (as.integer(as.Date("1999-06-30") - as.Date("1999-01-01")) /
+                                    as.integer(as.Date("2000-01-01") - as.Date("1999-01-01"))),
+                            2004 + 60/366),
+                          3)
     expect_equal(ans.obtained, ans.expected)
 })
 
-test_that("dimvaluesDefineMonths works", {
-    dimvaluesDefineMonths <- dembase:::dimvaluesDefineMonths
-    expect_false(dimvaluesDefineMonths(2000))
-    expect_false(dimvaluesDefineMonths(c(2000, 2000 + 32/366)))
-    expect_false(dimvaluesDefineMonths(c(2000, 2000 + 30/366)))
-    expect_true(dimvaluesDefineMonths(c(2000, 2000 + 31/366)))
-    expect_true(dimvaluesDefineMonths(c(2000, 2000 + 31/366, 2000 + 60/366)))
-    expect_true(dimvaluesDefineMonths(c(2000 - 31/365, 2000, 2000 + 31/366, 2000 + 60/366)))
+test_that("dimvaluesDescribeTimeUnit works when units are days", {
+    dimvaluesDescribeTimeUnit <- dembase:::dimvaluesDescribeTimeUnit
+    dateToFracYear <- dembase:::dateToFracYear
+    dimvalues <- dateToFracYear(as.Date(c("2000-01-01", "2000-02-28", "2018-03-13", "2020-12-31")))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues))
+    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 3)))
+    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 4)))
+    expect_false(dimvaluesDescribeTimeUnit(dimvalues, successive = TRUE))
+    dimvalues <- dateToFracYear(as.Date("2001-05-01"))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, successive = TRUE))
+    dimvalues <- dateToFracYear(as.Date(c("2001-05-01", "2001-05-02")))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, successive = TRUE))
 })
+
+test_that("dimvaluesDescribeTimeUnit works when units are months", {
+    dimvaluesDescribeTimeUnit <- dembase:::dimvaluesDescribeTimeUnit
+    dateToFracYear <- dembase:::dateToFracYear
+    dimvalues <- dateToFracYear(as.Date(c("2000-01-01", "2000-02-01", "2018-03-01", "2020-12-01")))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "month"))
+    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 3), unit = "m"))
+    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 4), unit = "month"))
+    expect_false(dimvaluesDescribeTimeUnit(dimvalues, unit = "month", successive = TRUE))
+    dimvalues <- dateToFracYear(as.Date("2001-05-01"))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "month", successive = TRUE))
+    dimvalues <- dateToFracYear(as.Date(c("2001-05-01", "2001-06-01")))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "month", successive = TRUE))
+})
+
+test_that("dimvaluesDescribeTimeUnit works when units are quarters", {
+    dimvaluesDescribeTimeUnit <- dembase:::dimvaluesDescribeTimeUnit
+    dateToFracYear <- dembase:::dateToFracYear
+    dimvalues <- dateToFracYear(as.Date(c("2000-01-01", "2000-04-01", "2020-10-01")))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "quarter"))
+    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 3), unit = "q"))
+    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 4), unit = "quarter"))
+    expect_false(dimvaluesDescribeTimeUnit(dimvalues, unit = "qu", successive = TRUE))
+    dimvalues <- dateToFracYear(as.Date("2001-04-01"))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "qu", successive = TRUE))
+    dimvalues <- dateToFracYear(as.Date(c("2001-04-01", "2001-07-01")))
+    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "qu", successive = TRUE))
+})
+
+
     
 ## test_that("makeLabelsForClosedIntervals works", {
 ##     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals

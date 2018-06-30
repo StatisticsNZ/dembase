@@ -1,0 +1,97 @@
+---
+title: "Age and Time in Package 'dembase'"
+author: "John Bryant"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Age and Time in Package 'dembase'}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Labels
+
+Everything denominated in years
+
+
+## Labelling points
+
+```{r, eval = TRUE, echo = FALSE}
+date <- seq(from = as.Date("2000-01-01"), by = "1 month", length.out = 4)
+frac_year <- round(as.integer(date) / as.integer(as.Date("2001-01-01") - as.Date("2000-01-01")), 3)
+```
+
+If every point is the start of a month, then label using start of month. Eg `r 2000 + frac_year` is displayed as `r date`.
+
+Otherwise, label with number.
+
+
+## Labelling intervals
+
+
+| Lower limit | Upper limit | Dimension | Rule      | Example       |
+|:------------|:------------|:----------|:---------:|:-------------:|	
+| Integer | Lower + 1 | Age | Always use lower | `5`, `6` => `"5"` |
+| Integer | Lower + 1 | Time | Lower or upper | `5`, `6` => `"5"` or `"6"` |
+| Integer | Integer | Age | Lower - (Upper-1) | `5`, `10` => `"5-9"` |
+| Start month | Start next month | Time | Year-Month | `2000`, `2000.085` => `"2000-01"` |
+| Start quarter | Start next quarter | Time | Year-Quarter | `2000`, `2000.249` => `"2000-Q1"` |
+| Any | Infinite | Any | Lower+ | `100`, `Inf` => `"100+"` |
+| Infinite | Any | Any | <Upper | `-Inf`, `2000` => `"<2000"` |
+| Any | Any | Age or Time | Lower - Upper | `77`, `80.1` => `"77-80.1"` |
+-------------------------------------------------------------------------
+
+
+Whether a one-year time interval is displayed using lower or upper depends on `labelStart` argument.
+
+Only use "2000-01" labelling if every interval can be interpreted as a month.  Similarly, only use "2000-Q1" labelling if every interval can be interpreted as a quarter.
+
+
+
+
+# Cleaning data
+
+cleanAgeGroup(age)
+cleanPeriod(period)
+
+
+## Creating labels from dates
+
+dateToAgeGroup(date, dob, breaks, firstOpen = TRUE, lastOpen = TRUE)
+dateToCohort(date, breaks, firstOpen = TRUE, lastOpen = FALSE)
+dateToPeriod(date, breaks, firstOpen = FALSE, lastOpen = FALSE)
+dateToTriangle(date, dob, breaks, firstOpen = TRUE, lastOpen = FALSE)
+
+
+## Creating labels from years
+
+ageToAgeGroup(age, breaks = seq(0, 100, 5), firstOpen = FALSE, lastOpen = TRUE) 
+yearToPeriod(year, breaks, firstOpen = FALSE, lastOpen = FALSE)
+
+
+
+## subarray
+
+```
+subarray(time > 2010)
+subarray(time > "2010")
+```
+
+## Counts, accounts
+
+Movements(population, births = NULL, internal = NULL, entries = list(), 
+    exits = list(), net = list(), labelStart = TRUE)
+
+Counts(object, dimtypes = NULL, dimscales = NULL, type = NULL)
+
+exposure((object, triangles = FALSE, labelStart = TRUE)
+
+
+

@@ -436,10 +436,13 @@ setClass("Quantiles",
 
 ## HAS_TESTS
 setClass("Intervals",
-         slots = c(dimvalues = "numeric"),
+         slots = c(dimvalues = "numeric",
+                   labelStart = "logical"),
          contains = "DimScale",
+         prototype = prototype(labelStart = TRUE),
          validity = function(object) {
              dimvalues <- dimvalues(object)
+             labelStart <- object@labelStart
              n <- length(dimvalues)
              if (n > 0L) {
                  if (n == 1L)
@@ -449,6 +452,12 @@ setClass("Intervals",
                  if (!all(diff(dimvalues) > 0))
                      return(gettext("values not strictly increasing"))
              }
+             if (!identical(length(labelStart), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "labelStart", 1L))
+             if (is.na(labelStart))
+                 return(gettextf("'%s' is missing",
+                                 "labelStart"))
              TRUE
          })
 

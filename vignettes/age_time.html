@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="John Bryant" />
+
+<meta name="date" content="2018-07-01" />
+
+<title>Age and Time in Package ‘dembase’</title>
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Age and Time in Package ‘dembase’</h1>
+<h4 class="author"><em>John Bryant</em></h4>
+<h4 class="date"><em>2018-07-01</em></h4>
+
+
+
+<p>Everything denominated in years</p>
+<div id="labelling-points" class="section level2">
+<h2>Labelling points</h2>
+<p>If every point is the start of a month, then label using start of month. Eg 2029.937, 2030.022, 2030.101, 2030.186 is displayed as 2000-01-01, 2000-02-01, 2000-03-01, 2000-04-01</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Value</th>
+<th align="left">Dimension</th>
+<th align="left">Rule</th>
+<th align="center">Example</th>
+<th align="center"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Start month</td>
+<td align="left">Time</td>
+<td align="left">Year-Month</td>
+<td align="center"><code>2000.0847</code> =&gt; <code>&quot;2000-01-01&quot;</code></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="left">Any</td>
+<td align="left">Any</td>
+<td align="left">Age or Time</td>
+<td align="center">Lower - Upper</td>
+<td align="center"><code>77</code>, <code>80.1</code> =&gt; <code>&quot;77-80.1&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+<div id="labelling-intervals" class="section level2">
+<h2>Labelling intervals</h2>
+<table>
+<colgroup>
+<col width="20%"></col>
+<col width="20%"></col>
+<col width="17%"></col>
+<col width="17%"></col>
+<col width="23%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Lower limit</th>
+<th align="left">Upper limit</th>
+<th align="left">Dimension</th>
+<th align="center">Rule</th>
+<th align="center">Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Integer</td>
+<td align="left">Lower + 1</td>
+<td align="left">Age</td>
+<td align="center">Always use lower</td>
+<td align="center"><code>5</code>, <code>6</code> =&gt; <code>&quot;5&quot;</code></td>
+</tr>
+<tr class="even">
+<td align="left">Integer</td>
+<td align="left">Lower + 1</td>
+<td align="left">Time</td>
+<td align="center">Lower or upper</td>
+<td align="center"><code>5</code>, <code>6</code> =&gt; <code>&quot;5&quot;</code> or <code>&quot;6&quot;</code></td>
+</tr>
+<tr class="odd">
+<td align="left">Integer</td>
+<td align="left">Integer</td>
+<td align="left">Age</td>
+<td align="center">Lower - (Upper-1)</td>
+<td align="center"><code>5</code>, <code>10</code> =&gt; <code>&quot;5-9&quot;</code></td>
+</tr>
+<tr class="even">
+<td align="left">Start month</td>
+<td align="left">Start next month</td>
+<td align="left">Time</td>
+<td align="center">Year-Month</td>
+<td align="center"><code>2000</code>, <code>2000.085</code> =&gt; <code>&quot;2000-01&quot;</code></td>
+</tr>
+<tr class="odd">
+<td align="left">Start quarter</td>
+<td align="left">Start next quarter</td>
+<td align="left">Time</td>
+<td align="center">Year-Quarter</td>
+<td align="center"><code>2000</code>, <code>2000.249</code> =&gt; <code>&quot;2000-Q1&quot;</code></td>
+</tr>
+<tr class="even">
+<td align="left">Any</td>
+<td align="left">Infinite</td>
+<td align="left">Any</td>
+<td align="center">Lower+</td>
+<td align="center"><code>100</code>, <code>Inf</code> =&gt; <code>&quot;100+&quot;</code></td>
+</tr>
+<tr class="odd">
+<td align="left">Infinite</td>
+<td align="left">Any</td>
+<td align="left">Any</td>
+<td align="center">&lt;Upper</td>
+<td align="center"><code>-Inf</code>, <code>2000</code> =&gt; <code>&quot;&lt;2000&quot;</code></td>
+</tr>
+<tr class="even">
+<td align="left">Any</td>
+<td align="left">Any</td>
+<td align="left">Age or Time</td>
+<td align="center">Lower - Upper</td>
+<td align="center"><code>77</code>, <code>80.1</code> =&gt; <code>&quot;77-80.1&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+<div id="cleaning-data" class="section level2">
+<h2>Cleaning data</h2>
+<p>cleanAgeGroup(age) cleanPeriod(period)</p>
+</div>
+<div id="creating-labels-from-dates" class="section level2">
+<h2>Creating labels from dates</h2>
+<p>dateToAgeGroup(date, dob, breaks, firstOpen = TRUE, lastOpen = TRUE) dateToCohort(date, breaks, firstOpen = TRUE, lastOpen = FALSE) dateToPeriod(date, breaks, firstOpen = FALSE, lastOpen = FALSE) dateToTriangle(date, dob, breaks, firstOpen = TRUE, lastOpen = FALSE)</p>
+</div>
+<div id="creating-labels-from-years" class="section level2">
+<h2>Creating labels from years</h2>
+<p>ageToAgeGroup(age, breaks = seq(0, 100, 5), firstOpen = FALSE, lastOpen = TRUE) yearToPeriod(year, breaks, firstOpen = FALSE, lastOpen = FALSE)</p>
+</div>
+<div id="subarray" class="section level2">
+<h2>subarray</h2>
+<pre><code>subarray(time &gt; 2010)
+subarray(time &gt; &quot;2010&quot;)</code></pre>
+</div>
+<div id="counts-accounts" class="section level2">
+<h2>Counts, accounts</h2>
+<p>Movements(population, births = NULL, internal = NULL, entries = list(), exits = list(), net = list(), labelStart = TRUE)</p>
+<p>Counts(object, dimtypes = NULL, dimscales = NULL, type = NULL)</p>
+<p>exposure((object, triangles = FALSE, labelStart = TRUE)</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -774,6 +774,8 @@ test_that("class Intervals works", {
     expect_error(new("Intervals", dimvalues = c(-Inf, Inf)),
                  "no finite values")
     expect_true(validObject(new("Intervals")))
+    expect_true(new("Intervals")@labelStart)
+    expect_true(validObject(new("Intervals", dimvalues = c(0, 1), labelStart = FALSE)))                                
 })
 
 test_that("class Iterations works", {
