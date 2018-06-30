@@ -1,4 +1,67 @@
 
+## aperm #######################################################################
+
+## HAS_TESTS
+#' @method aperm Net
+#' @export
+aperm.Net <- function(a, perm, resize = TRUE, keep.class = TRUE, ...) {
+    if (missing(perm) || is.null(perm))
+        perm <- seq_along(dim(a))
+    if (!isTRUE(resize) || !isTRUE(keep.class))
+        methods::callGeneric(a = a@.Data, perm = perm, resize = resize,
+                    keep.class = keep.class, ...)
+    else {
+        .Data.new <- methods::callGeneric(a = a@.Data, perm = perm)
+        metadata.new <- metadata(a)[perm]
+        perm <- match(perm, names(a))
+        iBetween <- a@iBetween
+        iBetween.new <- match(iBetween, perm)
+        methods::new(class(a),
+                     .Data = .Data.new,
+                     metadata = metadata.new,
+                     iBetween = iBetween.new)
+    }
+}
+
+#' @rdname internal-methods
+#' @export
+setMethod("aperm",
+          signature(a = "Net"),
+          aperm.Net)
+
+## HAS_TESTS
+#' @method aperm Pool
+#' @export
+aperm.Pool <- function(a, perm, resize = TRUE, keep.class = TRUE, ...) {
+    if (missing(perm) || is.null(perm))
+        perm <- seq_along(dim(a))
+    if (!isTRUE(resize) || !isTRUE(keep.class))
+        methods::callGeneric(a = a@.Data, perm = perm, resize = resize,
+                             keep.class = keep.class, ...)
+    else {
+        .Data.new <- methods::callGeneric(a = a@.Data, perm = perm)
+        metadata.new <- metadata(a)[perm]
+        perm <- match(perm, names(a))
+        iBetween <- a@iBetween
+        iDirection <- a@iDirection
+        iDirection.new <- match(iDirection, perm)
+        iBetween.new <- match(iBetween, perm)
+        methods::new(class(a),
+                     .Data = .Data.new,
+                     metadata = metadata.new,
+                     iDirection = iDirection.new,
+                     iBetween = iBetween.new)
+    }
+}
+
+#' @rdname internal-methods
+#' @export
+setMethod("aperm",
+          signature(a = "Pool"),
+          aperm.Pool)
+
+
+## collapseDimension ###################################################################
 
 #' @rdname collapseDimension
 ## NO_TESTS

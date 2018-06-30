@@ -1,0 +1,56 @@
+---
+title: "Age, Time, and Cohort"
+author: "John Bryant"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Age, Time, and Cohort}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+| Dimension | Population | Accession | Events |
+|:----------|:----------:|:---------:|:------:|
+| age | Intervals | Points | Intervals |
+| time | Points | Intervals | Intervals |
+| cohort | Intervals | Intervals | Intervals |
+| triangle | [not used] | [not used] | Triangle |
+
+
+## Population and Accession
+
+
+
+
+$a = t - c$, $t = a + c$, $c = t - a$
+
+No minimum or maximum value for $i$, $j$. (Allow negative ages.) 
+
+$$
+N_{ij}^{AT} = N_{j,j-i}^{TC} = N_{i,j-i}^{AC}
+$$
+
+$$
+N_{i+,j}^{AT} = \sum_{\delta = i}^{\infty} N_{\delta j}^{AT}
+$$
+
+
+$$
+N_{i,j-}^{TC} = \sum_{\delta = -\infty}^{j} N_{i \delta}^{TC}
+$$
+
+$$
+N_{i+,j}^{AT} = N_{j,(j-i)-}^{TC} = N_{i+,j-i}^{AC}
+$$
+
+
+## Events
+

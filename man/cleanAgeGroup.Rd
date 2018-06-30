@@ -23,7 +23,7 @@ expected by functions such as \code{\link{Counts}} and
 }
 \details{
 \code{cleanAgeGroup} does the reformatting. \code{cleanAgeGroupConc}
-constructs a \code{\link[classconc]{Concordance}} between the old and
+constructs a \code{{Concordance}} between the old and
 new age-group labels.
 
 \code{cleanAgeGroup} is suitable for interactive use, or for
@@ -35,7 +35,7 @@ code where the data may change. The workflow is as follows:
  \item Use a vector of age labels to construct a concordance.
  \item Store the concordance.
  \item When new data arrives, use function
-\code{\link[classconc]{translate}}, plus the stored concordance,
+\code{\link{translate}}, plus the stored concordance,
   to clean the age data.
 }
 The advantange of this work flow is that \code{translate}
@@ -54,7 +54,7 @@ cleanAgeGroup(x2)
 
 ## Set up concordance and use that
 conc <- cleanAgeGroupConc(x3)
-classconc::translate(x4, concordance = conc)
+translate(x4, concordance = conc)
 
 }
 \seealso{

@@ -401,7 +401,7 @@ setMethod("collapseCategories",
                                                     DimScales = DimScales)
               for (i in dimension) {
                   dv.old <- dimvalues(DimScales[[i]])
-                  dv.new <- tryCatch(classconc::translate(dv.old, concordance = concordance),
+                  dv.new <- tryCatch(translate(dv.old, concordance = concordance),
                                      error = function(e) e)
                   if (methods::is(dv.new, "error"))
                       stop(gettextf("problem translating dimension \"%s\" : %s",
@@ -781,10 +781,10 @@ setMethod("expandCategories",
               if (!is.null(weights))
                   warning(gettextf("'%s' argument ignored",
                                    "weights"))
-              classif.to <- classconc::classificationTo(concordance)
-              classif.from <- classconc::classificationFrom(concordance)
-              codes.to <- classconc::codes(concordance, classification = classif.to)
-              codes.from <- classconc::codes(concordance, classification = classif.from)
+              classif.to <- classificationTo(concordance)
+              classif.from <- classificationFrom(concordance)
+              codes.to <- codes(concordance, classification = classif.to)
+              codes.from <- codes(concordance, classification = classif.from)
               dims <- seq_along(dim.obj)
               indices <- lapply(dim.obj, seq_len)
               for (i in dimension) {

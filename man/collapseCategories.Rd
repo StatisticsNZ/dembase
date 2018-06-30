@@ -79,7 +79,6 @@ collapseCategories(titanic, dimension = 1,
                    old = c("1st", "2nd", "3rd"),
                    new = "Passengers")
 ## set up and use a concordance
-library(classconc)
 conc <- data.frame(status = c("1st", "2nd", "3rd", "Crew"),
                    wealth = c("Rich", "Mixed", "Poor", "Mixed"))
 conc <- Concordance(conc)

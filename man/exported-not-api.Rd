@@ -197,7 +197,7 @@ makeAxStart(mx)
 subset of all cells.}
 
 \item{concordances}{A list of objects of class
-\code{\link[classconc:Concordance-class]{Concordance}}.}
+\code{\link{Concordance}}.}
 
 \item{allowCopyIterDim}{Logical. Whether to allow an iteration dimension
 to be copied from one element to the other, if one element has an iterations

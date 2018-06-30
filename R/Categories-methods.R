@@ -88,9 +88,9 @@ setMethod("canMakeDimScalesCompatible",
               dv.y <- dimvalues(y)
               if (!is.null(concordance)) {
                   if (collapse) # 'x' comes from Counts object
-                      dv.x <- classconc::translate(dv.x, concordance = concordance)
+                      dv.x <- translate(dv.x, concordance = concordance)
                   else          # 'x' comes from Values object
-                      dv.y <- classconc::translate(dv.y, concordance = concordance)
+                      dv.y <- translate(dv.y, concordance = concordance)
               }
               in.y.not.in.x <- setdiff(dv.y, dv.x)
               n.in.y.not.in.x <- length(in.y.not.in.x)
@@ -134,18 +134,17 @@ setMethod("inferDimvalues",
 
 
 ## assume that canMakeCompatible has returned TRUE
-#' @importClassesFrom classconc ManyToOne
 setMethod("makeIndices",
           signature(x = "Categories", y = "Categories", concordance = "ManyToOne"),
           function(x, y, collapse, concordance) {
               dvx <- dimvalues(x)
               dvy <- dimvalues(y)
               if (collapse) {
-                  dvx <- classconc::translate(dvx, concordance = concordance)
+                  dvx <- translate(dvx, concordance = concordance)
                   match(dvx, dvy, nomatch = 0L)
               }
               else {
-                  dvy <- classconc::translate(dvy, concordance = concordance)
+                  dvy <- translate(dvy, concordance = concordance)
                   match(dvy, dvx, nomatch = 0L)
               }
           })

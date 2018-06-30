@@ -4,7 +4,7 @@
 \alias{yearToPeriod}
 \title{Convert years to periods}
 \usage{
-yearToPeriod(year, breaks, firstOpen = FALSE, lastOpen = TRUE)
+yearToPeriod(year, breaks, firstOpen = FALSE, lastOpen = FALSE)
 }
 \arguments{
 \item{year}{A vector of years. A numeric vector, or a vector

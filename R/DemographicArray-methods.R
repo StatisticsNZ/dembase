@@ -1450,7 +1450,7 @@ setMethod("prop.table",
 ##                           stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
 ##                                         names[i], class(DimScale)))
 ##                       codes.old <- dimvalues(DimScale)
-##                       codes.new <- classconc::translate(codes.old, concordance = concordance)
+##                       codes.new <- translate(codes.old, concordance = concordance)
 ##                       DimScale <- methods::new("Categories", dimvalues = codes.new)
 ##                       DimScales[[i]] <- DimScale
 ##                   }
@@ -1534,6 +1534,251 @@ setMethod("resetIterations",
               dimnames(.Data) <- dimnames(metadata)
               methods::new(class(object), .Data = .Data, metadata = metadata)
           })
+
+
+## NO_TESTS
+#' @rdname rotateAgeTime
+#' @export
+setMethod("rotateAgeTime",
+          signature(object = "DemographicArray"),
+          function(object, to = NULL, name = NULL) {
+              choices.at <- c("at", "ta", "age-time", "time-age")
+              choices.ac <- c("ac", "ca", "age-cohort", "cohort-age")
+              choices.tc <- c("tc", "ct", "time-cohort", "cohort-time")
+              choices.to <- c(choices.at, choices.ac, choices.tc)
+              hasRegularAgeTime(object)
+              .Data.old <- object@.Data
+              names.old <- names(object)
+              dim.old <- dim(object)
+              dimtypes.old <- dimtypes(object,
+                                       use.names = FALSE)
+              DimScales.old <- DimScales(object,
+                                         use.names = FALSE)
+              n.dim <- length(dim.old)
+              n.old <- length(.Data.old)
+              pos.old <- seq_len(n.old) - 1L # C-style
+              i.age <- match("age", dimtypes.old, nomatch = 0L)
+              i.time <- match("time", dimtypes.old, nomatch = 0L)
+              i.cohort <- match("cohort", dimtypes.old, nomatch = 0L)
+              i.triangle <- match("triangle", dimtypes.old, nomatch = 0L)
+              has.age <- i.age > 0L
+              has.time <- i.time > 0L
+              has.cohort <- i.cohort > 0L
+              has.triangle <- i.triangle > 0L
+              if (has.age + has.time + has.cohort != 2L)
+                  stop(gettextf("'%s' must have dimensions with two of the following three dimtypes: \"%s\", \"%s\", \"%s\"",
+                                "object", "age", "time", "cohort"))
+              has.at <- has.age && has.time
+              has.ac <- has.age && has.cohort
+              has.tc <- has.time && has.cohort
+              if (is.null(to))
+                  stop(gettextf("argument \"%s\" is missing, with no default",
+                                "to"))
+              to <- tolower(to)
+              to <- match.arg(to, choices = choices.to)
+              to.at <- to %in% choices.at
+              to.ac <- to %in% choices.ac
+              to.tc <- to %in% choices.tc
+              no.change <- (has.at && to.at) || (has.ac && to.ac) || (has.tc && to.tc)
+              if (no.change)
+                  return(object)
+              if (!is.null(name)) {
+                  if (!identical(length(name), 1L))
+                      stop(gettextf("'%s' does not have length %d",
+                                    "name", 1L))
+                  if (is.na(name))
+                      stop(gettextf("'%s' is missing",
+                                    "name"))
+              }
+              if (has.age) {
+                  DimScale.age <- DimScales.old[[i.age]]
+                  dv.age <- dimvalues(DimScale.age)
+                  if (any(is.infinite(dv.age)))
+                      stop(gettextf("dimension with %s \"%s\" has open interval",
+                                    "dimtype", "age"))
+                  if (any(dv.age < 0))
+                      stop(gettext("cannnegative ages"))
+                  n.age <- dim.old[i.age]
+                  step.age <- 1L
+                  for (d in seq_len(i.age - 1L))
+                      step.age <- step.age * dim.old[d]
+                  pos.age <- (pos.old %/% step.age) %% n.age # C-style
+              }
+              if (has.time) {
+                  DimScale.time <- DimScales.old[[i.time]]
+                  dv.time <- dimvalues(DimScale.time)
+                  if (any(is.infinite(dv.time)))
+                      stop(gettextf("dimension with %s \"%s\" has open interval",
+                                    "dimtype", "time"))
+                  n.time <- dim.old[i.time]
+                  step.time <- 1L
+                  for (d in seq_len(i.time - 1L))
+                      step.time <- step.time * dim.old[d]
+                  pos.time <- (pos.old %/% step.time) %% n.time # C-style
+              }
+              if (has.cohort) {
+                  DimScale.cohort <- DimScales.old[[i.cohort]]
+                  dv.cohort <- dimvalues(DimScale.cohort)
+                  if (any(is.infinite(dv.cohort)))
+                      stop(gettextf("dimension with %s \"%s\" has open interval",
+                                    "dimtype", "cohort"))
+                  n.cohort <- dim.old[i.cohort]
+                  step.cohort <- 1L
+                  for (d in seq_len(i.cohort - 1L))
+                      step.cohort <- step.cohort * dim.old[d]
+                  pos.cohort <- (pos.old %/% step.cohort) %% n.cohort # C-style
+              }
+              if (has.triangle) {
+                  DimScale.triangle <- DimScales.old[[i.triangle]]
+                  n.triangle <- dim.old[i.triangle]
+                  step.triangle <- 1L
+                  for (d in seq_len(i.triangle - 1L))
+                      step.triangle <- step.triangle * dim.old[d]
+                  pos.triangle <- (pos.old %/% step.triangle) %% n.triangle # C-style
+              }
+              else
+                  pos.triangle <- rep.int(0L, times = n.old)
+              if (has.at) { # new dimension is cohort
+                  if (is.null(name))
+                      name <- "cohort"
+                  DimScale.cohort <- makeMissingAgeTimeDimScale(age = DimScale.age,
+                                                                time = DimScale.time)
+                  pos.along.new <- pos.time - pos.age - pos.triangle
+                  if (to.ac) { # replacing time with cohort
+                      name <- make.unique(c(names.old[-i.time], name))[n.dim]
+                      names.new <- replace(names.old,
+                                           list = i.time,
+                                           values = name)
+                      dimtypes.new <- replace(dimtypes.old,
+                                              list = i.time,
+                                              values = "cohort")
+                      DimScales.new <- replace(DimScales.old,
+                                               list = i.time,
+                                               values = list(DimScale.cohort))
+                      iAlong <- i.time
+                  }
+                  else { # replacing age with cohort
+                      name <- make.unique(c(names.old[-i.age], name))[n.dim]
+                      names.new <- replace(names.old,
+                                           list = i.age,
+                                           values = name)
+                      dimtypes.new <- replace(dimtypes.old,
+                                              list = i.age,
+                                              values = "cohort")
+                      DimScales.new <- replace(DimScales.old,
+                                               list = i.age,
+                                               values = list(DimScale.cohort))
+                      iAlong <- i.age
+                  }
+              }
+              else if (has.ac) { # new dimension is time
+                  if (is.null(name))
+                      name <- "time"
+                  DimScale.time <- makeMissingAgeTimeDimScale(age = DimScale.age,
+                                                              cohort = DimScale.cohort)
+                  pos.along.new <- pos.cohort + pos.age + pos.triangle
+                  if (to.at) { # replacing cohort with time
+                      name <- make.unique(c(names.old[-i.cohort], name))[n.dim]
+                      names.new <- replace(names.old,
+                                           list = i.cohort,
+                                           values = name)
+                      dimtypes.new <- replace(dimtypes.old,
+                                              list = i.cohort,
+                                              values = "time")
+                      DimScales.new <- replace(DimScales.old,
+                                               list = i.cohort,
+                                               values = list(DimScale.time))
+                      iAlong <- i.cohort
+                  }
+                  else { # replacing age with time
+                      name <- make.unique(c(names.old[-i.age], name))[n.dim]
+                      names.new <- replace(names,
+                                           list = i.age,
+                                           values = name)
+                      dimtypes.new <- replace(dimtypes.old,
+                                              list = i.age,
+                                              values = "time")
+                      DimScales.new <- replace(DimScales,
+                                               list = i.age,
+                                               values = list(DimScale.time))
+                      iAlong <- i.age
+                  }
+              }
+              else { # has.tc - new dimension is age
+                  if (!all(dv.cohort <= max(dv.time)))
+                      stop(gettext("cohort starting after final time point or interval"))
+                  if (is.null(name))
+                      name <- "age"
+                  DimScale.age <- makeMissingAgeTimeDimScale(time = DimScale.time,
+                                                             cohort = DimScale.cohort)
+                  pos.along.new <- pos.time - pos.cohort - pos.triangle
+                  if (to.ac) { # replacing time with age
+                      name <- make.unique(c(names.old[-i.time], name))[n.dim]
+                      names.new <- replace(names.old,
+                                           list = i.time,
+                                           values = name)
+                      dimtypes.new <- replace(dimtypes.old,
+                                              list = i.time,
+                                              values = "age")
+                      DimScales.new <- replace(DimScales.old,
+                                               list = i.time,
+                                               values = list(DimScale.age))
+                      iAlong <- i.time
+                  }
+                  else { # replacing cohort with age
+                      name <- make.unique(c(names.old[-i.cohort], name))[n.dim]
+                      names.new <- replace(names.old,
+                                           list = i.cohort,
+                                           values = name)
+                      dimtypes.new <- replace(dimtypes.old,
+                                              list = i.cohort,
+                                              values = "age")
+                      DimScales.new <- replace(DimScales.old,
+                                               list = i.cohort,
+                                               values = list(DimScale.age))
+                      iAlong <- i.cohort
+                  }
+              }
+              metadata.new <- new("MetaData",
+                                  nms = names.new,
+                                  dimtypes = dimtypes.new,
+                                  DimScales = DimScales.new)
+              dim.new <- dim(metadata.new)
+              dimnames.new <- dimnames(metadata.new)
+              .Data.new <- array(NA_integer_,
+                                 dim = dim.new,
+                                 dimnames = dimnames.new)
+              n.along.old <- dim.old[iAlong]
+              n.along.new <- dim.new[iAlong]
+              if (iAlong > 1L) {
+                  s.before <- seq.int(from = 1L, to = iAlong - 1L)
+                  n.within <- prod(dim.old[s.before])
+              }
+              else
+                  n.within <- 1L
+              if (iAlong < n.dim) {
+                  s.after <- seq.int(from = iAlong + 1L, to = n.dim)
+                  n.between <- prod(dim.old[s.after])
+              }
+              else
+                  n.between <- 1L
+              seq.within <- seq_len(n.within) - 1L
+              seq.along.old <- seq_len(n.along.old) - 1L
+              seq.between <- seq_len(n.between) - 1L
+              pos.within.old <- rep(seq.within, times = n.along.old * n.between)
+              pos.along.old <- rep(rep(seq.along.old, each = n.within), times = n.between)
+              pos.along.new <- pos.along.new - min(pos.along.new)
+              pos.between.old <- rep(seq.between, each = n.within * n.along.old)
+              pos.new <- pos.within.old + n.within * pos.along.new + n.within * n.along.new * pos.between.old
+              pos.new <- pos.new + 1L # R-style
+              .Data.new[pos.new] <- .Data.old
+              class.new <- if (methods::is(object, "Counts")) "Counts" else "Values"
+              new(class.new,
+                  .Data = .Data.new,
+                  metadata = metadata.new)
+          })
+
+
 
 ## HAS_TESTS
 #' @rdname ageMinMax

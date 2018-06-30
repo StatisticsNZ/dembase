@@ -401,6 +401,165 @@ test_that("makeIndices method for Points works", {
                      integer())
 })
 
+test_that("makeMissingAgeTimeDimScale works with age and time both DimScales - no triangles", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 1, 2)),
+                                               time = new("Points", dimvalues = c(0, 1)))
+    ans.expected <- new("Intervals", dimvalues = c(-2, -1, 0, 1))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 5)),
+                                               time = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Intervals", dimvalues = c(1995, 2000, 2005, 2010))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(2, 3)),
+                                               time = new("Points", dimvalues = c(0, 1)))
+    ans.expected <- new("Intervals", dimvalues = c(-3, -2, -1))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with age and time both DimScales - with triangles", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 1, 2)),
+                                               time = new("Points", dimvalues = c(0, 1)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(-2, -1, 0, 1))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 5)),
+                                               time = new("Intervals", dimvalues = c(2000, 2005, 2010)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(1995, 2000, 2005, 2010))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(2, 3)),
+                                               time = new("Points", dimvalues = c(0, 1)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(-3, -2, -1))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with age and cohort both Intervals - no triangles", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 1, 2)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2001)))
+    ans.expected <- new("Points", dimvalues = c(2001, 2002))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 5)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Points", dimvalues = c(2005, 2010))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(10, 15)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Points", dimvalues = c(2015, 2020))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with age and cohort both Intervals - with triangles", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 1, 2)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2001)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(2000, 2001, 2002, 2003))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(0, 5)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(2000, 2005, 2010, 2015))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Intervals", dimvalues = c(10, 15)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(2010, 2015, 2020, 2025))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with age Points and cohort Intervals", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Points", dimvalues = c(0, 1, 2)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2001)))
+    ans.expected <- new("Intervals", dimvalues = c(2000, 2001, 2002, 2003))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Points", dimvalues = 5),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Intervals", dimvalues = c(2005, 2010, 2015))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(age = new("Points", dimvalues = c(10, 15)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Intervals", dimvalues = c(2010, 2015, 2020, 2025))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with time and cohort both Intervals - no triangles", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2000, 2001, 2002, 2003)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2001)))
+    ans.expected <- new("Points", dimvalues = c(0, 1, 2))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2005, 2010)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Points", dimvalues = c(0, 5))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2010, 2015)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Points", dimvalues = c(5, 10))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with time and cohort both Intervals - with triangles", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2000, 2001, 2002, 2003)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2001)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(0, 1, 2, 3))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2005, 2010)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2010, 2015)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)),
+                                               triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
+    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10, 15))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMissingAgeTimeDimScale works with time Points and cohort Intervals", {
+    makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Points", dimvalues = c(2001, 2002, 2003)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2001)))
+    ans.expected <- new("Intervals", dimvalues = c(0, 1, 2, 3))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Points", dimvalues = c(2005, 2010)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- makeMissingAgeTimeDimScale(time = new("Points", dimvalues = c(2010, 2015)),
+                                               cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
+    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10, 15))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
+
+
+
+
+
+
+
+    
+
+          
+
+    
+
+          
+
+    
+
+          
+
+
 test_that("makePairIndices method for Categories works", {
     makePairIndices <- dembase:::makePairIndices
     e1 <- new("Categories", dimvalues = c("a", "b"))
