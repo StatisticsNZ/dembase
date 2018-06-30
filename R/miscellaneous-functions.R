@@ -335,6 +335,7 @@ NULL
 #' @export
 cleanAgeGroup <- function(age) {
     age <- tolower(age)
+    age <- sub("less than 1 year", "0", age)
     age <- sub("year|years|yr|yrs", "", age)
     age <- sub("and over|plus", "+", age)
     age <- sub("to|-+|_+", "-", age)
