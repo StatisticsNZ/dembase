@@ -2815,47 +2815,7 @@ test_that("dateToFracYear works", {
     expect_equal(ans.obtained, ans.expected)
 })
 
-test_that("dimvaluesDescribeTimeUnit works when units are days", {
-    dimvaluesDescribeTimeUnit <- dembase:::dimvaluesDescribeTimeUnit
-    dateToFracYear <- dembase:::dateToFracYear
-    dimvalues <- dateToFracYear(as.Date(c("2000-01-01", "2000-02-28", "2018-03-13", "2020-12-31")))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues))
-    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 3)))
-    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 4)))
-    expect_false(dimvaluesDescribeTimeUnit(dimvalues, successive = TRUE))
-    dimvalues <- dateToFracYear(as.Date("2001-05-01"))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, successive = TRUE))
-    dimvalues <- dateToFracYear(as.Date(c("2001-05-01", "2001-05-02")))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, successive = TRUE))
-})
 
-test_that("dimvaluesDescribeTimeUnit works when units are months", {
-    dimvaluesDescribeTimeUnit <- dembase:::dimvaluesDescribeTimeUnit
-    dateToFracYear <- dembase:::dateToFracYear
-    dimvalues <- dateToFracYear(as.Date(c("2000-01-01", "2000-02-01", "2018-03-01", "2020-12-01")))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "month"))
-    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 3), unit = "m"))
-    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 4), unit = "month"))
-    expect_false(dimvaluesDescribeTimeUnit(dimvalues, unit = "month", successive = TRUE))
-    dimvalues <- dateToFracYear(as.Date("2001-05-01"))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "month", successive = TRUE))
-    dimvalues <- dateToFracYear(as.Date(c("2001-05-01", "2001-06-01")))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "month", successive = TRUE))
-})
-
-test_that("dimvaluesDescribeTimeUnit works when units are quarters", {
-    dimvaluesDescribeTimeUnit <- dembase:::dimvaluesDescribeTimeUnit
-    dateToFracYear <- dembase:::dateToFracYear
-    dimvalues <- dateToFracYear(as.Date(c("2000-01-01", "2000-04-01", "2020-10-01")))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "quarter"))
-    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 3), unit = "q"))
-    expect_true(dimvaluesDescribeTimeUnit(round(dimvalues, 4), unit = "quarter"))
-    expect_false(dimvaluesDescribeTimeUnit(dimvalues, unit = "qu", successive = TRUE))
-    dimvalues <- dateToFracYear(as.Date("2001-04-01"))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "qu", successive = TRUE))
-    dimvalues <- dateToFracYear(as.Date(c("2001-04-01", "2001-07-01")))
-    expect_true(dimvaluesDescribeTimeUnit(dimvalues, unit = "qu", successive = TRUE))
-})
 
 
     
@@ -2982,9 +2942,74 @@ test_that("monthLabelsToDimvalues", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("timeUnitsFromDimScales works when units are days", {
+    timeUnitsFromDimScales <- dembase:::timeUnitsFromDimScales
+    dateToFracYear <- dembase:::dateToFracYear
+    dates <- as.Date(c("2000-01-01", "2000-02-28", "2018-03-13", "2020-12-31"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 3)),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 4)),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, successive = TRUE),
+                     NULL)
+    date <- as.Date("2001-05-01")
+    dimvalues <- dateToFracYear(date)
+    expect_identical(timeUnitsFromDimScales(dimvalues, successive = TRUE),
+                     date)
+    dates <- as.Date(c("2001-05-01", "2001-05-02"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, successive = TRUE),
+                     dates)
+})
 
+test_that("timeUnitsFromDimScales works when units are months", {
+    timeUnitsFromDimScales <- dembase:::timeUnitsFromDimScales
+    dateToFracYear <- dembase:::dateToFracYear
+    dates <- as.Date(c("2000-01-01", "2000-02-01", "2018-03-01", "2020-12-01"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month"),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 3), unit = "m"),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 4), unit = "month"),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+                     NULL)
+    date <- as.Date("2001-05-01")
+    dimvalues <- dateToFracYear(date)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+                     date)
+    dates <- as.Date(c("2001-05-01", "2001-06-01"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+                     dates)
+})
 
-
+test_that("timeUnitsFromDimScales works when units are quarters", {
+    timeUnitsFromDimScales <- dembase:::timeUnitsFromDimScales
+    dateToFracYear <- dembase:::dateToFracYear
+    dates <- as.Date(c("2000-01-01", "2000-04-01", "2020-10-01"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "quarter"),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 3), unit = "q"),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 4), unit = "quarter"),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = TRUE),
+                     NULL)
+    date <- as.Date("2001-04-01")
+    dimvalues <- dateToFracYear(date)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = TRUE),
+                     date)
+    dates <- as.Date(c("2001-04-01", "2001-07-01"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = TRUE),
+                     dates)
+})
 
 
 ## FUNCTIONS FOR INFERRING DIMVALUES FOR INTERVALS ###################################

@@ -139,6 +139,20 @@ setMethod("inferDimvalues",
           signature(DimScale = "Points", labels = "NULL"),
           function(DimScale, labels) numeric())
 
+
+#' @rdname internal-methods
+#' @export
+setMethod("labels",
+          signature(object = "Points"),
+          function(object) {
+              dimvalues <- dimvalues(object)
+              time.units <- timeUnitsFromDimScales(dimvalues)
+              if (is.null(time.units))
+                  as.character(dimvalues)
+              else
+                  time.units
+          })
+
 #' @rdname exported-not-api
 #' @export
 setMethod("stepLengths",

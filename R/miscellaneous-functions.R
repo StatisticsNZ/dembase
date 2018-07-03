@@ -1982,37 +1982,6 @@ dateToFracYear <- function(date) {
 }
 
 ## HAS_TESTS
-dimvaluesDescribeTimeUnit <- function(dimvalues, unit = c("day", "month", "quarter"),
-                                      successive = FALSE) {
-    digits.round <- getDigitsRoundDimvaluesTimeUnit()
-    unit <- match.arg(unit)
-    if (any(is.infinite(dimvalues)))
-        return(FALSE)
-    n <- length(dimvalues)
-    poss.year.first <- floor(dimvalues[1L])
-    poss.year.last <- floor(dimvalues[n]) + 1L
-    date.from <- as.Date(sprintf("%s-01-01", poss.year.first))
-    date.to <- as.Date(sprintf("%s-01-01", poss.year.last))
-    poss.dimvalues <- seq(from = date.from,
-                          to = date.to,
-                          by = unit)
-    poss.dimvalues <- dateToFracYear(poss.dimvalues)
-    dimvalues <- round(dimvalues, digits.round)
-    i <- match(dimvalues, poss.dimvalues, nomatch = 0L)
-    all.dimvalues.valid <- all(i > 0L)
-    if (all.dimvalues.valid) {
-        if (successive) {
-            all.successive <- all(diff(i) == 1L)
-            all.successive
-        }
-        else
-            TRUE
-    }
-    else
-        FALSE
-}    
-
-## HAS_TESTS
 makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
                                          limitPrintLower = NULL) {
     kDigits <- 4L
@@ -2203,6 +2172,40 @@ monthLabelsToDimvalues <- function(x) {
     monthAndYearToDimvalues(month = month,
                             year = year)
 }
+
+
+## HAS_TESTS
+timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter"),
+                                   successive = FALSE) {
+    digits.round <- getDigitsRoundDimvaluesTimeUnit()
+    unit <- match.arg(unit)
+    if (any(is.infinite(dimvalues)))
+        return(FALSE)
+    n <- length(dimvalues)
+    poss.year.first <- floor(dimvalues[1L])
+    poss.year.last <- floor(dimvalues[n]) + 1L
+    date.from <- as.Date(sprintf("%s-01-01", poss.year.first))
+    date.to <- as.Date(sprintf("%s-01-01", poss.year.last))
+    poss.dimvalues <- seq(from = date.from,
+                          to = date.to,
+                          by = unit)
+    poss.dimvalues.frac <- dateToFracYear(poss.dimvalues)
+    dimvalues <- round(dimvalues, digits.round)
+    i <- match(dimvalues, poss.dimvalues.frac, nomatch = 0L)
+    all.dimvalues.valid <- all(i > 0L)
+    if (all.dimvalues.valid) {
+        if (successive) {
+            all.successive <- all(diff(i) == 1L)
+            if (all.successive)
+                poss.dimvalues[i]
+        }
+        else
+            poss.dimvalues[i]
+    }
+    else
+        NULL
+}    
+
 
 
 
