@@ -28,7 +28,18 @@ date <- seq(from = as.Date("2000-01-01"), by = "1 month", length.out = 4)
 frac_year <- round(as.integer(date) / as.integer(as.Date("2001-01-01") - as.Date("2000-01-01")), 3)
 ```
 
-If every point is the start of a month, then label using start of month. Eg `r 2000 + frac_year` is displayed as `r date`.
+| Value         | Dimension | Length | Rule           | Example                  |
+|:------------  |:--------- |:------ |:-------------- |:------------------------ |	
+| Start day     | Time      | $\ge 2$| Year-Month-Day | `2000, 2000.003` $\to$ `"2000-01-01", "2000-01-02"` |
+| Start month   | Time      | $\ge 2$| Year-Month     | `2000, 2000.085` $\to$ `"2000-01-01", "2000-02-01` |
+| Start quarter | Time      | $\ge 2$| Year-Quarter   | `2000, 2000.249` $\to$ `"2000-01-01", "2000-04-01"` |
+| Any           | Any       | Any    | Value          | `80.1` $\to$ `"80.1"`    |
+----------------------------------------------------------------------------------
+
+
+
+If every point is the start of a day, and more than one point, then label using date, 
+If every point is the start of a month, and more than one point, then label using date. Eg `r 2000 + frac_year` is displayed as `r date`.
 
 Otherwise, label with number.
 
@@ -36,22 +47,24 @@ Otherwise, label with number.
 ## Labelling intervals
 
 
-| Lower limit | Upper limit | Dimension | Rule      | Example       |
-|:------------|:------------|:----------|:---------:|:-------------:|	
-| Integer | Lower + 1 | Age | Always use lower | `5`, `6` => `"5"` |
-| Integer | Lower + 1 | Time | Lower or upper | `5`, `6` => `"5"` or `"6"` |
-| Integer | Integer | Age | Lower - (Upper-1) | `5`, `10` => `"5-9"` |
-| Start month | Start next month | Time | Year-Month | `2000`, `2000.085` => `"2000-01"` |
-| Start quarter | Start next quarter | Time | Year-Quarter | `2000`, `2000.249` => `"2000-Q1"` |
-| Any | Infinite | Any | Lower+ | `100`, `Inf` => `"100+"` |
-| Infinite | Any | Any | <Upper | `-Inf`, `2000` => `"<2000"` |
-| Any | Any | Age or Time | Lower - Upper | `77`, `80.1` => `"77-80.1"` |
+| Lower limit | Upper limit | Dimtype | Rule      | Example       |
+|:------------|:------------|:----------|:----------|:--------------|	
+| Integer | Lower+1 | age |  Lower | `5, 6` $\to$ `"5"` |
+| Integer | Lower+1 | time, cohort | Lower or Upper | `5, 6` $\to$ `"5"` or `"6"` |
+| Integer | Integer | age | Lower-\<Upper-1\> | `5, 10` $\to$ `"5-9"` |
+| Start day | Start next day | time, cohort | Year-Month-Day | `2000, 2000.003` $\to$ `"2000-01-01"` |
+| Start month | Start next month | time, cohort | Year-Month | `2000, 2000.085` $\to$ `"2000-01"` |
+| Start quarter | Start next quarter | time, cohort | Year-Quarter | `2000, 2000.249` $\to$ `"2000-Q1"` |
+| Any | Infinite | Any | Lower+ | `100, Inf` $\to$ `"100+"` |
+| Infinite | Any | Any | <Upper | `-Inf, 2000` $\to$ `"<2000"` |
+| Any | Any | Any | Lower-Upper | `2005, 2010` $\to$ `"2005-2010"` |
 -------------------------------------------------------------------------
 
+Only time and cohort can have labelStart = FALSE. Cannot have labelStart = FALSE if last interval is open.
 
 Whether a one-year time interval is displayed using lower or upper depends on `labelStart` argument.
 
-Only use "2000-01" labelling if every interval can be interpreted as a month.  Similarly, only use "2000-Q1" labelling if every interval can be interpreted as a quarter.
+Only use "2000-01" labelling if every interval can be interpreted as a month and if months successively.  Similarly, only use "2000-Q1" labelling if every interval can be interpreted as a quarter.
 
 
 

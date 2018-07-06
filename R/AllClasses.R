@@ -69,8 +69,8 @@ setOldClass(c("xtabs", "table"))
 #' @export
 setClass("MetaData",
          slots = c(nms = "character",
-             dimtypes = "character",
-             DimScales = "list"),
+                   dimtypes = "character",
+                   DimScales = "list"),
          validity = function(object) {
              ## do not use accessor functions because these may
              ## produce confusing error messages
@@ -120,6 +120,19 @@ setClass("MetaData",
                  if (!(dimscale %in% permitted.dimscales))
                      return(gettextf("dimension \"%s\" has dimtype \"%s\" but dimscale \"%s\"",
                                      names[i], dimtype, dimscale))
+             }
+             ## Intervals with 'labelStart' equal to FALSE
+             is.intervals <- sapply(DimScales, methods::is, "Intervals")
+             is.label.start <- sapply(DimScales[is.intervals], slot, "labelStart")
+             is.time.or.cohort <- (dimtypes[is.intervals] %in% c("time", "cohort"))
+             invalid.label.start <- !is.label.start & !is.time.or.cohort
+             if (any(invalid.label.start)) {
+                 name.invalid <- names[is.intervals][invalid.label.start][1L]
+                 dimscale.invalid <- class(DimScales[is.intervals][invalid.label.start][[1L]])
+                 dimtype.invalid <- dimtypes[is.intervals][invalid.label.start][1L]
+                 return(gettextf("dimension \"%s\" has %s \"%s\" with '%s' equal to %s but has %s \"%s\"",
+                                 name.invalid, "dimscale", dimscale.invalid, "labelStart",
+                                 "FALSE", "dimtype", dimtype.invalid))
              }
              ## origin, destination, parent, child dimensions
              dimtypes.with.pairs <- getDimtypesWithPairs()
@@ -458,6 +471,9 @@ setClass("Intervals",
              if (is.na(labelStart))
                  return(gettextf("'%s' is missing",
                                  "labelStart"))
+             if (!labelStart && is.infinite(dimvalues[n]))
+                 return(gettextf("last interval is open but '%s' is %s",
+                                 "labelStart", "TRUE"))
              TRUE
          })
 

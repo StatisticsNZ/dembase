@@ -131,6 +131,33 @@ test_that("dimensions have dimscales permitted for dimtypes", {
                                  "but dimscale \"Points\"")))
 })
 
+test_that("tests for labelStart work", {
+    ans.obtained <- new("MetaData",
+                        nms = c("region", "sex", "time"),
+                        dimtypes = c("state", "state", "time"),
+                        DimScales = list(
+                            new("Categories", dimvalues = c("Region 1", "Region 2")),
+                            new("Categories", dimvalues = c("Male", "Female")),
+                            new("Intervals", dimvalues = 0:4, labelStart = FALSE)))
+    expect_true(validObject(ans.obtained))
+    ans.obtained <- new("MetaData",
+                        nms = c("region", "sex", "cohort"),
+                        dimtypes = c("state", "state", "cohort"),
+                        DimScales = list(
+                            new("Categories", dimvalues = c("Region 1", "Region 2")),
+                            new("Categories", dimvalues = c("Male", "Female")),
+                            new("Intervals", dimvalues = 0:4, labelStart = FALSE)))
+    expect_true(validObject(ans.obtained))
+    expect_error(new("MetaData",
+                     nms = c("region", "sex", "age"),
+                     dimtypes = c("state", "state", "age"),
+                     DimScales = list(
+                         new("Categories", dimvalues = c("Region 1", "Region 2")),
+                         new("Categories", dimvalues = c("Male", "Female")),
+                         new("Intervals", dimvalues = 0:4, labelStart = FALSE))),
+                 "dimension \"age\" has dimscale \"Intervals\" with 'labelStart' equal to FALSE but has dimtype \"age\"")
+})
+
 
 test_that("origin, destination, parent, and child dimensions work as expected", {
   expect_that(validObject(new("MetaData",
@@ -775,7 +802,9 @@ test_that("class Intervals works", {
                  "no finite values")
     expect_true(validObject(new("Intervals")))
     expect_true(new("Intervals")@labelStart)
-    expect_true(validObject(new("Intervals", dimvalues = c(0, 1), labelStart = FALSE)))                                
+    expect_true(validObject(new("Intervals", dimvalues = c(0, 1), labelStart = FALSE)))
+    expect_error(new("Intervals", dimvalues = c(0, 1, Inf), labelStart = FALSE),
+                 "last interval is open but 'labelStart' is TRUE")
 })
 
 test_that("class Iterations works", {

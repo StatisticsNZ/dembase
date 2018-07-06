@@ -32,14 +32,6 @@ getDimtypesWithPairs <- function(firstElementOnly = FALSE) {
 }
 
 ## HAS_TESTS
-getIntervalSeparator <- function()
-  "-"
-
-## HAS_TESTS
-getLimitPrintLower <- function()
-    1000L
-
-## HAS_TESTS
 ## Given dimension names that have pairs (eg "reg_orig", "ethnicity_parent"),
 ## return the pairs (eg "reg_dest", "ethnicity_child").  If a dimension
 ## name does not have a pair (eg "age"), then the original name is returned.
@@ -59,14 +51,6 @@ getNamesPairs <- function(names) {
                                               names[contains.current.suffix])
     }
     names
-}
-
-## HAS_TESTS
-getOpenIntervalSymbol <- function(which = c("final", "first")) {
-  which <- match.arg(which)
-  switch(which,
-         final = "+",
-         first = "<")
 }
 
 ## HAS_TESTS
@@ -1982,134 +1966,102 @@ dateToFracYear <- function(date) {
 }
 
 ## HAS_TESTS
-makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
-                                         limitPrintLower = NULL) {
-    kDigits <- 4L
+makeIntervalLabelsForDateDimvalues <- function(dimvalues) {
+    n <- length(dimvalues)
+    if (n < 2L)
+        return(NULL)
+    if (any(is.infinite(dimvalues)))
+        return(NULL)
+    time.units <- timeUnitsFromDimScales(dimvalues, unit = "quarter")
+    if (!is.null(time.units)) {
+        time.units <- time.units[-n]
+        time.units <- as.Date(time.units, format = "%Y-%m-%d")
+        year <- format(time.units, format = "%Y")
+        month <- format(time.units, format = "%m")
+        month <- as.integer(month)
+        quarter <- month %/% 3L + 1L
+        ans <- sprintf("%s-Q%i", year, quarter)
+        return(ans)
+    }
+    time.units <- timeUnitsFromDimScales(dimvalues, unit = "month")
+    if (!is.null(time.units)) {
+        time.units <- time.units[-n]
+        time.units <- as.Date(time.units, format = "%Y-%m-%d")
+        ans <- format(time.units, format = "%Y-%m")
+        return(ans)
+    }
+    time.units <- timeUnitsFromDimScales(dimvalues, unit = "day")
+    if (!is.null(time.units)) {
+        time.units <- time.units[-n]
+        ans <- format(time.units, format = "%Y-%m-%d")
+        return(ans)
+    }
+    NULL
+}
+
+## HAS_TESTS
+makeLabelsForClosedIntervals <- function(dimvalues, labelStart, ageLike) {
+    kDigits <- 3L
     n <- length(dimvalues)
     if (n > 0L) {
-        if (is.null(intervalSeparator))
-            intervalSeparator <- getIntervalSeparator()
-        if (is.null(limitPrintLower))
-            limitPrintLower <- getLimitPrintLower()
-        is.integer <- dimvalues == as.integer(dimvalues)
-        shift.labels <- all(is.integer)
-        print.lower <- max(dimvalues) < limitPrintLower
         ans <- character(length = n - 1L)
-        if (shift.labels) {
-            is.single.value <- (diff(dimvalues) == 1) & is.integer[-n]
-            single.labels <- dimvalues[-n][is.single.value] + !print.lower
-            ans[is.single.value] <-  single.labels
-        }
+        lower.is.integer <- dimvalues[-n] == round(dimvalues[-n])
+        diff.is.integer <- diff(dimvalues) == 1
+        use.single.value <- lower.is.integer[-n] & diff.is.integer
+        if (labelStart)
+            ans[use.single.value] <- dimvalues[-n][use.single.value]
+        else
+            ans[use.single.value] <- dimvalues[-1L][use.single.value]
         lower <- dimvalues[-n][ans == ""]
         upper <- dimvalues[-1L][ans == ""]
-        if (shift.labels) {
-            if (print.lower)
-                upper <- upper - 1L
-            else
-                lower <- lower + 1L
+        lower.is.integer <- lower == round(lower)
+        upper.is.integer <- upper == round(upper)
+        if (ageLike) {
+            reduce.upper <- lower.is.integer & upper.is.integer
+            upper[reduce.upper] <- upper[reduce.upper] - 1L
         }
         lower <- round(lower, kDigits)
         upper <- round(upper, kDigits)
-        ans[ans == ""] <- paste(lower, upper, sep = intervalSeparator)
+        ans[ans == ""] <- paste0(lower, "-", upper)
         ans
     }
     else
         character()
 }
-
-## ## HAS_TESTS
-## makeLabelsForClosedIntervals <- function(dimvalues, intervalSeparator = NULL,
-##                                          limitPrintLower = NULL) {
-##     kDigits <- 4L
-##     n <- length(dimvalues)
-##     if (n > 0L) {
-##         if (is.null(intervalSeparator))
-##             intervalSeparator <- getIntervalSeparator()
-##         if (is.null(limitPrintLower))
-##             limitPrintLower <- getLimitPrintLower()
-##         is.integer <- dimvalues == as.integer(dimvalues)
-##         ans <- character(length = n - 1L)
-##         is.single.value <- (diff(dimvalues) == 1) & is.integer[-n]
-##         single.labels <- dimvalues[-n][is.single.value]
-##         ans[is.single.value] <-  single.labels
-##         lower <- dimvalues[-n][ans == ""]
-##         upper <- dimvalues[-1L][ans == ""]
-##         reduce.upper <- all(is.integer) && (max(dimvalues) < limitPrintLower)
-##         if (reduce.upper)
-##             upper <- upper - 1L
-##         lower <- round(lower, kDigits)
-##         upper <- round(upper, kDigits)
-##         ans[ans == ""] <- paste(lower, upper, sep = intervalSeparator)
-##         ans
-##     }
-##     else
-##         character()
-## }
-
+        
 ## HAS_TESTS
-makeLabelsForIntervals <- function(dimvalues, intervalSeparator = NULL,
-                                   limitPrintLower = NULL) {
+makeLabelsForIntervals <- function(dimvalues, labelStart) {
     n <- length(dimvalues)
-    if (is.null(limitPrintLower))
-        limitPrintLower <- getLimitPrintLower()
     if (n > 0L) {
-        if (dimvaluesDefineMonths(dimvalues)) {
-            ans <- makeLabelsMonths(dimvalues)
-            return(ans)
+        finite.dimvalues <- dimvalues[is.finite(dimvalues)]
+        age.like <- all(finite.dimvalues >= 0) && all(finite.dimvalues <= 300)
+        if (!age.like) {
+            possible.ans <- makeIntervalLabelsForDateDimvalues(dimvalues)
+            if (!is.null(possible.ans))
+                return(possible.ans)
         }
         first.interval.is.open <- is.infinite(dimvalues[1L])
-        final.interval.is.open <- is.infinite(dimvalues[n])
+        last.interval.is.open <- is.infinite(dimvalues[n])
         ans <- character(n - 1L)
         if (first.interval.is.open) {
-            symbol <- getOpenIntervalSymbol(which = "first")
-            ans[1L] <- paste(symbol, dimvalues[2L], sep = "")
+            upper <- dimvalues[2L]
+            ans[1L] <- paste0("<", upper)
         }
-        if (final.interval.is.open) {
-            symbol <- getOpenIntervalSymbol(which = "final")
+        if (last.interval.is.open) {
             lower <- dimvalues[n - 1L]
-            finite.dv <- dimvalues[is.finite(dimvalues)]
-            dv.is.integer <- as.integer(finite.dv) == finite.dv
-            shift.labels <- all(dv.is.integer)
-            if (shift.labels) {
-                print.lower <- min(finite.dv) < limitPrintLower
-                if (!print.lower)
-                    lower <- lower + 1L
-            }
-            ans[n - 1L] <- paste(lower, symbol, sep = "")
+            ans[n - 1L] <- paste0(lower, "+")
         }
         use.for.closed <- c(!first.interval.is.open,
                             rep(TRUE, n - 2L),
-                            !final.interval.is.open)
-        ans[ans == ""] <-
-            makeLabelsForClosedIntervals(dimvalues = dimvalues[use.for.closed],
-                                         intervalSeparator = intervalSeparator,
-                                         limitPrintLower = limitPrintLower)
+                            !last.interval.is.open)
+        dimvalues.closed <- dimvalues[use.for.closed]
+        ans[ans == ""] <- makeLabelsForClosedIntervals(dimvalues = dimvalues.closed,
+                                                       ageLike = age.like,
+                                                       labelStart = labelStart)
         ans
     }
     else
         character()
-}
-
-## HAS_TESTS
-makeLabelsMonths <- function(dimvalues) {
-    n.dv <- length(dimvalues)
-    dv.first <- dimvalues[1L]
-    dv.last <- dimvalues[n.dv]
-    year.first <- floor(dv.first)
-    year.last <- floor(dv.last)
-    n.year <- year.last - year.first + 1L
-    month <- rep(base::month.abb, times = n.year)
-    year <- seq(from = year.first, to = year.last)
-    year <- rep(year, each = 12L)
-    dimvalues.all <- monthAndYearToDimvalues(month = month,
-                                             year = year)
-    i <- match(dimvalues, dimvalues.all, nomatch = 0L)
-    is.invalid <- i == 0L
-    if (any(is.invalid))
-        stop(gettextf("'%s' is not a valid dimvalue for a month",
-                      dimvalues[is.invalid][1L]))
-    ans <- paste(month[i], year[i], sep = "-")
-    ans[-n.dv]
 }
 
 ## HAS_TESTS
@@ -2175,8 +2127,7 @@ monthLabelsToDimvalues <- function(x) {
 
 
 ## HAS_TESTS
-timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter"),
-                                   successive = FALSE) {
+timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter")) {
     digits.round <- getDigitsRoundDimvaluesTimeUnit()
     unit <- match.arg(unit)
     if (any(is.infinite(dimvalues)))
@@ -2194,13 +2145,11 @@ timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter"
     i <- match(dimvalues, poss.dimvalues.frac, nomatch = 0L)
     all.dimvalues.valid <- all(i > 0L)
     if (all.dimvalues.valid) {
-        if (successive) {
-            all.successive <- all(diff(i) == 1L)
-            if (all.successive)
-                poss.dimvalues[i]
-        }
-        else
+        successive <- all(diff(i) == 1L)
+        if (successive)
             poss.dimvalues[i]
+        else
+            NULL
     }
     else
         NULL

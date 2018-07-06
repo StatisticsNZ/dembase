@@ -12,7 +12,7 @@
 
 <meta name="author" content="John Bryant" />
 
-<meta name="date" content="2018-07-01" />
+<meta name="date" content="2018-07-04" />
 
 <title>Age and Time in Package ‘dembase’</title>
 
@@ -214,42 +214,66 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Age and Time in Package ‘dembase’</h1>
 <h4 class="author"><em>John Bryant</em></h4>
-<h4 class="date"><em>2018-07-01</em></h4>
+<h4 class="date"><em>2018-07-04</em></h4>
 
 
 
+<div id="labels" class="section level1">
+<h1>Labels</h1>
 <p>Everything denominated in years</p>
 <div id="labelling-points" class="section level2">
 <h2>Labelling points</h2>
-<p>If every point is the start of a month, then label using start of month. Eg 2029.937, 2030.022, 2030.101, 2030.186 is displayed as 2000-01-01, 2000-02-01, 2000-03-01, 2000-04-01</p>
 <table>
+<colgroup>
+<col width="18%"></col>
+<col width="14%"></col>
+<col width="10%"></col>
+<col width="21%"></col>
+<col width="35%"></col>
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">Value</th>
 <th align="left">Dimension</th>
+<th align="left">Length</th>
 <th align="left">Rule</th>
-<th align="center">Example</th>
-<th align="center"></th>
+<th align="left">Example</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<td align="left">Start day</td>
+<td align="left">Time</td>
+<td align="left"><span class="math inline">\(\ge 2\)</span></td>
+<td align="left">Year-Month-Day</td>
+<td align="left"><code>2000, 2000.003</code> <span class="math inline">\(\to\)</span> <code>&quot;2000-01-01&quot;, &quot;2000-01-02&quot;</code></td>
+</tr>
+<tr class="even">
 <td align="left">Start month</td>
 <td align="left">Time</td>
+<td align="left"><span class="math inline">\(\ge 2\)</span></td>
 <td align="left">Year-Month</td>
-<td align="center"><code>2000.0847</code> =&gt; <code>&quot;2000-01-01&quot;</code></td>
-<td align="center"></td>
+<td align="left"><code>2000, 2000.085</code> <span class="math inline">\(\to\)</span> <code>&quot;2000-01-01&quot;, &quot;2000-02-01</code></td>
+</tr>
+<tr class="odd">
+<td align="left">Start quarter</td>
+<td align="left">Time</td>
+<td align="left"><span class="math inline">\(\ge 2\)</span></td>
+<td align="left">Year-Quarter</td>
+<td align="left"><code>2000, 2000.249</code> <span class="math inline">\(\to\)</span> <code>&quot;2000-01-01&quot;, &quot;2000-04-01&quot;</code></td>
 </tr>
 <tr class="even">
 <td align="left">Any</td>
 <td align="left">Any</td>
-<td align="left">Age or Time</td>
-<td align="center">Lower - Upper</td>
-<td align="center"><code>77</code>, <code>80.1</code> =&gt; <code>&quot;77-80.1&quot;</code></td>
+<td align="left">Any</td>
+<td align="left">Value</td>
+<td align="left"><code>80.1</code> <span class="math inline">\(\to\)</span> <code>&quot;80.1&quot;</code></td>
 </tr>
 </tbody>
 </table>
 <hr />
+<p>If every point is the start of a day, and more than one point, then label using date, If every point is the start of a month, and more than one point, then label using date. Eg 2029.937, 2030.022, 2030.101, 2030.186 is displayed as 2000-01-01, 2000-02-01, 2000-03-01, 2000-04-01.</p>
+<p>Otherwise, label with number.</p>
 </div>
 <div id="labelling-intervals" class="section level2">
 <h2>Labelling intervals</h2>
@@ -266,75 +290,84 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <th align="left">Lower limit</th>
 <th align="left">Upper limit</th>
 <th align="left">Dimension</th>
-<th align="center">Rule</th>
-<th align="center">Example</th>
+<th align="left">Rule</th>
+<th align="left">Example</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">Integer</td>
-<td align="left">Lower + 1</td>
+<td align="left">Lower+1</td>
 <td align="left">Age</td>
-<td align="center">Always use lower</td>
-<td align="center"><code>5</code>, <code>6</code> =&gt; <code>&quot;5&quot;</code></td>
+<td align="left">Lower</td>
+<td align="left"><code>5, 6</code> <span class="math inline">\(\to\)</span> <code>&quot;5&quot;</code></td>
 </tr>
 <tr class="even">
 <td align="left">Integer</td>
-<td align="left">Lower + 1</td>
+<td align="left">Lower+1</td>
 <td align="left">Time</td>
-<td align="center">Lower or upper</td>
-<td align="center"><code>5</code>, <code>6</code> =&gt; <code>&quot;5&quot;</code> or <code>&quot;6&quot;</code></td>
+<td align="left">Lower or Upper</td>
+<td align="left"><code>5, 6</code> <span class="math inline">\(\to\)</span> <code>&quot;5&quot;</code> or <code>&quot;6&quot;</code></td>
 </tr>
 <tr class="odd">
 <td align="left">Integer</td>
 <td align="left">Integer</td>
 <td align="left">Age</td>
-<td align="center">Lower - (Upper-1)</td>
-<td align="center"><code>5</code>, <code>10</code> =&gt; <code>&quot;5-9&quot;</code></td>
+<td align="left">Lower-&lt;Upper-1&gt;</td>
+<td align="left"><code>5, 10</code> <span class="math inline">\(\to\)</span> <code>&quot;5-9&quot;</code></td>
 </tr>
 <tr class="even">
+<td align="left">Start day</td>
+<td align="left">Start next day</td>
+<td align="left">Time</td>
+<td align="left">Year-Month-Day</td>
+<td align="left"><code>2000, 2000.003</code> <span class="math inline">\(\to\)</span> <code>&quot;2000-01-01&quot;</code></td>
+</tr>
+<tr class="odd">
 <td align="left">Start month</td>
 <td align="left">Start next month</td>
 <td align="left">Time</td>
-<td align="center">Year-Month</td>
-<td align="center"><code>2000</code>, <code>2000.085</code> =&gt; <code>&quot;2000-01&quot;</code></td>
+<td align="left">Year-Month</td>
+<td align="left"><code>2000, 2000.085</code> <span class="math inline">\(\to\)</span> <code>&quot;2000-01&quot;</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Start quarter</td>
 <td align="left">Start next quarter</td>
 <td align="left">Time</td>
-<td align="center">Year-Quarter</td>
-<td align="center"><code>2000</code>, <code>2000.249</code> =&gt; <code>&quot;2000-Q1&quot;</code></td>
-</tr>
-<tr class="even">
-<td align="left">Any</td>
-<td align="left">Infinite</td>
-<td align="left">Any</td>
-<td align="center">Lower+</td>
-<td align="center"><code>100</code>, <code>Inf</code> =&gt; <code>&quot;100+&quot;</code></td>
+<td align="left">Year-Quarter</td>
+<td align="left"><code>2000, 2000.249</code> <span class="math inline">\(\to\)</span> <code>&quot;2000-Q1&quot;</code></td>
 </tr>
 <tr class="odd">
+<td align="left">Any</td>
+<td align="left">Infinite</td>
+<td align="left">Any</td>
+<td align="left">Lower+</td>
+<td align="left"><code>100, Inf</code> <span class="math inline">\(\to\)</span> <code>&quot;100+&quot;</code></td>
+</tr>
+<tr class="even">
 <td align="left">Infinite</td>
 <td align="left">Any</td>
 <td align="left">Any</td>
-<td align="center">&lt;Upper</td>
-<td align="center"><code>-Inf</code>, <code>2000</code> =&gt; <code>&quot;&lt;2000&quot;</code></td>
+<td align="left">&lt;Upper</td>
+<td align="left"><code>-Inf, 2000</code> <span class="math inline">\(\to\)</span> <code>&quot;&lt;2000&quot;</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Any</td>
 <td align="left">Any</td>
 <td align="left">Age or Time</td>
-<td align="center">Lower - Upper</td>
-<td align="center"><code>77</code>, <code>80.1</code> =&gt; <code>&quot;77-80.1&quot;</code></td>
+<td align="left">Lower-Upper</td>
+<td align="left"><code>77, 80.1</code> <span class="math inline">\(\to\)</span> <code>&quot;77-80.1&quot;</code></td>
 </tr>
 </tbody>
 </table>
 <hr />
+<p>Whether a one-year time interval is displayed using lower or upper depends on <code>labelStart</code> argument.</p>
+<p>Only use “2000-01” labelling if every interval can be interpreted as a month and if months successively. Similarly, only use “2000-Q1” labelling if every interval can be interpreted as a quarter.</p>
 </div>
-<div id="cleaning-data" class="section level2">
-<h2>Cleaning data</h2>
+</div>
+<div id="cleaning-data" class="section level1">
+<h1>Cleaning data</h1>
 <p>cleanAgeGroup(age) cleanPeriod(period)</p>
-</div>
 <div id="creating-labels-from-dates" class="section level2">
 <h2>Creating labels from dates</h2>
 <p>dateToAgeGroup(date, dob, breaks, firstOpen = TRUE, lastOpen = TRUE) dateToCohort(date, breaks, firstOpen = TRUE, lastOpen = FALSE) dateToPeriod(date, breaks, firstOpen = FALSE, lastOpen = FALSE) dateToTriangle(date, dob, breaks, firstOpen = TRUE, lastOpen = FALSE)</p>
@@ -353,6 +386,7 @@ subarray(time &gt; &quot;2010&quot;)</code></pre>
 <p>Movements(population, births = NULL, internal = NULL, entries = list(), exits = list(), net = list(), labelStart = TRUE)</p>
 <p>Counts(object, dimtypes = NULL, dimscales = NULL, type = NULL)</p>
 <p>exposure((object, triangles = FALSE, labelStart = TRUE)</p>
+</div>
 </div>
 
 

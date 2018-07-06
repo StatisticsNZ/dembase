@@ -27,17 +27,6 @@ test_that("getDimtypesWithPairs works", {
               is_identical_to(c("origin", "parent")))
 })
 
-test_that("getIntervalSeparator works", {
-  getIntervalSeparator <- dembase:::getIntervalSeparator
-  expect_that(getIntervalSeparator(),
-              is_identical_to("-"))
-})
-
-test_that("getLimitPrintLower works", {
-  getLimitPrintLower <- dembase:::getLimitPrintLower
-  expect_identical(getLimitPrintLower(), 1000L)
-})
-
 test_that("getNamesPairs works", {
   getNamesPairs <- dembase:::getNamesPairs
   expect_that(getNamesPairs(names = c("reg_dest", "eth_child")),
@@ -48,19 +37,6 @@ test_that("getNamesPairs works", {
               is_identical_to(character()))
   expect_that(getNamesPairs(names = c("region_orig", "age")),
               is_identical_to(c("region_dest", "age")))
-})
-
-test_that("getOpenIntervalSymbol works", {
-  getOpenIntervalSymbol <- dembase:::getOpenIntervalSymbol
-  expect_that(getOpenIntervalSymbol(),
-              is_identical_to("+"))
-  expect_that(getOpenIntervalSymbol(which = "final"),
-              is_identical_to("+"))
-  expect_that(getOpenIntervalSymbol(which = "fir"),
-              is_identical_to("<"))
-  expect_that(getOpenIntervalSymbol(which = "wrong"),
-              throws_error(sprintf("'arg' should be one of %s, %s",
-                                   dQuote("final"), dQuote("first"))))
 })
 
 test_that("getPossibleDimscales works", {
@@ -505,6 +481,46 @@ test_that("isLeapYear works", {
     ans.expected <- c(FALSE, TRUE, FALSE, TRUE, FALSE)
     expect_identical(ans.obtained, ans.expected)
 })
+
+test_that("makeIntervalLabelsForDateDimvalues works", {
+    makeIntervalLabelsForDateDimvalues <- dembase:::makeIntervalLabelsForDateDimvalues
+    dateToFracYear <- dembase:::dateToFracYear
+    ## quarters
+    dates <- as.Date(c("2004-01-01", "2004-04-01", "2004-07-01"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
+    ans.expected <- c("2004-Q1", "2004-Q2")
+    expect_identical(ans.obtained, ans.expected)
+    dates <- as.Date(c("2018-10-01", "2019-01-01", "2019-04-01"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
+    ans.expected <- c("2018-Q4", "2019-Q1")
+    expect_identical(ans.obtained, ans.expected)
+    ## months
+    dates <- as.Date(c("2004-01-01", "2004-02-01", "2004-03-01"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
+    ans.expected <- c("2004-01", "2004-02")
+    expect_identical(ans.obtained, ans.expected)
+    dates <- as.Date(c("2018-12-01", "2019-01-01", "2019-02-01"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
+    ans.expected <- c("2018-12", "2019-01")
+    expect_identical(ans.obtained, ans.expected)
+    ## days
+    dates <- as.Date(c("2004-01-01", "2004-01-02", "2004-01-03"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
+    ans.expected <- c("2004-01-01", "2004-01-02")
+    expect_identical(ans.obtained, ans.expected)
+    dates <- as.Date(c("2018-12-31", "2019-01-01", "2019-01-02"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
+    ans.expected <- c("2018-12-31", "2019-01-01")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 
 test_that("makeDateVecYears works", {
     makeDateVecYears <- dembase:::makeDateVecYears
@@ -2815,77 +2831,78 @@ test_that("dateToFracYear works", {
     expect_equal(ans.obtained, ans.expected)
 })
 
-
-
-
-    
-## test_that("makeLabelsForClosedIntervals works", {
-##     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
-##     expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10)),
-##                      c("0-4", "5-9"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(2000, 2005, 2010)),
-##                      c("2000-2005", "2005-2010"))
-##     expect_identical(makeLabelsForClosedIntervals2(1:4),
-##                      c("1", "2", "3"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(1:4, 5.1)),
-##                      c("1", "2", "3", "4-5.1"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(0.01, 1.01, 2.01)),
-##                      c("0.01-1.01", "1.01-2.01"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(0.1, 5, 10)),
-##                      c("0.1-5", "5-10"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(-10, -5, 0)),
-##                      c("-10--6", "-5--1"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(-10, -5, 0),
-##                                                   intervalSeparator = " to "),
-##                      c("-10 to -6", "-5 to -1"))
-##     expect_identical(makeLabelsForClosedIntervals2(c(0, 5, 10),
-##                                                   limitPrintLower = -Inf),
-##                      c("0-5", "5-10"))
-##     expect_identical(makeLabelsForClosedIntervals2(numeric()),
-##                      character())
-##     expect_identical(makeLabelsForClosedIntervals2(2000:2004),
-##                      as.character(2000:2003))
-##     expect_identical(makeLabelsForClosedIntervals2(c(2000:2004, 2005.1)),
-##                      c("2000", "2001", "2002", "2003",
-##                        "2004-2005.1"))
-## })
+test_that("makeLabelsForClosedIntervals works", {
+    makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
+    expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10), ageLike = TRUE, labelStart = TRUE),
+                     c("0-4", "5-9"))
+    expect_identical(makeLabelsForClosedIntervals(c(2000, 2005, 2010),
+                                                  ageLike = FALSE, labelStart = TRUE),
+                     c("2000-2005", "2005-2010"))
+    expect_identical(makeLabelsForClosedIntervals(2001:2004,
+                                                  ageLike = FALSE, labelStart = TRUE),
+                     c("2001", "2002", "2003"))
+    expect_identical(makeLabelsForClosedIntervals(2001:2004, ageLike = FALSE,
+                                                  labelStart = FALSE),
+                     c("2002", "2003", "2004"))
+    expect_identical(makeLabelsForClosedIntervals(c(1:4, 5.1), ageLike = TRUE, labelStart = TRUE),
+                     c("1", "2", "3", "4-5.1"))
+    expect_identical(makeLabelsForClosedIntervals(c(0.01, 1.01, 2.01),
+                                                  ageLike = TRUE, labelStart = TRUE),
+                     c("0.01-1.01", "1.01-2.01"))
+    expect_identical(makeLabelsForClosedIntervals(c(0.1, 5, 10), ageLike = TRUE,
+                                                  labelStart = TRUE),
+                     c("0.1-5", "5-9"))
+    expect_identical(makeLabelsForClosedIntervals(c(-10, -5, 0),
+                                                  ageLike = FALSE, labelStart = TRUE),
+                     c("-10--5", "-5-0"))
+    expect_identical(makeLabelsForClosedIntervals(numeric(), ageLike = TRUE,
+                                                  labelStart = TRUE),
+                     character())
+    expect_identical(makeLabelsForClosedIntervals(2000:2004, ageLike = FALSE,
+                                                  labelStart = TRUE),
+                     as.character(2000:2003))
+    expect_identical(makeLabelsForClosedIntervals(2000:2004, ageLike = FALSE,
+                                                  labelStart = FALSE),
+                     as.character(2001:2004))
+    expect_identical(makeLabelsForClosedIntervals(c(2000:2004, 2005.1),
+                                                  ageLike = FALSE, labelStart = TRUE),
+                     c("2000", "2001", "2002", "2003",
+                       "2004-2005.1"))
+})
 
 test_that("makeLabelsForIntervals works", {
   makeLabelsForIntervals <- dembase:::makeLabelsForIntervals
-  expect_identical(makeLabelsForIntervals(c(0, 5, Inf)),
+  dateToFracYear <- dembase:::dateToFracYear
+  expect_identical(makeLabelsForIntervals(c(0, 5, Inf), labelStart = TRUE),
               c("0-4", "5+"))
-  expect_identical(makeLabelsForIntervals(c(0, 5, 10)),
+  expect_identical(makeLabelsForIntervals(c(0, 5, 10), labelStart = TRUE),
               c("0-4", "5-9"))
-  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10)),
+  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10), labelStart = TRUE),
               c("<0", "0-4", "5-9"))
-  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10, Inf)),
+  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10, Inf), labelStart = TRUE),
               c("<0", "0-4", "5-9", "10+"))
-  expect_identical(makeLabelsForIntervals(c(0, 5, Inf), intervalSeparator = " to "),
-              c("0 to 4", "5+"))
-  expect_identical(makeLabelsForIntervals(c(0, 5, 10), limitPrintLower = -Inf),
-              c("1-5", "6-10"))
-  expect_identical(makeLabelsForIntervals(numeric()),
+  expect_identical(makeLabelsForIntervals(c(2000, 2005, Inf), labelStart = TRUE),
+              c("2000-2005", "2005+"))
+  expect_identical(makeLabelsForIntervals(numeric(), labelStart = TRUE),
               character())
-  expect_identical(makeLabelsForIntervals(c(2000, Inf)), "2001+")
-  expect_identical(makeLabelsForIntervals(c(2000, Inf), limitPrintLower = Inf),
+  expect_identical(makeLabelsForIntervals(c(2000, Inf), labelStart = TRUE),
                    "2000+")
-  expect_identical(makeLabelsForIntervals(c(1995, 2000, Inf)), c("1996-2000", "2001+"))
-  expect_identical(makeLabelsForIntervals(c(-Inf, 0)), "<0")
-  expect_identical(makeLabelsForIntervals(0:5), as.character(0:4))
-  expect_identical(makeLabelsForIntervals(2000:2005), as.character(2001:2005))
-  expect_identical(makeLabelsForIntervals(c(2000:2002, 2004.5)),
-                   c("2000-2001", "2001-2002", "2002-2004.5"))
-})
-
-test_that("makeLabelsMonths works", {
-    makeLabelsMonths <- dembase:::makeLabelsMonths
-    monthAndYearToDimvalues <- dembase:::monthAndYearToDimvalues
-    months <- c("Nov", "Dec", base::month.abb, "Jan", "Feb")
-    years <- c(2007L, 2007L, rep(2008L, 12), 2009L, 2009L)
-    dv <- monthAndYearToDimvalues(month = months, year = years)
-    ans.obtained <- makeLabelsMonths(dv)
-    ans.expected <- paste(months, years, sep = "-")
-    expect_equal(ans.obtained, ans.expected)
+  expect_identical(makeLabelsForIntervals(c(2000, 2001, Inf), labelStart = TRUE),
+                   c("2000", "2001+"))
+  expect_identical(makeLabelsForIntervals(c(1995, 2000, Inf), labelStart = TRUE),
+                   c("1995-2000", "2000+"))
+  expect_identical(makeLabelsForIntervals(c(-Inf, 0), labelStart = TRUE),
+                   "<0")
+  expect_identical(makeLabelsForIntervals(0:5, labelStart = TRUE),
+                   as.character(0:4))
+  expect_identical(makeLabelsForIntervals(2000:2005, labelStart = FALSE),
+                   as.character(2001:2005))
+  expect_identical(makeLabelsForIntervals(c(2000:2002, 2004.5), labelStart = TRUE),
+                   c("2000", "2001", "2002-2004.5"))
+  dates <- as.Date(c("2014-01-01", "2014-04-01", "2014-07-01"))
+  dimvalues <- dateToFracYear(dates)
+  expect_identical(makeLabelsForIntervals(dimvalues, labelStart = TRUE),
+                   c("2014-Q1", "2014-Q2"))
 })
 
 test_that("monthAndYearToDimvalues works", {
@@ -2945,7 +2962,7 @@ test_that("monthLabelsToDimvalues", {
 test_that("timeUnitsFromDimScales works when units are days", {
     timeUnitsFromDimScales <- dembase:::timeUnitsFromDimScales
     dateToFracYear <- dembase:::dateToFracYear
-    dates <- as.Date(c("2000-01-01", "2000-02-28", "2018-03-13", "2020-12-31"))
+    dates <- as.Date(c("2000-01-01", "2000-01-02", "2000-01-03", "2000-01-04"))
     dimvalues <- dateToFracYear(dates)
     expect_identical(timeUnitsFromDimScales(dimvalues),
                      dates)
@@ -2953,22 +2970,22 @@ test_that("timeUnitsFromDimScales works when units are days", {
                      dates)
     expect_identical(timeUnitsFromDimScales(round(dimvalues, 4)),
                      dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues[-2]),
                      NULL)
     date <- as.Date("2001-05-01")
     dimvalues <- dateToFracYear(date)
-    expect_identical(timeUnitsFromDimScales(dimvalues, successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues),
                      date)
     dates <- as.Date(c("2001-05-01", "2001-05-02"))
     dimvalues <- dateToFracYear(dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues),
                      dates)
 })
 
 test_that("timeUnitsFromDimScales works when units are months", {
     timeUnitsFromDimScales <- dembase:::timeUnitsFromDimScales
     dateToFracYear <- dembase:::dateToFracYear
-    dates <- as.Date(c("2000-01-01", "2000-02-01", "2018-03-01", "2020-12-01"))
+    dates <- as.Date(c("2000-01-01", "2000-02-01", "2000-03-01", "2000-4-01"))
     dimvalues <- dateToFracYear(dates)
     expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month"),
                      dates)
@@ -2976,15 +2993,15 @@ test_that("timeUnitsFromDimScales works when units are months", {
                      dates)
     expect_identical(timeUnitsFromDimScales(round(dimvalues, 4), unit = "month"),
                      dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues[-2], unit = "month"),
                      NULL)
     date <- as.Date("2001-05-01")
     dimvalues <- dateToFracYear(date)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month"),
                      date)
     dates <- as.Date(c("2001-05-01", "2001-06-01"))
     dimvalues <- dateToFracYear(dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month"),
                      dates)
 })
 
@@ -2999,15 +3016,15 @@ test_that("timeUnitsFromDimScales works when units are quarters", {
                      dates)
     expect_identical(timeUnitsFromDimScales(round(dimvalues, 4), unit = "quarter"),
                      dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu"),
                      NULL)
     date <- as.Date("2001-04-01")
     dimvalues <- dateToFracYear(date)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu"),
                      date)
     dates <- as.Date(c("2001-04-01", "2001-07-01"))
     dimvalues <- dateToFracYear(dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = TRUE),
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu"),
                      dates)
 })
 

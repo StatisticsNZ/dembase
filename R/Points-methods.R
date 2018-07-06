@@ -146,11 +146,19 @@ setMethod("labels",
           signature(object = "Points"),
           function(object) {
               dimvalues <- dimvalues(object)
-              time.units <- timeUnitsFromDimScales(dimvalues)
-              if (is.null(time.units))
-                  as.character(dimvalues)
-              else
-                  time.units
+              n <- length(dimvalues)
+              if (n >= 2L) {
+                  time.units <- timeUnitsFromDimScales(dimvalues, unit = "quarter")
+                  if (!is.null(time.units))
+                      return(time.units)
+                  time.units <- timeUnitsFromDimScales(dimvalues, unit = "month")
+                  if (!is.null(time.units))
+                      return(time.units)
+                  time.units <- timeUnitsFromDimScales(dimvalues, unit = "day")
+                  if (!is.null(time.units))
+                      return(time.units)
+              }
+              as.character(dimvalues)
           })
 
 #' @rdname exported-not-api
@@ -161,3 +169,7 @@ setMethod("stepLengths",
             dimvalues <- dimvalues(object)
             diff(dimvalues)
           })
+
+
+
+

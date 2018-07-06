@@ -60,10 +60,10 @@ test_that("dimscales method for DimScales works when used on Points", {
 
 test_that("dimvalues method for DimScales works when used on Points", {
   dimvalues <- dembase:::dimvalues
-  expect_that(dimvalues(new("Points", dimvalues = c(0, 1, 2))),
-              is_identical_to(c(0, 1, 2)))
-  expect_that(dimvalues(new("Points")),
-              is_identical_to(numeric()))
+  expect_identical(dimvalues(new("Points", dimvalues = c(0, 1, 2))),
+                   c(0, 1, 2))
+  expect_identical(dimvalues(new("Points")),
+                   numeric())
 })
 
 test_that("e1IsFirstDimScale works", {
@@ -83,10 +83,28 @@ test_that("e1IsFirstDimScale works", {
 })
 
 test_that("labels method for DimScales works when used on Points", {
-  expect_that(labels(new("Points", dimvalues = c(1, 2))),
-              is_identical_to(c("1", "2")))
-  expect_that(labels(new("Points")),
-              is_identical_to(character()))
+    dateToFracYear <- dembase:::dateToFracYear
+    expect_identical(labels(new("Points", dimvalues = c(1, 2))),
+                     c("1", "2"))
+    expect_identical(labels(new("Points", dimvalues = 2000)),
+                     "2000")
+    expect_identical(labels(new("Points")),
+                     character())
+    date <- as.Date(c("2000-01-01", "2000-01-02"))
+    dv <- dateToFracYear(date)
+    ans.obtained <- labels(new("Points", dimvalues = dv))
+    ans.expected <- date
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2000-01-01", "2000-02-01"))
+    dv <- dateToFracYear(date)
+    ans.obtained <- labels(new("Points", dimvalues = dv))
+    ans.expected <- date
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2000-01-01", "2000-04-01"))
+    dv <- dateToFracYear(date)
+    ans.obtained <- labels(new("Points", dimvalues = dv))
+    ans.expected <- date
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("stepLengths method for Points works", {
