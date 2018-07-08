@@ -765,13 +765,13 @@ test_that("monthStartNum works", {
                  "invalid value for 'monthStart' : \"wrong\" is not a valid month")
 })
 
-test_that("yearToPeriod works", {
-    ans.obtained <- yearToPeriod(c(2000, 2049, 2033),
+test_that("timeToPeriod works", {
+    ans.obtained <- timeToPeriod(c(2000, 2049, 2033),
                                  breaks = seq(2000, 2050, 5))
     ans.expected <- factor(c("2001-2005", "2046-2050", "2031-2035"),
                            levels = paste(seq(2001, 2046, 5), seq(2005, 2050, 5), sep = "-"))
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- yearToPeriod(c(1999, 2005, 2033, 2099),
+    ans.obtained <- timeToPeriod(c(1999, 2005, 2033, 2099),
                                  breaks = c(2000, 2010, 2020),
                                  firstOpen = TRUE, lastOpen = TRUE)
     ans.expected <- factor(c("<2000", "2001-2010", "2021+", "2021+"),
@@ -779,12 +779,12 @@ test_that("yearToPeriod works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("yearToPeriod throws appropriate errors", {
-    expect_error(yearToPeriod(list("a", "b", "c"), breaks = c(2000, 2005)),
+test_that("timeToPeriod throws appropriate errors", {
+    expect_error(timeToPeriod(list("a", "b", "c"), breaks = c(2000, 2005)),
                  "'year' has class \"list\"")
-    expect_error(yearToPeriod(c("1", NA, "b"), breaks = c(2000, 2005)),
+    expect_error(timeToPeriod(c("1", NA, "b"), breaks = c(2000, 2005)),
                  "value \"b\" from 'year' cannot be coerced to numeric")
-    expect_error(yearToPeriod(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
+    expect_error(timeToPeriod(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
                  "'year' has values less than the lowest value of 'breaks', but 'firstOpen' is FALSE")
 })
 

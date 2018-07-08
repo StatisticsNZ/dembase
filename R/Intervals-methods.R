@@ -481,7 +481,7 @@ setMethod("labels",
           signature(object = "Intervals"),
           function(object) {
               dimvalues <- dimvalues(object)
-              makeLabelsForIntervals(dimvalues)
+              makeLabelsForIntervals(dimvalues = dimvalues)
           })
 
 #' @export
