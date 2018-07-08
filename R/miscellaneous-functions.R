@@ -2137,17 +2137,17 @@ timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter"
     poss.year.last <- floor(dimvalues[n]) + 1L
     date.from <- as.Date(sprintf("%s-01-01", poss.year.first))
     date.to <- as.Date(sprintf("%s-01-01", poss.year.last))
-    poss.dimvalues <- seq(from = date.from,
-                          to = date.to,
-                          by = unit)
-    poss.dimvalues.frac <- dateToFracYear(poss.dimvalues)
+    poss.dates <- seq(from = date.from,
+                      to = date.to,
+                      by = unit)
+    poss.dimvalues <- dateToFracYear(poss.dates)
     dimvalues <- round(dimvalues, digits.round)
-    i <- match(dimvalues, poss.dimvalues.frac, nomatch = 0L)
+    i <- match(dimvalues, poss.dimvalues, nomatch = 0L)
     all.dimvalues.valid <- all(i > 0L)
     if (all.dimvalues.valid) {
         successive <- all(diff(i) == 1L)
         if (successive)
-            poss.dimvalues[i]
+            poss.dates[i]
         else
             NULL
     }
@@ -2903,26 +2903,33 @@ addIterationsToMetadata <- function(object, iterations) {
         DimScales = DimScales)
 }
 
-incrementDimvaluesMonths <- function(start, forward, n) {
-    year.start <- as.integer(start)
-    n.year <- abs(as.integer(n)) %/% 12L + 2L
-    month <- rep(base::month.abb, times = n.year)
-    if (forward)
-        year <- seq.int(from = year.start, by = 1L, length.out = n.year)
-    else
-        year <- seq.int(to = year.start, by = 1L, length.out = n.year)
-    year <- rep(year, each = 12L)
-    dimvalues.poss <- monthAndYearToDimvalues(month = month,
-                                              year = year)
-    i.start <- match(start, dimvalues.poss, nomatch = 0L)
-    if (identical(i.start, 0L))
-        stop(gettextf("'%s' is not a valid dimvalue for a month",
-                      start))
-    if (forward)
-        s <- seq(from = i.start, length.out = n + 1L)
-    else
-        s <- seq(to = i.start, length.out = n + 1L)
-    dimvalues.poss[s]
+## HAS_TESTS
+incrementDimvaluesForTimeUnits <- function(dimvalues, forward, n) {
+    n.dv <- length(dimvalues)
+    if (n.dv >= 2L) {
+        for (unit in c("quarter", "month", "day")) {
+            time.units <- timeUnitsFromDimScales(dimvalues,
+                                                 unit = unit)
+            if (!is.null(time.units)) {
+                if (forward) {
+                    dates <- seq.Date(from = time.units[n.dv],
+                                      by = unit,
+                                      length.out = n + 1L)
+                    dates <- dates[-1L]
+                }
+                else {
+                    dates <- seq.Date(from = time.units[1L],
+                                      by = paste(-1, unit),
+                                      length.out = n + 1L)
+                    dates <- dates[-1L]
+                    dates <- rev(dates)
+                }
+                ans <- dateToFracYear(dates)
+                return(ans)
+            }
+        }
+    }
+    NULL
 }
 
 

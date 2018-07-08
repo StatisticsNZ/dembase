@@ -97,25 +97,30 @@ setMethod("incrementDimScale",
               if (n.dv < 2L)
                   stop(gettextf("\"%s\" dimension has length %d",
                                 "along", n.dv))
-              if (n.dv == 2L)
-                  step = diff(dv)
-              else {
-                  step <- diff(dv[1:2])
-                  if (!all(diff(dv[-1L]) == step))
-                      stop(gettextf("points on \"%s\" dimension not regularly spaced",
-                                   "along"))
-              }
-              if (forward) {
-                  dimvalues <- seq(from = dv[n.dv],
-                                   by = step,
-                                   length.out = n + 1L)
-                  dimvalues <- dimvalues[-1L]
-              }
-              else {
-                  dimvalues <- seq(to = dv[1L],
-                                   by = step,
-                                   length.out = -n + 1L)
-                  dimvalues <- dimvalues[n - 1L]
+              dimvalues <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                          forward = forward,
+                                                          n = n)
+              if (is.null(dimvalues)) {
+                  if (n.dv == 2L)
+                      step = diff(dv)
+                  else {
+                      step <- diff(dv[1:2])
+                      if (!all(diff(dv[-1L]) == step))
+                          stop(gettextf("points on \"%s\" dimension not regularly spaced",
+                                        "along"))
+                  }
+                  if (forward) {
+                      dimvalues <- seq(from = dv[n.dv],
+                                       by = step,
+                                       length.out = n + 1L)
+                      dimvalues <- dimvalues[-1L]
+                  }
+                  else {
+                      dimvalues <- seq(to = dv[1L],
+                                       by = step,
+                                       length.out = -n + 1L)
+                      dimvalues <- dimvalues[n - 1L]
+                  }
               }
               methods::new("Points", dimvalues = dimvalues)
           })

@@ -4257,6 +4257,75 @@ test_that("incrementDimvaluesMonths works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("incrementDimvaluesForTimeUnits works with quarters", {
+    incrementDimvaluesForTimeUnits <- dembase:::incrementDimvaluesForTimeUnits
+    dateToFracYear <- dembase:::dateToFracYear
+    dates <- as.Date(c("2018-01-01", "2018-04-01", "2018-07-01"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = TRUE,
+                                                   n = 3)
+    ans.expected <- dateToFracYear(as.Date(c("2018-10-01", "2019-01-01", "2019-04-01")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = FALSE,
+                                                   n = 2)
+    ans.expected <- dateToFracYear(as.Date(c("2017-07-01", "2017-10-01")))
+    expect_identical(ans.obtained, ans.expected)
+    dimvalues <- c(1, 3)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = TRUE,
+                                                   n = 2)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("incrementDimvaluesForTimeUnits works with months", {
+    incrementDimvaluesForTimeUnits <- dembase:::incrementDimvaluesForTimeUnits
+    dateToFracYear <- dembase:::dateToFracYear
+    dates <- as.Date(c("2018-01-01", "2018-02-01", "2018-03-01"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = TRUE,
+                                                   n = 3)
+    ans.expected <- dateToFracYear(as.Date(c("2018-04-01", "2018-05-01", "2018-06-01")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = FALSE,
+                                                   n = 2)
+    ans.expected <- dateToFracYear(as.Date(c("2017-11-01", "2017-12-01")))
+    expect_identical(ans.obtained, ans.expected)
+    dimvalues <- c(1, 3)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = TRUE,
+                                                   n = 2)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("incrementDimvaluesForTimeUnits works with days", {
+    incrementDimvaluesForTimeUnits <- dembase:::incrementDimvaluesForTimeUnits
+    dateToFracYear <- dembase:::dateToFracYear
+    dates <- as.Date(c("2018-01-01", "2018-01-02", "2018-01-03"))
+    dimvalues <- dateToFracYear(dates)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = TRUE,
+                                                   n = 3)
+    ans.expected <- dateToFracYear(as.Date(c("2018-01-04", "2018-01-05", "2018-01-06")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = FALSE,
+                                                   n = 2)
+    ans.expected <- dateToFracYear(as.Date(c("2017-12-30", "2017-12-31")))
+        expect_identical(ans.obtained, ans.expected)
+    dimvalues <- c(1, 3)
+    ans.obtained <- incrementDimvaluesForTimeUnits(dimvalues = dimvalues,
+                                                   forward = TRUE,
+                                                   n = 2)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("mergeMetadata works", {
     mergeMetadata <- dembase:::mergeMetadata
     makePairTransforms <- dembase:::makePairTransforms
