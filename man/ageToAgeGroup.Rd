@@ -55,6 +55,6 @@ ageToAgeGroup(age = c(0, 17, 14, 3, 9),
               lastOpen = FALSE)
 }
 \seealso{
-\code{\link{yearToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
+\code{\link{timeToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
 is useful for creating complicated \code{breaks} arguments.
 }

@@ -156,7 +156,7 @@ getValidDimtypes <- function()
 #'
 #' @return A factor, the same length as \code{age}.
 #'
-#' @seealso \code{\link{yearToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
+#' @seealso \code{\link{timeToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
 #' is useful for creating complicated \code{breaks} arguments.
 #'
 #' @examples
@@ -785,7 +785,7 @@ monthStartNum <- function(monthStart) {
     i
 }
 
-## HAS_TESTS (via ageToAgeGroup and yearToPeriod)
+## HAS_TESTS (via ageToAgeGroup and timeToPeriod)
 pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
     if (!is.numeric(vec) && !is.character(vec) && !is.factor(vec))
         stop(gettextf("'%s' has class \"%s\"",
@@ -861,7 +861,7 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
 #' \code{2018.633}, but are more typically integers
 #' such as \code{2000} or \code{2018}.
 #'
-#' If \code{year} is a factor, then \code{yearToPeriod} will coerce
+#' If \code{year} is a factor, then \code{timeToPeriod} will coerce
 #' it to a character vector before trying to coerce it to numeric.
 #' See below for an example.
 #'
@@ -881,13 +881,13 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
 #' @examples
 #' year <- c(2001, 2023, 2000, 2005, 2014, 2013, 2029)
 #' ## 5-year periods, 2000-2005, 2005-2010, ..., 2025-2030
-#' yearToPeriod(year, breaks = seq(2000, 2030, 5))
+#' timeToPeriod(year, breaks = seq(2000, 2030, 5))
 #' ## 5-year periods, 2000-2005, 2005-2010, ..., 2045-2050
-#' yearToPeriod(year, breaks = seq(2000, 2050, 5))
+#' timeToPeriod(year, breaks = seq(2000, 2050, 5))
 #' ## first period open 
-#' yearToPeriod(year, breaks = seq(2010, 2030, 5), firstOpen = TRUE)
+#' timeToPeriod(year, breaks = seq(2010, 2030, 5), firstOpen = TRUE)
 #' @export
-yearToPeriod <- function(year, breaks, firstOpen = FALSE,
+timeToPeriod <- function(year, breaks, firstOpen = FALSE,
                          lastOpen = FALSE) {
     if (missing(breaks))
         stop(gettextf("argument \"%s\" is missing, with no default",
