@@ -1110,8 +1110,13 @@ setMethod("dplot",
                   expr <- parse(text = text)
                   data <- eval(expr)
               }
-              ## collapse unused dimensions - apart from any "iteration" dimension
-              margin <- c(all.vars(formula)[-1L], group.vars)
+              ## collapse unused dimensions - apart from any "iteration" or "quantile" dimension
+              conditioning.vars <- all.vars(formula)[-1L]
+              margin <- c(conditioning.vars, group.vars)
+              is.not.in.names <- !(margin %in% names(data))
+              if (any(is.not.in.names))
+                  stop(gettextf("'%s' does not contain a dimension called \"%s\"",
+                                "data", margin[is.not.in.names][1L]))
               collapse.iter <- FALSE
               i.iter <- match("iteration", dimtypes(data), nomatch = 0L)
               has.iter <- i.iter > 0L
@@ -1121,7 +1126,19 @@ setMethod("dplot",
                   if (collapse.iter)
                       margin <- c(margin, name.iter)
               }
-              data <- collapseDimension(data, margin = margin)
+              i.quantile <- match("quantile", dimtypes(data), nomatch = 0L)
+              has.quantile <- i.quantile > 0L
+              if (has.quantile) {
+                  name.quantile <- names(data)[i.quantile]
+                  if (!(name.quantile %in% margin))
+                      margin <- c(margin, name.quantile)
+              }
+              if (!setequal(names(data), margin)) {
+                  if (has.quantile)
+                      stop(gettextf("trying to collapse dimensions, but '%s' has dimension with %s \"%s\"",
+                                    "data", "dimtype", "quantile"))
+                  data <- collapseDimension(data, margin = margin)
+              }
               ## deal with cases where response is "proportion" or "percent"
               if (response.is.propn) {
                   if (!methods::hasArg(groups))
@@ -1130,6 +1147,7 @@ setMethod("dplot",
                   ## use numbers to refer to dimensions, to allow for possibility
                   ## that names of paired dimensions have changed
                   margin.prop <- which(!(margin %in% group.vars))
+                  margin.prop <- setdiff(margin.prop, c(i.iter, i.quantile))
                   data <- prop.table(data, margin = margin.prop)
                   if (identical(response.name, "percent"))
                       data <- 100 * data
