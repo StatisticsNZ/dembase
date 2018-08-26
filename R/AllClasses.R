@@ -426,6 +426,7 @@ setClass("Triangles",
 setClass("Points",
          slots = c(dimvalues = "numeric"),
          contains = "DimScale",
+         prototype = prototype(showDates = FALSE),
          validity = function(object) {
              dimvalues <- dimvalues(object)
              if (any(is.infinite(dimvalues)))

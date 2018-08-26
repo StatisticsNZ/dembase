@@ -63,23 +63,6 @@ test_that("getSuffixPattern works", {
               is_identical_to(c("_orig$|_parent$")))
 })
 
-test_that("getSynonymsForIntervalSeparator works", {
-  getSynonymsForIntervalSeparator <- dembase:::getSynonymsForIntervalSeparator
-  expect_that(getSynonymsForIntervalSeparator(),
-              is_identical_to(c("-", "to")))
-})
-
-test_that("getSynonymsForOpenIntervalSymbol works", {
-  getSynonymsForOpenIntervalSymbol <- dembase:::getSynonymsForOpenIntervalSymbol
-  expect_true("+" %in% getSynonymsForOpenIntervalSymbol())
-  expect_true("andover" %in% getSynonymsForOpenIntervalSymbol(which = "final"))
-  expect_true("<" %in% getSynonymsForOpenIntervalSymbol(which = "firstLeft"))
-  expect_true("orless" %in% getSynonymsForOpenIntervalSymbol("firstRight"))
-  expect_error(getSynonymsForOpenIntervalSymbol(which = "wrong"),
-               sprintf("'arg' should be one of %s, %s, %s",
-                       dQuote("final"), dQuote("firstLeft"), dQuote("firstRight")))
-})
-
 test_that("getUniqueDimtypes works", {
   getUniqueDimtypes <- dembase:::getUniqueDimtypes
   expect_false("sex" %in% getUniqueDimtypes())
@@ -2829,6 +2812,82 @@ test_that("dateToFracYear works", {
                             2004 + 60/366),
                           3)
     expect_equal(ans.obtained, ans.expected)
+})
+
+test_that("intervalDimvaluesFromDates works", {
+    intervalDimvaluesFromDates <- dembase:::intervalDimvaluesFromDates
+    dateToFracYear <- dembase:::dateToFracYear
+    labels <- c("2010-03-01", "2010-03-03", "2010-03-02")
+    ans.obtained <- intervalDimvaluesFromDates(labels)
+    ans.expected <- dateToFracYear(as.Date(c("2010-03-01", "2010-03-02", "2010-03-03", "2010-03-04")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("intervalDimvaluesFromMonths works", {
+    intervalDimvaluesFromMonths <- dembase:::intervalDimvaluesFromMonths
+    dateToFracYear <- dembase:::dateToFracYear
+    labels <- c("2010-03", "2010-04", "2010-02")
+    ans.obtained <- intervalDimvaluesFromMonths(labels)
+    ans.expected <- dateToFracYear(as.Date(c("2010-02-01", "2010-03-01", "2010-04-01", "2010-05-01")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("intervalDimvaluesFromQuarters works", {
+    intervalDimvaluesFromQuarters <- dembase:::intervalDimvaluesFromQuarters
+    dateToFracYear <- dembase:::dateToFracYear
+    labels <- c("2010-Q2", "2010-Q4", "2010-Q3")
+    ans.obtained <- intervalDimvaluesFromQuarters(labels)
+    ans.expected <- dateToFracYear(as.Date(c("2010-04-01", "2010-07-01", "2010-10-01", "2011-01-01")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("isValidIntervalLabelsDate works", {
+    isValidIntervalLabelsDate <- dembase:::isValidIntervalLabelsDate
+    expect_true(isValidIntervalLabelsDate(character()))
+    expect_true(isValidIntervalLabelsDate("2010-03-05"))
+    expect_true(isValidIntervalLabelsDate(c("2010-03-05", "2010-03-06")))
+    expect_false(isValidIntervalLabelsDate(c("2010-03-05", "2010-03-07")))
+    expect_true(isValidIntervalLabelsDate(c("2010-03-05", "2010-03-04")))
+    expect_false(isValidIntervalLabelsDate(c("2010-03-05", "2010-03-04"), ordered = TRUE))
+    expect_false(isValidIntervalLabelsDate(c("2010-03-05", "wrong")))
+    expect_false(isValidIntervalLabelsDate(c("2010-03-05", NA)))
+})
+
+test_that("isValidIntervalLabelsMonth works", {
+    isValidIntervalLabelsMonth <- dembase:::isValidIntervalLabelsMonth
+    expect_true(isValidIntervalLabelsMonth(character()))
+    expect_true(isValidIntervalLabelsMonth("2010-03"))
+    expect_true(isValidIntervalLabelsMonth(c("2010-04", "2010-05")))
+    expect_false(isValidIntervalLabelsMonth(c("2010-05", "2010-07")))
+    expect_false(isValidIntervalLabelsMonth(c("2010-03", "2010-03")))
+    expect_false(isValidIntervalLabelsMonth(c("2010-03", "wrong")))
+    expect_false(isValidIntervalLabelsMonth(c("2010-03", NA)))
+})
+
+test_that("isValidIntervalLabelsQuarter works", {
+    isValidIntervalLabelsQuarter <- dembase:::isValidIntervalLabelsQuarter
+    expect_true(isValidIntervalLabelsQuarter(character()))
+    expect_true(isValidIntervalLabelsQuarter("2010-Q3"))
+    expect_true(isValidIntervalLabelsQuarter(c("2010-Q2", "2010-Q3")))
+    expect_true(isValidIntervalLabelsQuarter(c("2010-Q3", "2010-Q2")))
+    expect_false(isValidIntervalLabelsQuarter(c("2010-Q3", "2010-Q2"), ordered = TRUE))
+    expect_false(isValidIntervalLabelsQuarter(c("2010-Q1", "2010-Q3")))
+    expect_false(isValidIntervalLabelsQuarter(c("2010-Q1", "2010-Q1")))
+    expect_false(isValidIntervalLabelsQuarter(c("2010-Q3", "wrong")))
+    expect_false(isValidIntervalLabelsQuarter(c("2010-Q3", NA)))
+})
+
+test_that("isValidPointLabelsDate works", {
+    isValidPointLabelsDate <- dembase:::isValidPointLabelsDate
+    expect_true(isValidPointLabelsDate(character()))
+    expect_true(isValidPointLabelsDate("2010-03-05"))
+    expect_true(isValidPointLabelsDate(c("2010-03-05", "2010-03-06")))
+    expect_true(isValidPointLabelsDate(c("2010-03-06", "2010-03-05")))
+    expect_false(isValidPointLabelsDate(c("2010-03-06", "2010-03-05"), ordered = TRUE))
+    expect_true(isValidPointLabelsDate(c("2010-03-05", "2010-03-07")))
+    expect_false(isValidPointLabelsDate(c("2010-03-05", "2010-03-04")))
+    expect_false(isValidPointLabelsDate(c("2010-03-05", "wrong")))
+    expect_false(isValidPointLabelsDate(c("2010-03-05", NA)))
 })
 
 test_that("makeLabelsForClosedIntervals works", {

@@ -364,6 +364,26 @@ setMethod("inferDimvalues",
               n <- length(labels)
               if (identical(n, 0L))
                   return(numeric())
+              try.to.interpet.as.time.units <- n >= 2L
+              if (try.to.interpet.as.time.units) {
+                  if (isValidIntervalLabelsDate(labels)) {
+                      labels <- sort(labels)
+                      dimvalues <- dateToFracYear(labels)
+                      return(dimvalues)
+                  }
+                  if (isValidIntervalLabelsMonth(labels)) {
+                      labels <- sort(labels)
+                      
+                      
+
+                  }
+                      || isValidIntervalLabelsMonth(labels)
+                      || isValidIntervalLabelsQuarter(labels)) {
+                      labels <- sort(labels)
+                      
+                  }
+
+              }
               month.dimvalues <- tryCatch(monthLabelsToDimvalues(labels),
                                           error = function(e) NULL)
               if (!is.null(month.dimvalues))

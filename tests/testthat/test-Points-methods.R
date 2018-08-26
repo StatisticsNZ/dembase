@@ -2,6 +2,20 @@
 
 context("Points-methods")
 
+test_that("coercion from Points to Sexes works", {
+  expect_error(as(new("Points", dimvalues = c(0.025, 0.5, 0.975)), "Sexes"),
+               "labels not valid for dimscale")
+  expect_identical(as(new("Points"), "Sexes"),
+                   new("Sexes"))
+})
+
+test_that("coercion from Points to Triangles works", {
+  expect_error(as(new("Points", dimvalues = c(0.025, 0.5, 0.975)), "Triangles"),
+               "labels not valid for dimscale")
+  expect_identical(as(new("Points"), "Triangles"),
+                   new("Triangles"))
+})
+
 test_that("coercion from Points to Quantiles works", {
   expect_that(as(new("Points", dimvalues = c(0.025, 0.5, 0.975)), "Quantiles"),
               is_identical_to(new("Quantiles", dimvalues = c(0.025, 0.5, 0.975))))
@@ -82,31 +96,6 @@ test_that("e1IsFirstDimScale works", {
     expect_true(e1IsFirstDimScale(e1 = e1, e2 = e2))
 })
 
-test_that("labels method for DimScales works when used on Points", {
-    dateToFracYear <- dembase:::dateToFracYear
-    expect_identical(labels(new("Points", dimvalues = c(1, 2))),
-                     c("1", "2"))
-    expect_identical(labels(new("Points", dimvalues = 2000)),
-                     "2000")
-    expect_identical(labels(new("Points")),
-                     character())
-    date <- as.Date(c("2000-01-01", "2000-01-02"))
-    dv <- dateToFracYear(date)
-    ans.obtained <- labels(new("Points", dimvalues = dv))
-    ans.expected <- date
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2000-01-01", "2000-02-01"))
-    dv <- dateToFracYear(date)
-    ans.obtained <- labels(new("Points", dimvalues = dv))
-    ans.expected <- date
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2000-01-01", "2000-04-01"))
-    dv <- dateToFracYear(date)
-    ans.obtained <- labels(new("Points", dimvalues = dv))
-    ans.expected <- date
-    expect_identical(ans.obtained, ans.expected)
-})
-
 test_that("stepLengths method for Points works", {
   stepLengths <- dembase:::stepLengths
   expect_that(stepLengths(new("Points", dimvalues = c(1, 2, 4))),
@@ -136,17 +125,46 @@ test_that("incrementDimScale method for Points works", {
 })
 
 test_that("inferDimvalues method for Points works", {
-  inferDimvalues <- dembase:::inferDimvalues
-  expect_that(inferDimvalues(new("Points"), labels = c("1", "2")),
-              is_identical_to(c(1, 2)))
-  expect_that(inferDimvalues(new("Points"), labels = character()),
-              is_identical_to(numeric()))
-  expect_that(inferDimvalues(new("Points"), labels = NULL),
-              is_identical_to(numeric()))
-  expect_that(inferDimvalues(new("Points"), labels = c("2", "1")),
-              is_identical_to(c(1, 2)))
-  expect_that(inferDimvalues(new("Points"), labels = c("2", "1", "a")),
-              is_identical_to(NULL))
+    inferDimvalues <- dembase:::inferDimvalues
+    dateToFracYear <- dembase:::dateToFracYear
+    expect_that(inferDimvalues(new("Points"), labels = c("1", "2")),
+                is_identical_to(c(1, 2)))
+    expect_that(inferDimvalues(new("Points"), labels = character()),
+                is_identical_to(numeric()))
+    expect_that(inferDimvalues(new("Points"), labels = NULL),
+                is_identical_to(numeric()))
+    expect_that(inferDimvalues(new("Points"), labels = c("2", "1")),
+                is_identical_to(c(1, 2)))
+    expect_that(inferDimvalues(new("Points"), labels = c("2", "1", "a")),
+                is_identical_to(NULL))
+    labels <- c("2000-01-01", "2000-01-02", "2000-02-03", "2000-01-30")
+    expect_identical(inferDimvalues(new("Points"), labels = labels),
+                     dateToFracYear(as.Date(labels)))
+    expect_identical(inferDimvalues(new("Points"), labels = "2000-01-01"),
+                     2000)
 })
 
-
+test_that("labels method for DimScales works when used on Points", {
+    dateToFracYear <- dembase:::dateToFracYear
+    expect_identical(labels(new("Points", dimvalues = c(1, 2))),
+                     c("1", "2"))
+    expect_identical(labels(new("Points", dimvalues = 2000)),
+                     "2000")
+    expect_identical(labels(new("Points")),
+                     character())
+    date <- as.Date(c("2000-01-01", "2000-01-02"))
+    dv <- dateToFracYear(date)
+    ans.obtained <- labels(new("Points", dimvalues = dv))
+    ans.expected <- date
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2000-01-01", "2000-02-01"))
+    dv <- dateToFracYear(date)
+    ans.obtained <- labels(new("Points", dimvalues = dv))
+    ans.expected <- date
+    expect_identical(ans.obtained, ans.expected)
+    date <- as.Date(c("2000-01-01", "2000-04-01"))
+    dv <- dateToFracYear(date)
+    ans.obtained <- labels(new("Points", dimvalues = dv))
+    ans.expected <- date
+    expect_identical(ans.obtained, ans.expected)
+})

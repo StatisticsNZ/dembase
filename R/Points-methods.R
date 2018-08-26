@@ -1,4 +1,5 @@
 
+## HAS_TESTS
 setAs(from = "Points", to = "Sexes",
       function(from) {
         if (length(from) > 0L)
@@ -7,6 +8,7 @@ setAs(from = "Points", to = "Sexes",
           methods::new("Sexes")
       })
 
+## HAS_TESTS
 setAs(from = "Points", to = "Triangles",
       function(from) {
         if (length(from) > 0L)
@@ -15,6 +17,7 @@ setAs(from = "Points", to = "Triangles",
           methods::new("Triangles")
       })
 
+## HAS_TESTS
 setAs(from = "Points", to = "Quantiles",
       function(from) {
         if (length(from) > 0L) {
@@ -28,6 +31,7 @@ setAs(from = "Points", to = "Quantiles",
           methods::new("Quantiles")
       })
 
+## HAS_TESTS
 setAs(from = "Points", to = "Intervals",
       function(from) {
         if (length(from) > 0L) {
@@ -46,6 +50,7 @@ setAs(from = "Points", to = "Intervals",
           methods::new("Intervals")
       })
 
+## HAS_TESTS
 setAs(from = "Points", to = "Iterations",
       function(from) {
         if (length(from) > 0L) {
@@ -125,26 +130,36 @@ setMethod("incrementDimScale",
               methods::new("Points", dimvalues = dimvalues)
           })
 
+
+## HAS_TESTS
 setMethod("inferDimvalues",
           signature(DimScale = "Points", labels = "character"),
           function(DimScale, labels) {
-            ans <- suppressWarnings(as.numeric(labels))
-            if (!any(is.na(ans))) {
-                ans <- sort(ans)
-                if(all(diff(ans) > 0))
-                    ans
-                else
-                    NULL
-            }
-            else
-              NULL
+              value <- isValidPointLabelsDate(labels = labels,
+                                              ordered = FALSE)
+              if (isTRUE(value)) {
+                  labels <- as.Date(labels)
+                  dateToFracYear(labels)
+              }
+              else {
+                  ans <- suppressWarnings(as.numeric(labels))
+                  if (!any(is.na(ans))) {
+                      ans <- sort(ans)
+                      if(all(diff(ans) > 0))
+                          ans
+                      else
+                          NULL
+                  }
+                  else
+                      NULL
+              }
           })
 
 setMethod("inferDimvalues",
           signature(DimScale = "Points", labels = "NULL"),
           function(DimScale, labels) numeric())
 
-
+## HAS_TESTS
 #' @rdname internal-methods
 #' @export
 setMethod("labels",

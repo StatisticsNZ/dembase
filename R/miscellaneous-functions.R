@@ -96,21 +96,6 @@ getSuffixPattern <- function(firstElementOnly = FALSE) {
 }
 
 ## HAS_TESTS
-getSynonymsForIntervalSeparator <- function()
-  c("-", "to")
-
-## HAS_TESTS
-getSynonymsForOpenIntervalSymbol <- function(which = c("final", "firstLeft", "firstRight")) {
-    which <- match.arg(which)
-    switch(which,
-           final = c("+", "plus", "orhigher", "ormore",
-                     "andhigher", "andmore", "andover"),
-           firstLeft = c("<", "lessthan", "upto"),
-           firstRight = "orless",
-           stop(gettextf("invalid value for '%s'", "which")))
-}
-
-## HAS_TESTS
 ## dimtypes that where only one dimension is possible per object
 getUniqueDimtypes <- function()
   c("age", "cohort", "iteration", "quantile", "time", "triangle")
@@ -1962,10 +1947,141 @@ dateToFracYear <- function(date) {
     days.start.next.year <- as.integer(date.start.next.year)
     days.date <- as.integer(date)
     frac <- ((days.date - days.start.this.year)
-        / (days.start.next.year - days.start.this.year))
+             / (days.start.next.year - days.start.this.year))
     ans <- this.year + frac
     round(ans, digits.round)
 }
+
+## HAS_TESTS
+intervalDimvaluesFromDates <- function(labels) {
+    if (!methods::is(labels, "Date"))
+        labels <- as.Date(labels)
+    labels <- sort(labels)
+    n <- length(labels)
+    final <- seq.Date(from = labels[n],
+                      length.out = 2L,
+                      by = "1 day")[2L]
+    labels <- c(labels, final)
+    dateToFracYear(labels)
+}
+
+## HAS_TESTS
+intervalDimvaluesFromMonths <- function(labels) {
+    labels <- sort(labels)
+    labels <- paste0(labels, "-01")
+    labels <- as.Date(labels)
+    n <- length(labels)
+    final <- seq.Date(from = labels[n],
+                      length.out = 2L,
+                      by = "1 month")[2L]
+    labels <- c(labels, final)
+    dateToFracYear(labels)
+}
+
+## HAS_TESTS
+intervalDimvaluesFromQuarters <- function(labels) {
+    labels <- toupper(labels)
+    labels <- sort(labels)
+    labels <- gsub("Q1", "01", labels)
+    labels <- gsub("Q2", "04", labels)
+    labels <- gsub("Q3", "07", labels)
+    labels <- gsub("Q4", "10", labels)
+    labels <- paste0(labels, "-01")
+    labels <- as.Date(labels)
+    n <- length(labels)
+    final <- seq.Date(from = labels[n],
+                      length.out = 2L,
+                      by = "1 quarter")[2L]
+    labels <- c(labels, final)
+    dateToFracYear(labels)
+}
+
+## HAS_TESTS
+isValidIntervalLabelsDate <- function(labels, ordered = FALSE) {
+    n <- length(labels)
+    if (identical(n, 0L))
+        return(TRUE)
+    values <- suppressWarnings(as.Date(labels, format = "%Y-%m-%d"))
+    has.invalid.dates <- any(is.na(values))
+    if (has.invalid.dates)
+        return(FALSE)
+    if (identical(n, 1L))
+        return(TRUE)
+    values <- as.integer(values)
+    if (!ordered)
+        values <- sort(values)
+    all(diff(values) == 1L)
+}
+
+## HAS_TESTS
+isValidIntervalLabelsMonth <- function(labels, ordered = FALSE) {
+    n <- length(labels)
+    if (identical(n, 0L))
+        return(TRUE)
+    labels.plus.day <- paste0(labels, "-01")
+    values <- suppressWarnings(as.Date(labels.plus.day, format = "%Y-%m-%d"))
+    has.invalid.dates <- any(is.na(values))
+    if (has.invalid.dates)
+        return(FALSE)
+    if (identical(n, 1L))
+        return(TRUE)
+    if (!ordered)
+        values <- sort(values)
+    from <- values[1L]
+    to <- values[n]
+    if (to <= from)
+        return(FALSE)
+    implied.values <- seq.Date(from = from,
+                               to = to,
+                               by = "1 month")
+    isTRUE(all.equal(values, implied.values))
+}
+
+## HAS_TESTS
+isValidIntervalLabelsQuarter <- function(labels, ordered = FALSE) {
+    n <- length(labels)
+    if (identical(n, 0L))
+        return(TRUE)
+    labels <- toupper(labels)
+    all.valid.quarters <- all(grepl("^(-?[1-9][0-9]*|0)\\-Q[1-4]$", labels))
+    if (!all.valid.quarters)
+        return(FALSE)
+    if (identical(n, 1L))
+        return(TRUE)
+    labels.as.dates <- gsub("Q1", "01", labels)
+    labels.as.dates <- gsub("Q2", "04", labels.as.dates)
+    labels.as.dates <- gsub("Q3", "07", labels.as.dates)
+    labels.as.dates <- gsub("Q4", "10", labels.as.dates)
+    labels.as.dates <- paste0(labels.as.dates, "-01")
+    labels.as.dates <- as.Date(labels.as.dates)
+    if (!ordered)
+        labels.as.dates <- sort(labels.as.dates)
+    from <- labels.as.dates[1L]
+    to <- labels.as.dates[n]
+    if (to <= from)
+        return(FALSE)
+    implied.values <- seq.Date(from = from,
+                               to = to,
+                               by = "1 quarter")
+    isTRUE(all.equal(labels.as.dates, implied.values))
+}
+
+## HAS_TESTS
+isValidPointLabelsDate <- function(labels, ordered = FALSE) {
+    n <- length(labels)
+    if (identical(n, 0L))
+        return(TRUE)
+    values <- suppressWarnings(as.Date(labels, format = "%Y-%m-%d"))
+    has.invalid.dates <- any(is.na(values))
+    if (has.invalid.dates)
+        return(FALSE)
+    if (identical(n, 1L))
+        return(TRUE)
+    values <- as.integer(values)
+    if (!ordered)
+        values <- sort(values)
+    all(diff(values) >= 1L)
+}    
 
 ## HAS_TESTS
 makeIntervalLabelsForDateDimvalues <- function(dimvalues) {
