@@ -3322,6 +3322,13 @@ test_that("dplot works", {
     x.with.missing <- x
     x.with.missing[1] <- NA
     p <- dplot( ~ age, data = x.with.missing, na.rm = TRUE)
+    x <- Counts(array(rpois(n = 36, lambda = 20),
+                      dim = c(3, 3, 4),
+                      dimnames = list(reg = c("a", "b", "c"),
+                      sim = 1:3,
+                      age = c("0-4", "5-9", "10-14", "15+"))))
+    x <- collapseIterations(x, prob = c(0.2, 0.8))
+    p <- dplot(~ age | reg, x)
 })
 
 

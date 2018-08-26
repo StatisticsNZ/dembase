@@ -617,8 +617,12 @@ setMethod("dplot",
                   expr <- parse(text = text)
                   data <- eval(expr)
               }
-              ## collapse unused dimensions - apart from any "iteration" dimension
-              margin <- c(all.vars(formula)[-1L], group.vars)
+              ## collapse unused dimensions - apart from any "iteration" or "quantile" dimension
+              conditioning.vars <- all.vars(formula)[-1L]
+              margin <- c(conditioning.vars, group.vars)
+              if (any(is.not.in.names))
+                  stop(gettextf("'%s' does not contain a dimension called \"%s\"",
+                                "data", margin[is.not.in.names][1L]))
               collapse.iter <- FALSE
               i.iter <- match("iteration", dimtypes(data), nomatch = 0L)
               has.iter <- i.iter > 0L
@@ -628,9 +632,19 @@ setMethod("dplot",
                   if (collapse.iter)
                       margin <- c(margin, name.iter)
               }
+              i.quantile <- match("quantile", dimtypes(data), nomatch = 0L)
+              has.quantile <- i.quantile > 0L
+              if (has.quantile) {
+                  name.quantile <- names(data)[i.quantile]
+                  if (!(name.quantile %in% margin))
+                      margin <- c(margin, name.quantile)
+              }
               dims.to.collapse <- setdiff(names(data)[dim(data) != 1L], margin)
               n.dims.to.collapse <- length(dims.to.collapse)
               if (n.dims.to.collapse > 0L) {
+                  if (has.quantile)
+                      stop(gettextf("trying to collapse dimensions, but '%s' has dimension with %s \"%s\"",
+                                    "data", "dimtype", "quantile"))
                   if (!methods::hasArg(weights))
                       stop(sprintf(ngettext(n.dims.to.collapse,
                                             "need to collapse %s dimension but '%s' argument not supplied",
