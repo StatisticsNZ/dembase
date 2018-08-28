@@ -2389,7 +2389,7 @@ setGeneric("incrementUpperTri",
                standardGeneric("incrementUpperTri"))
 
 setGeneric("inferDimvalues",
-           function(DimScale, labels, ...)
+           function(DimScale, labels, isAge, labelStart = TRUE)
                standardGeneric("inferDimvalues"))
 
 #' Interval score.

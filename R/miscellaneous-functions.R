@@ -163,7 +163,8 @@ ageToAgeGroup <- function(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
                          breaks = breaks,
                          firstOpen = firstOpen,
                          lastOpen = lastOpen,
-                         nameVec = "age")
+                         nameVec = "age",
+                         isAge = TRUE)
 }
 
 
@@ -773,7 +774,7 @@ monthStartNum <- function(monthStart) {
 }
 
 ## HAS_TESTS (via ageToAgeGroup and timeToPeriod)
-pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
+pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec, isAge) {
     if (!is.numeric(vec) && !is.character(vec) && !is.factor(vec))
         stop(gettextf("'%s' has class \"%s\"",
                       nameVec, class(vec)))
@@ -828,7 +829,8 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
             stop(gettextf("'%s' has values greater than or equal to the highest value of '%s', but '%s' is %s",
                           nameVec, "breaks", "lastOpen", "FALSE"))
     }
-    labels <- makeLabelsForIntervals(breaks)
+    labels <- makeLabelsForIntervals(dimvalues = breaks,
+                                     isAge = isAge)
     cut(x = x,
         breaks = breaks,
         labels = labels,
@@ -883,7 +885,8 @@ timeToPeriod <- function(year, breaks, firstOpen = FALSE,
                          breaks = breaks,
                          firstOpen = firstOpen,
                          lastOpen = lastOpen,
-                         nameVec = "year")
+                         nameVec = "year",
+                         isAge = FALSE)
 }
 
 
@@ -2118,7 +2121,7 @@ makeIntervalLabelsForDateDimvalues <- function(dimvalues) {
 }
 
 ## HAS_TESTS
-makeLabelsForClosedIntervals <- function(dimvalues, labelStart, ageLike) {
+makeLabelsForClosedIntervals <- function(dimvalues, labelStart, isAge) {
     kDigits <- 3L
     n <- length(dimvalues)
     if (n > 0L) {
@@ -2134,7 +2137,7 @@ makeLabelsForClosedIntervals <- function(dimvalues, labelStart, ageLike) {
         upper <- dimvalues[-1L][ans == ""]
         lower.is.integer <- lower == round(lower)
         upper.is.integer <- upper == round(upper)
-        if (ageLike) {
+        if (isAge) {
             reduce.upper <- lower.is.integer & upper.is.integer
             upper[reduce.upper] <- upper[reduce.upper] - 1L
         }
@@ -2148,12 +2151,11 @@ makeLabelsForClosedIntervals <- function(dimvalues, labelStart, ageLike) {
 }
         
 ## HAS_TESTS
-makeLabelsForIntervals <- function(dimvalues, labelStart) {
+makeLabelsForIntervals <- function(dimvalues, labelStart, isAge) {
     n <- length(dimvalues)
     if (n > 0L) {
         finite.dimvalues <- dimvalues[is.finite(dimvalues)]
-        age.like <- all(finite.dimvalues >= 0) && all(finite.dimvalues <= 300)
-        if (!age.like) {
+        if (!isAge) {
             possible.ans <- makeIntervalLabelsForDateDimvalues(dimvalues)
             if (!is.null(possible.ans))
                 return(possible.ans)
@@ -2174,7 +2176,7 @@ makeLabelsForIntervals <- function(dimvalues, labelStart) {
                             !last.interval.is.open)
         dimvalues.closed <- dimvalues[use.for.closed]
         ans[ans == ""] <- makeLabelsForClosedIntervals(dimvalues = dimvalues.closed,
-                                                       ageLike = age.like,
+                                                       isAge = isAge,
                                                        labelStart = labelStart)
         ans
     }
@@ -2280,47 +2282,37 @@ timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter"
 
 ## HAS_TESTS
 ## Given a label, see if it consists of a number and open interval symbol.
-## If it does, return the number; if not, return NULL.  If 'which' is "final"
-## or "firstRight", the symbol is assumed to be on the right of the number;
-## if 'which is "firstLeft", the symbol is assumed to be on the left.
-## The test ignores white space and is case-insensitive.
-extractNumberFromOpenInterval <- function(name, which = c("final", "firstLeft", "firstRight")) {
+## If it does, return the number; if not, return NULL.  If 'which' is "last"
+## the symbol is assumed to be on the right of the number;
+## if 'which' is "first", the symbol is assumed to be on the left.
+extractNumberFromOpenInterval <- function(name, which = c("first", "last")) {
   if (!identical(length(name), 1L))
     stop(gettextf("'%s' does not have length 1", "name"))
-  name <- gsub(" ", "", name)
   which <- match.arg(which)
-  symbols <- getSynonymsForOpenIntervalSymbol(which = which)
-  symbols <- gsub(" ", "", symbols)
-  symbols <- sprintf("\\Q%s\\E", symbols)
-  symbols <- switch(which,
-                    final = paste(symbols, "$", sep = ""),
-                    firstLeft = paste("^", symbols, sep = ""),
-                    firstRight = paste(symbols, "$", sep = ""))
-  found.answer <- FALSE
-  for (symbol in symbols) {
-    if (grepl(symbol, name, ignore.case = TRUE)) {
-      number <- sub(symbol, "", name, ignore.case = TRUE)
+  pattern <- switch(which,
+                    first = "^<",
+                    last = "+$")
+  found.symbol <- grepl(symbol, name)
+  if (found.symbol) {
+      number <- sub(pattern, "", name)
       number <- suppressWarnings(as.numeric(number))
-      if (!is.na(number)) {
-        found.answer <- TRUE
-        break
-      }
-    }
+      is.number <- !is.na(number)
+      if (is.number)
+          number
+      else
+          NULL
   }
-  if (found.answer)
-    number
   else
-    NULL
+      NULL
 }
 
 ## HAS_TESTS
-extractNumbersFromEndOfStrings <- function(strings, intervalSeparator = NULL) {
-  if (is.null(intervalSeparator))
-    intervalSeparator <- getIntervalSeparator()
-  p <- sprintf("^(-?[0-9]*\\.?[0-9]*%s)(-?[0-9]*\\.?[0-9]*)$", intervalSeparator)
-  ans <- mapply(sub, p, "\\2", strings)
-  ans <- suppressWarnings(as.numeric(ans))
-  ans
+extractNumbersFromEndOfStrings <- function(strings) {
+    interval.separator <- "-"
+    p <- sprintf("^(-?[0-9]*\\.?[0-9]*%s)(-?[0-9]*\\.?[0-9]*)$", interval.separator)
+    ans <- mapply(sub, p, "\\2", strings)
+    ans <- suppressWarnings(as.numeric(ans))
+    ans
 }
 
 ## HAS_TESTS
@@ -2353,7 +2345,9 @@ stringsAreNumbers <- function(strings) {
 ## HAS_TESTS
 #' @rdname exported-not-api
 #' @export
-inferDimScale <- function(dimtype, dimscale = NULL, labels, name) {
+inferDimScale <- function(dimtype, dimscale = NULL, labels, name, labelStart = TRUE) {
+    is.age <- dimtype == "age"
+    is.time <- dimtype == "time"
     if (is.null(dimscale))
         possible.dimscales <- getPossibleDimscales(dimtype)
     else
@@ -2364,11 +2358,22 @@ inferDimScale <- function(dimtype, dimscale = NULL, labels, name) {
     for (i in seq_len(n.possible)) {
         possible.dimscale <- possible.dimscales[i]
         DimScale <- methods::new(possible.dimscale)
-        dimvalues <- inferDimvalues(DimScale = DimScale, labels = labels)
+        dimvalues <- inferDimvalues(DimScale = DimScale,
+                                    labels = labels,
+                                    labelStart = labelStart)
         if (is.null(dimvalues))
             answers[[i]] <- NULL
-        else
-            answers[[i]] <- methods::new(possible.dimscale, dimvalues = dimvalues)
+        else {
+            if (possible.dimscale == "Intervals") {
+                answers[[i]] <- methods::new("Intervals",
+                                             dimvalues = dimvalues,
+                                             isAge = is.age,
+                                             labelStart = labelStart)
+            }
+            else
+                answers[[i]] <- methods::new(possible.dimscale,
+                                             dimvalues = dimvalues)
+        }
     }
     is.valid <- !sapply(answers, is.null)
     n.valid <- sum(is.valid)
@@ -2380,14 +2385,14 @@ inferDimScale <- function(dimtype, dimscale = NULL, labels, name) {
         answers[[i.valid]]
     }
     else {
-        if (dimtype == "age") {
+        if (is.age) {
             is.intervals <- sapply(answers, methods::is, "Intervals")
             message(gettextf("assuming dimension \"%s\" with %s \"%s\" has %s \"%s\"",
                              name, "dimtype", dimtype, "dimscale", "Intervals"))
             i.intervals <- which(is.intervals)
             answers[[i.intervals]]
         }
-        else if (dimtype == "time")
+        else if (is.time)
             stop(gettextf("dimension \"%s\" with %s \"%s\" could have %s \"%s\" or %s \"%s\" : please supply a '%s' or '%s' argument",
                           name, "dimtype", "time", "dimscale", "Intervals", "dimscale", "Points", "dimscale", "dimscales"))
         else

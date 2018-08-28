@@ -451,7 +451,8 @@ setClass("Quantiles",
 ## HAS_TESTS
 setClass("Intervals",
          slots = c(dimvalues = "numeric",
-                   labelStart = "logical"),
+                   labelStart = "logical",
+                   isAge = "logical"),
          contains = "DimScale",
          prototype = prototype(labelStart = TRUE),
          validity = function(object) {
@@ -475,6 +476,12 @@ setClass("Intervals",
              if (!labelStart && is.infinite(dimvalues[n]))
                  return(gettextf("last interval is open but '%s' is %s",
                                  "labelStart", "TRUE"))
+             if (!identical(length(isAge), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "isAge", 1L))
+             if (is.na(isAge))
+                 return(gettextf("'%s' is missing",
+                                 "isAge"))
              TRUE
          })
 

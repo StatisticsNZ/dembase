@@ -3094,24 +3094,24 @@ test_that("extractNumberFromOpenInterval works", {
   extractNumberFromOpenInterval <- dembase:::extractNumberFromOpenInterval
   expect_that(extractNumberFromOpenInterval("100+"),
               is_identical_to(100))
-  expect_that(extractNumberFromOpenInterval("100.5 and over", which = "final"),
+  expect_that(extractNumberFromOpenInterval("100.5+", which = "last"),
               is_identical_to(100.5))
   expect_that(extractNumberFromOpenInterval("-20+"),
               is_identical_to(-20))
-  expect_that(extractNumberFromOpenInterval("<-20", which = "firstLeft"),
+  expect_that(extractNumberFromOpenInterval("<-20", which = "first"),
               is_identical_to(-20))
-  expect_that(extractNumberFromOpenInterval("less than 0", which = "firstLeft"),
+  expect_that(extractNumberFromOpenInterval("<0", which = "first"),
               is_identical_to(0))
-  expect_that(extractNumberFromOpenInterval("0 or less", which = "firstRight"),
-              is_identical_to(0))
-  expect_that(extractNumberFromOpenInterval("0 OR LESS", which = "firstRight"),
-              is_identical_to(0))
-  expect_that(extractNumberFromOpenInterval("0ORLESS", which = "firstRight"),
-              is_identical_to(0))
+  expect_that(extractNumberFromOpenInterval("0 or less", which = "first"),
+              is_identical_to(NULL))
+  expect_that(extractNumberFromOpenInterval("0 OR LESS", which = "first"),
+              is_identical_to(NULL))
+  expect_that(extractNumberFromOpenInterval("0ORLESS", which = "first"),
+              is_identical_to(NULL))
   expect_error(extractNumberFromOpenInterval("0 or less", which = "wrong"),
-              sprintf("'arg' should be one of %s, %s, %s",
-                      dQuote("final"), dQuote("firstLeft"), dQuote("firstRight")))
-  expect_error(extractNumberFromOpenInterval(c("0 or less", "0 or less"), which = "firstRight"),
+              sprintf("'arg' should be one of %s, %s",
+                      dQuote("first"), dQuote("last")))
+  expect_error(extractNumberFromOpenInterval(c("0 or less", "0 or less"), which = "first"),
               "'name' does not have length 1")
 })
 
