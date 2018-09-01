@@ -364,7 +364,7 @@ setMethod("inferDimvalues",
               n <- length(labels)
               if (identical(n, 0L))
                   return(numeric())
-              try.to.interpet.as.time.units <- n >= 2L
+              try.to.interpet.as.time.units <- !isAge && (n >= 2L)
               if (try.to.interpet.as.time.units) {
                   if (isValidIntervalLabelsDate(labels)) {
                       dimvalues <- intervalDimvaluesFromDates(labels)
@@ -388,7 +388,6 @@ setMethod("inferDimvalues",
               if (!is.null(dimvalue)) {
                   decoded.labels[1L] <- TRUE
                   dimvalues[1:2] <- c(-Inf, dimvalue)
-                  break
               }
               ## see if the final label can be interpreted as denoting an
               ## open interval, and infer the appropriate dimvalues if it can
@@ -400,7 +399,7 @@ setMethod("inferDimvalues",
               }
               if (!decoded.labels[n]) {
                   ## If the last label has not been decoded, see if it can be
-                  ## interpreted as (x, x + a). The decoding cannot be done in
+                  ## interpreted as [x, x + a). The decoding cannot be done in
                   ## the same way as other labels, since the last label supplies
                   ## two dimvalues rather than one.
                   first <- extractNumbersFromStartOfStrings(labels[n])
@@ -416,8 +415,8 @@ setMethod("inferDimvalues",
               }
               if (!decoded.labels[n]) {
                   ## If the last interval has not been decoded, see if it is a
-                  ## single integer x.  If so, assume that the final two
-                  ## dimvalues are x and x+1 or x-1 and x. The decoding cannot be done
+                  ## single integer x.  If so, assume that the final interval
+                  ## is [x, x+1) or [x-1, x). The decoding cannot be done
                   ## in the same way as other labels, since the last label
                   ## supplies two dimvalues rather than one.
                   if (stringsAreIntegers(labels[n])) {
@@ -427,7 +426,7 @@ setMethod("inferDimvalues",
                       }
                       else {
                           upper <- as.integer(labels[n])
-                          lower <- upper <-  1L
+                          lower <- upper - 1L
                       }
                       dimvalues[c(n, n + 1L)] <- c(lower, upper)
                       decoded.labels[n] <- TRUE
@@ -440,29 +439,19 @@ setMethod("inferDimvalues",
               ## Deal with all remaining labels.  Extract a number from the front
               ## of each label, and construct implied labels based on these
               ## numbers. If these implied labels match the actual labels,
-              ## then the attempt attempt was successful.
+              ## then the attempt was successful.
               lower <- extractNumbersFromStartOfStrings(labels[!decoded.labels])
               if (any(is.na(lower)))
                   return(NULL)
-              if (!labelStart)
-              if (!isAge && !labelStart) {
-                  lower.is.integer <- lower == as.integer(lower)
-                  finite.dv <- dimvalues[is.finite(dimvalues)]
-                  dv.is.integer <- finite.dv == as.integer(finite.dv)
-                  if (all(lower.is.integer) && all(dv.is.integer))
-                      lower <- lower - 1L
+              possible.labels <- makeLabelsForClosedIntervals(dimvalues = lower,
+                                                              labelStart = labelStart,
+                                                              isAge = isAge)
+              if (identical(possible.labels, labels[!decoded.labels])) {
+                  dimvalues[seq_len(n)][!decoded.labels] <- lower
+                  dimvalues
               }
-              for (sep in intervalSeparators) {
-                  possible.labels <-
-                      makeLabelsForClosedIntervals(dimvalues =
-                                                       c(lower, dimvalues[n]),
-                                                   intervalSeparator = sep)
-                  if (identical(possible.labels, labels[!decoded.labels])) {
-                      dimvalues[seq_len(n)][!decoded.labels] <- lower
-                      return(dimvalues)
-                  }
-              }
-              NULL
+              else
+                  NULL
           })
 
 ## HAS_TESTS
@@ -477,8 +466,10 @@ setMethod("labels",
           signature(object = "Intervals"),
           function(object) {
               dimvalues <- dimvalues(object)
+              labelStart <- object@labelStart
               isAge <- object@isAge
               makeLabelsForIntervals(dimvalues = dimvalues,
+                                     labelStart = labelStart,
                                      isAge = isAge)
           })
 

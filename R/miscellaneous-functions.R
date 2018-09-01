@@ -112,28 +112,30 @@ getValidDimtypes <- function()
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
 
-#' Convert exact ages to age groups
+#' Convert age labels based on exact ages to
+#' age labels based on intervals
 #'
-#' Convert a vector of exact ages to a vector of age groups.
-#' The age groups are formatted in
+#' Convert a vector of exact ages, or single-year ages, to a vector
+#' of age groups. Examples of exact ages are real numbers such
+#' as \code{6.238} or \code{77.13}.  Examples of single-year ages
+#' are \code{6} or \code{77}.
+#'
+#'
+#' The age groups produced by \code{ageToAgeGroup} are formatted in
 #' the way expected by functions such as \code{\link{Counts}} and
 #' \code{\link{Values}}.
 #'
-#' `Exact' ages can be numbers such as \code{6.238} or
-#' \code{77.13}, but are more typically integers
-#' such as \code{6} or \code{77}.
-#'
-#' If \code{age} is a factor, then \code{ageToAgeGroup} will coerce
+#' If \code{age} is a factor, then \code{ageToAgeGroup} coerces
 #' it to a character vector before trying to coerce it to numeric.
 #' See below for an example.
 #'
 #' By default, \code{ageToAgeGroup} creates 5-year age groups.
-#' See below for examples of other groupings.
+#' See below for examples of other intevals.
 #'
-#' @param age A vector of exact ages. A numeric vector, or a vector
-#' than can be coerced to numeric.
-#' @param breaks A vector of breaks, specifying the points dividing the
-#' age groups.
+#' @param age A vector of exact or single-year ages.
+#' A numeric vector, or a vector that can be coerced to numeric.
+#' @param breaks A vector of breaks, specifying the points that
+#' define the age groups.
 #' @param firstOpen Logical. Whether the first age group is "open",
 #' i.e. has no lower bound. Defaults to \code{FALSE}.
 #' @param lastOpen Logical. Whether the last age group is "open",
@@ -141,7 +143,7 @@ getValidDimtypes <- function()
 #'
 #' @return A factor, the same length as \code{age}.
 #'
-#' @seealso \code{\link{timeToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
+#' @seealso \code{\link{yearToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
 #' is useful for creating complicated \code{breaks} arguments.
 #'
 #' @examples
@@ -156,15 +158,19 @@ getValidDimtypes <- function()
 #' ageToAgeGroup(age = c(0, 17, 14, 3, 9),
 #'               breaks = seq(0, 20, 5),
 #'               lastOpen = FALSE)
+#' ## exact ages
+#' age <- c(0.356, 1.363, 3.22, 2.109)
+#' ageToAgeGroup(age, break = c(0, 1, 2, 3))
 #' @export
 ageToAgeGroup <- function(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
                           lastOpen = TRUE) {
-    pointToIntervalInner(vec = age,
-                         breaks = breaks,
-                         firstOpen = firstOpen,
-                         lastOpen = lastOpen,
-                         nameVec = "age",
-                         isAge = TRUE)
+    singleYearToMultiYear(vec = age,
+                          breaks = breaks,
+                          labelStart = TRUE,
+                          firstOpen = firstOpen,
+                          lastOpen = lastOpen,
+                          nameVec = "age",
+                          isAge = TRUE)
 }
 
 
@@ -413,11 +419,11 @@ completedMonths <- function(date, dob) {
 #' @examples
 #' date <- as.Date(c("2005-07-05", "2006-06-30", "2008-07-05"))
 #' dob <- as.Date(c("2005-06-30", "2005-06-30", "2006-07-01"))
-#' datesToAgeGroups(date = date, dob = dob)
-#' datesToAgeGroups(date = date, dob = dob, lastOpen = FALSE)
-#' datesToAgeGroups(date = date, dob = dob, step = "2 years")
-#' datesToAgeGroups(date = date, dob = dob, step = "quarter")
-#' datesToAgeGroups(date = date, dob = dob, step = "month")
+#' dateToAgeGroup(date = date, dob = dob)
+#' dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
+#' dateToAgeGroup(date = date, dob = dob, step = "2 years")
+#' dateToAgeGroup(date = date, dob = dob, step = "quarter")
+#' dateToAgeGroup(date = date, dob = dob, step = "month")
 #' datesToPeriods(date = date)
 #' datesToPeriods(date = date, monthStart = "July")
 #' datesToPeriods(date = date, step = "2 years", yearStart = 2001)
@@ -430,16 +436,138 @@ completedMonths <- function(date, dob) {
 #' 
 #' ## 'date' must be later than 'dob'
 #' \dontrun{
-#' datesToAgeGroups(date = as.Date("2000-01-01"), dob = as.Date("2005-01-01"))
+#' dateToAgeGroup(date = as.Date("2000-01-01"), dob = as.Date("2005-01-01"))
 #' }
 #' @export
-#' @name datesToAgeGroups
+#' @name dateToAgeGroup
 NULL
 
+checkAndTidyBreaksDates <- function(breaks) {
+    if (!methods::is(breaks, "Date"))
+        stop(gettextf("'%s' does not have class \"%s\"",
+                      "breaks", "Date"))
+    if (any(is.na(breaks)))
+        stop(gettextf("'%s' has missing values",
+                      "breaks"))
+    if (any(diff(breaks) <= 0L))
+        stop(gettextf("'%s' not strictly increasing",
+                      "breaks"))
+    NULL
+}
+        
+
+dateOfBirthToAge <- function(dateOfBirth, dateObs) {
+    l <- checkAndTidyDateBirthAndDateObs(dateOfBirth = dateOfBirth,
+                                         dateObs = dateObs)
+    date.birth <- l$date.birth
+    date.obs <- l$date.obs
+    if (!is.logical(exact))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "exact", class(exact)))
+    if (!identical(length(exact), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "exact", 1L))
+    if (is.na(exact))
+        stop(gettextf("'%s' is missing",
+                      "exact"))
+    
+
+}
+
+
+dateOfBirthToAgeMonth <- function(dateOfBirth, dateObs) {
+
+}
+
+
+dateOfBirthToAgeQuarter <- function(dateOfBirth, dateObs) {
+
+
+}
+
+dateOfBirthToAgeExact <- function(dateOfBirth, dateObs) {
+
+
+}
+
+
+
+collapseIntervalLabels <- function(labels, breaks, width, old) {
+
+}
+
+setOpenInterval <- function(labels, value, last = TRUE) {
+
+}
+
+
+## change setAgeMax, setAgeMin to work with labels, not demographic objects
+
+
+dateToYear <- function(date, dateStart, labelStart = TRUE) {
+
+}
+
+dateToQuarter <- function(date) {
+
+}
+
+dateToMonth <- function(date) {
+
+}
+
+set
+                         
+collapseAgeLabels <- function(age, breaks, 
+
+    ageToAgeGroup <- function(age, breaks, openLast = TRUE) {
+        
+
+    }
+
+
+
+dateOfBirthToCohort <- function(dateOfBirth, breaks, firstOpen = FALSE, lastOpen = FALSE) {
+
+}
+
+
+
+dateToPeriod <- function(date, breaks, labelStart = TRUE, firstOpen = FALSE, lastOpen = FALSE) {
+
+}
+
+
+dateToTriangle <- function(dateOfBirth, dateObs, breaks, , 
+
+
+    checkAndTidyBreaksDates(breaks)
+    n.date <- length(date.birth)
+    n.break <- length(breaks)
+    if (n.break == 0L) {
+        ans <- rep("0+", times = n.date)
+        ans <- factor(ans)
+        return(ans)
+    }
+    else {
+        break.first <- breaks[1L]
+        break.last <- breaks[n.break]
+        seq.if.months <- seq.Date(from = break.first,
+                                  to = break.last
+                                  by = "1 month")
+        seq.if.months <- seq.Date(from = break.first,
+                                  to = break.last
+                                  by = "1 month")
+        
+    }
+        rep("0+"
+    
+
+
 ## HAS_TESTS
-#' @rdname datesToAgeGroups
+#' @rdname dateToAgeGroup
 #' @export
-datesToAgeGroups <- function(date, dob, step = "1 year", lastOpen = TRUE) {
+dateToAgeGroup <- function(date, dob, step = "1 year", lastOpen = TRUE) {
     l <- checkAndTidyDateAndDOB(date = date,
                                 dob = dob)
     date <- l$date
@@ -467,7 +595,7 @@ datesToAgeGroups <- function(date, dob, step = "1 year", lastOpen = TRUE) {
     factor(ans, levels = age.labels)
 }
 
-#' @rdname datesToAgeGroups
+#' @rdname dateToAgeGroup
 #' @export
 datesToCohorts <- function(dob, step = "years", monthStart = "January",
                            yearStart = 2000) {
@@ -477,7 +605,7 @@ datesToCohorts <- function(dob, step = "years", monthStart = "January",
                    yearStart = yearStart)
 }
 
-#' @rdname datesToAgeGroups
+#' @rdname dateToAgeGroup
 #' @export
 datesToPeriods <- function(date, step = "years", monthStart = "January",
                            yearStart = 2000) {
@@ -514,7 +642,7 @@ datesToPeriods <- function(date, step = "years", monthStart = "January",
 }
 
 ## HAS_TESTS
-#' @rdname datesToAgeGroups
+#' @rdname dateToAgeGroup
 #' @export
 datesToTriangles <- function(date, dob, step = "years", monthStart = "January",
                              yearStart = 2000) {
@@ -750,7 +878,7 @@ makeAgeLabels <- function(stepNum, stepUnits, nAgeInterval, lastOpen) {
                      length.out = nAgeInterval + 1L)
     if (lastOpen)
         dimvalues[length(dimvalues)] <- Inf
-    DimScale <- methods::new("Intervals", dimvalues = dimvalues)
+    DimScale <- methods::new("Intervals", dimvalues = dimvalues, isAge = TRUE)
     labels(DimScale)
 }
 
@@ -773,8 +901,9 @@ monthStartNum <- function(monthStart) {
     i
 }
 
-## HAS_TESTS (via ageToAgeGroup and timeToPeriod)
-pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec, isAge) {
+## HAS_TESTS (via ageToAgeGroup and yearToPeriod)
+singleYearToMultiYear <- function(vec, breaks, labelStart, firstOpen,
+                                  lastOpen, nameVec, isAge) {
     if (!is.numeric(vec) && !is.character(vec) && !is.factor(vec))
         stop(gettextf("'%s' has class \"%s\"",
                       nameVec, class(vec)))
@@ -801,7 +930,7 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec, isAg
     if (any(diff(breaks) < 0))
         stop(gettextf("'%s' is non-increasing",
                       "breaks"))
-    for (name in c("firstOpen", "lastOpen")) {
+    for (name in c("labelStart", "firstOpen", "lastOpen")) {
         value <- get(name)
         if (!identical(length(value), 1L))
             stop(gettextf("'%s' does not have length %d",
@@ -830,6 +959,7 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec, isAg
                           nameVec, "breaks", "lastOpen", "FALSE"))
     }
     labels <- makeLabelsForIntervals(dimvalues = breaks,
+                                     labelStart = labelStart,
                                      isAge = isAge)
     cut(x = x,
         breaks = breaks,
@@ -839,28 +969,33 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec, isAg
 
 
 ## HAS TESTS
-#' Convert years to periods
+#' Convert labels for single-year time periods to labels for multi-year
+#' time periods
 #'
-#' Convert a vector of years to a vector of periods.
-#' The periods are formatted in the way expected by
+#' Convert a vector made of values such as \code{"2004", "2001", "2009"}
+#' into a vector of values such as \code{"2000-2005", "2000-2005",
+#' "2005-2010"}.  Period labels constructed using \code{yearToPeriod}
+#' are  periods are formatted in the way expected by
 #' functions such as \code{\link{Counts}} and
 #' \code{\link{Values}}.
 #'
-#' The years can be contain decimal fractions such as \code{2000.25} or
-#' \code{2018.633}, but are more typically integers
-#' such as \code{2000} or \code{2018}.
+#' If the \code{year} argument is a factor, \code{yearToPeriod}
+#' will coerce it to a character vector before trying to
+#' coerce it to numeric. See below for an example.
 #'
-#' If \code{year} is a factor, then \code{timeToPeriod} will coerce
-#' it to a character vector before trying to coerce it to numeric.
-#' See below for an example.
-#'
-#' @param year A vector of years. A numeric vector, or a vector
+#' @param year A vector of year labels. A numeric vector, or a vector
 #' than can be coerced to numeric.
-#' @param breaks A vector of breaks, specifying the points dividing
-#' periods.
-#' @param firstOpen Logical. Whether the first period is "open",
-#' i.e. has no lower bound. Defaults to \code{FALSE}.
-#' @param lastOpen Logical. Whether the last period is "open",
+#' @param breaks Numeric. A vector of breaks, specifying
+#' points dividing periods.
+#' @param labelStart Logical. Whether the single-year periods
+#' described by \code{year} are labelled according to the year
+#' at the start of the period or the year at the end.  Defaults
+#' to \code{TRUE}.
+#' @param firstOpen Logical. Whether the first period created by
+#' \code{yearToPeriod} should be "open", i.e. has no lower bound.
+#' Defaults to \code{FALSE}.
+#' @param lastOpen Logical. Whether the last period created by
+#' \code{yearToPeriod} is "open",
 #' i.e. has no upper bound. Defaults to \code{FALSE}.
 #'
 #' @return A factor, the same length as \code{year}.
@@ -870,23 +1005,34 @@ pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec, isAg
 #' @examples
 #' year <- c(2001, 2023, 2000, 2005, 2014, 2013, 2029)
 #' ## 5-year periods, 2000-2005, 2005-2010, ..., 2025-2030
-#' timeToPeriod(year, breaks = seq(2000, 2030, 5))
-#' ## 5-year periods, 2000-2005, 2005-2010, ..., 2045-2050
-#' timeToPeriod(year, breaks = seq(2000, 2050, 5))
+#' yearToPeriod(year, breaks = seq(2000, 2030, 5))
+#' ## 10-year periods, 2000-2005, 2005-2010, ..., 2025-2030
+#' yearToPeriod(year, breaks = seq(2000, 2030, 10))
+#' ## single-year periods specified by 'year' are labelled
+#' ## according to time at start
+#' year <- 2000:2009
+#' breaks <- c(1995, 2000, 2005, 2010)
+#' yearToPeriod(year = year, breaks = breaks)
+#' ## single-year periods specified by 'year' are labelled
+#' according to time at end
+#' year <- 2000:2009
+#' breaks <- c(1995, 2000, 2005, 2010)
+#' yearToPeriod(year = year, breaks = breaks, labelStart = FALSE)
 #' ## first period open 
-#' timeToPeriod(year, breaks = seq(2010, 2030, 5), firstOpen = TRUE)
+#' yearToPeriod(year, breaks = seq(2010, 2030, 5), firstOpen = TRUE)
 #' @export
-timeToPeriod <- function(year, breaks, firstOpen = FALSE,
-                         lastOpen = FALSE) {
+yearToPeriod <- function(year, breaks, labelStart = TRUE,
+                         firstOpen = FALSE, lastOpen = FALSE) {
     if (missing(breaks))
         stop(gettextf("argument \"%s\" is missing, with no default",
                       "breaks"))
-    pointToIntervalInner(vec = year,
-                         breaks = breaks,
-                         firstOpen = firstOpen,
-                         lastOpen = lastOpen,
-                         nameVec = "year",
-                         isAge = FALSE)
+    singleYearToMultiYear(vec = year,
+                          breaks = breaks,
+                          labelStart = labelStart,
+                          firstOpen = firstOpen,
+                          lastOpen = lastOpen,
+                          nameVec = "year",
+                          isAge = FALSE)
 }
 
 
@@ -2128,7 +2274,7 @@ makeLabelsForClosedIntervals <- function(dimvalues, labelStart, isAge) {
         ans <- character(length = n - 1L)
         lower.is.integer <- dimvalues[-n] == round(dimvalues[-n])
         diff.is.integer <- diff(dimvalues) == 1
-        use.single.value <- lower.is.integer[-n] & diff.is.integer
+        use.single.value <- lower.is.integer & diff.is.integer
         if (labelStart)
             ans[use.single.value] <- dimvalues[-n][use.single.value]
         else

@@ -3,7 +3,7 @@
 %   R/Counts-methods.R, R/CountsWithSubtotals-methods.R,
 %   R/DemographicAccount-methods.R, R/DemographicArray-methods.R,
 %   R/DimScale-methods.R, R/Intervals-methods.R, R/MetaData-methods.R,
-%   R/Movements-methods.R, R/Quantiles-methods.R,
+%   R/Movements-methods.R, R/Points-methods.R, R/Quantiles-methods.R,
 %   R/SummaryDemographic-generator.R, R/SummaryDemographic-methods.R,
 %   R/Values-methods.R
 \docType{methods}
@@ -64,6 +64,7 @@
 \alias{length,MetaData-method}
 \alias{show,MetaData-method}
 \alias{summary,Movements-method}
+\alias{labels,Points-method}
 \alias{diff,Quantiles-method}
 \alias{labels,Quantiles-method}
 \alias{summary,DemographicArray-method}
@@ -190,6 +191,8 @@
 \S4method{show}{MetaData}(object)
 
 \S4method{summary}{Movements}(object)
+
+\S4method{labels}{Points}(object)
 
 \S4method{diff}{Quantiles}(x)
 

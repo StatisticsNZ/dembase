@@ -2,17 +2,18 @@
 % Please edit documentation in R/miscellaneous-functions.R
 \name{ageToAgeGroup}
 \alias{ageToAgeGroup}
-\title{Convert exact ages to age groups}
+\title{Convert age labels based on exact ages to
+age labels based on intervals}
 \usage{
 ageToAgeGroup(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
   lastOpen = TRUE)
 }
 \arguments{
-\item{age}{A vector of exact ages. A numeric vector, or a vector
-than can be coerced to numeric.}
+\item{age}{A vector of exact or single-year ages.
+A numeric vector, or a vector that can be coerced to numeric.}
 
-\item{breaks}{A vector of breaks, specifying the points dividing the
-age groups.}
+\item{breaks}{A vector of breaks, specifying the points that
+define the age groups.}
 
 \item{firstOpen}{Logical. Whether the first age group is "open",
 i.e. has no lower bound. Defaults to \code{FALSE}.}
@@ -24,22 +25,22 @@ i.e. has no upper bound. Defaults to \code{TRUE}.}
 A factor, the same length as \code{age}.
 }
 \description{
-Convert a vector of exact ages to a vector of age groups.
-The age groups are formatted in
-the way expected by functions such as \code{\link{Counts}} and
-\code{\link{Values}}.
+Convert a vector of exact ages, or single-year ages, to a vector
+of age groups. Examples of exact ages are real numbers such
+as \code{6.238} or \code{77.13}.  Examples of single-year ages
+are \code{6} or \code{77}.
 }
 \details{
-`Exact' ages can be numbers such as \code{6.238} or
-\code{77.13}, but are more typically integers
-such as \code{6} or \code{77}.
+The age groups produced by \code{ageToAgeGroup} are formatted in
+the way expected by functions such as \code{\link{Counts}} and
+\code{\link{Values}}.
 
-If \code{age} is a factor, then \code{ageToAgeGroup} will coerce
+If \code{age} is a factor, then \code{ageToAgeGroup} coerces
 it to a character vector before trying to coerce it to numeric.
 See below for an example.
 
 By default, \code{ageToAgeGroup} creates 5-year age groups.
-See below for examples of other groupings.
+See below for examples of other intevals.
 }
 \examples{
 age <- c(22, 18, 4, 0, 89, 103, 7)
@@ -53,8 +54,11 @@ ageToAgeGroup(age, breaks = c(0, 1, seq(5, 85, 5)))
 ageToAgeGroup(age = c(0, 17, 14, 3, 9),
               breaks = seq(0, 20, 5),
               lastOpen = FALSE)
+## exact ages
+age <- c(0.356, 1.363, 3.22, 2.109)
+ageToAgeGroup(age, break = c(0, 1, 2, 3))
 }
 \seealso{
-\code{\link{timeToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
+\code{\link{yearToPeriod}}. \code{\link{seq}} (in combination with \code{\link{c}})
 is useful for creating complicated \code{breaks} arguments.
 }

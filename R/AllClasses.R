@@ -458,6 +458,7 @@ setClass("Intervals",
          validity = function(object) {
              dimvalues <- dimvalues(object)
              labelStart <- object@labelStart
+             isAge <- object@isAge
              n <- length(dimvalues)
              if (n > 0L) {
                  if (n == 1L)

@@ -264,23 +264,23 @@ test_that("completedMonths works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("datesToAgeGroups works", {
+test_that("dateToAgeGroup works", {
     dob <- as.Date("2000-06-30")
     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
                       "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- datesToAgeGroups(date = date, dob = dob, lastOpen = FALSE)
+    ans.obtained <- dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
     ans.expected <- factor(c("0", 0, 0, 1, 1, 4, 5),
                            levels = as.character(0:5))
     expect_identical(ans.obtained, ans.expected)
     dob <- as.Date(c("2000-06-30", "2000-08-30", "2001-01-01", "2001-12-31"))
     date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- datesToAgeGroups(date = date, dob = dob, lastOpen = FALSE)
+    ans.obtained <- dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
     ans.expected <- factor(c("2", "2", "1", "1"),
                            levels = as.character(0:2))
     expect_identical(ans.obtained, ans.expected)
     dob <- as.Date(c(NA, "2000-08-30", "2001-01-01", "2001-12-31"))
     date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- datesToAgeGroups(date = date, dob = dob, lastOpen = FALSE)
+    ans.obtained <- dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
     ans.expected <- factor(c(NA, "2", "1", "1"),
                            levels = as.character(0:2))
     expect_identical(ans.obtained, ans.expected)
@@ -288,14 +288,14 @@ test_that("datesToAgeGroups works", {
     dob <- as.Date("2000-06-30")
     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
                       "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- datesToAgeGroups(date = date, dob = dob, step = "5 years", lastOpen = TRUE)
+    ans.obtained <- dateToAgeGroup(date = date, dob = dob, step = "5 years", lastOpen = TRUE)
     ans.expected <- factor(c("0-4", "0-4", "0-4", "0-4", "0-4", "0-4", "5+"),
                            levels = c("0-4", "5+"))
     expect_identical(ans.obtained, ans.expected)
     ## quarter intervals
     dob <- as.Date("2000-01-01")
     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-07-01"))
-    ans.obtained <- datesToAgeGroups(date = date, dob = dob, step = "quarter", lastOpen = TRUE)
+    ans.obtained <- dateToAgeGroup(date = date, dob = dob, step = "quarter", lastOpen = TRUE)
     ans.expected <- factor(c("0.25-0.5", "0.5-0.75", "1.25-1.5", "1.5+"),
                            levels = c("0-0.25", "0.25-0.5", "0.5-0.75", "0.75-1", "1-1.25", "1.25-1.5", "1.5+"))
     expect_identical(ans.obtained, ans.expected)
@@ -764,26 +764,32 @@ test_that("monthStartNum works", {
                  "invalid value for 'monthStart' : \"wrong\" is not a valid month")
 })
 
-test_that("timeToPeriod works", {
-    ans.obtained <- timeToPeriod(c(2000, 2049, 2033),
+test_that("yearToPeriod works", {
+    ans.obtained <- yearToPeriod(c(2000, 2049, 2033),
                                  breaks = seq(2000, 2050, 5))
-    ans.expected <- factor(c("2001-2005", "2046-2050", "2031-2035"),
-                           levels = paste(seq(2001, 2046, 5), seq(2005, 2050, 5), sep = "-"))
+    ans.expected <- factor(c("2000-2005", "2045-2050", "2030-2035"),
+                           levels = paste(seq(2000, 2045, 5), seq(2005, 2050, 5), sep = "-"))
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- timeToPeriod(c(1999, 2005, 2033, 2099),
+    ans.obtained <- yearToPeriod(c(2000, 2049, 2033),
+                                 breaks = seq(1995, 2050, 5),
+                                 labelStart = FALSE)
+    ans.expected <- factor(c("1995-2000", "2045-2050", "2030-2035"),
+                           levels = paste(seq(2000, 2045, 5), seq(2005, 2050, 5), sep = "-"))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- yearToPeriod(c(1999, 2005, 2033, 2099),
                                  breaks = c(2000, 2010, 2020),
                                  firstOpen = TRUE, lastOpen = TRUE)
-    ans.expected <- factor(c("<2000", "2001-2010", "2021+", "2021+"),
-                           levels = c("<2000", "2001-2010", "2011-2020", "2021+"))
+    ans.expected <- factor(c("<2000", "2000-2010", "2020+", "2020+"),
+                           levels = c("<2000", "2000-2010", "2010-2020", "2020+"))
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("timeToPeriod throws appropriate errors", {
-    expect_error(timeToPeriod(list("a", "b", "c"), breaks = c(2000, 2005)),
+test_that("yearToPeriod throws appropriate errors", {
+    expect_error(yearToPeriod(list("a", "b", "c"), breaks = c(2000, 2005)),
                  "'year' has class \"list\"")
-    expect_error(timeToPeriod(c("1", NA, "b"), breaks = c(2000, 2005)),
+    expect_error(yearToPeriod(c("1", NA, "b"), breaks = c(2000, 2005)),
                  "value \"b\" from 'year' cannot be coerced to numeric")
-    expect_error(timeToPeriod(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
+    expect_error(yearToPeriod(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
                  "'year' has values less than the lowest value of 'breaks', but 'firstOpen' is FALSE")
 })
 

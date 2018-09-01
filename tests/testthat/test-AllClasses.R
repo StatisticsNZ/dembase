@@ -791,7 +791,7 @@ test_that("class Quantiles works", {
 })
 
 test_that("class Intervals works", {
-    expect_true(validObject(new("Intervals", dimvalues = c(-Inf, 1:2, Inf))))
+    expect_true(validObject(new("Intervals", dimvalues = c(-Inf, 1:2, Inf), isAge = FALSE)))
     expect_error(new("Intervals", dimvalues = c(NA, 2)),
                  "missing values")
     expect_error(new("Intervals", dimvalues = 1),
@@ -800,10 +800,10 @@ test_that("class Intervals works", {
                  "values not strictly increasing")
     expect_error(new("Intervals", dimvalues = c(-Inf, Inf)),
                  "no finite values")
-    expect_true(validObject(new("Intervals")))
+    expect_true(validObject(new("Intervals", isAge = TRUE)))
     expect_true(new("Intervals")@labelStart)
-    expect_true(validObject(new("Intervals", dimvalues = c(0, 1), labelStart = FALSE)))
-    expect_error(new("Intervals", dimvalues = c(0, 1, Inf), labelStart = FALSE),
+    expect_true(validObject(new("Intervals", dimvalues = c(0, 1), labelStart = FALSE, isAge = TRUE)))
+    expect_error(new("Intervals", dimvalues = c(0, 1, Inf), labelStart = FALSE, isAge = TRUE),
                  "last interval is open but 'labelStart' is TRUE")
 })
 

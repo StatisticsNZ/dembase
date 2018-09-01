@@ -171,7 +171,7 @@ makeMetaDataSubarraysBefore(metadata, transform)
 checkAge(object, minAges = 2L, regular = FALSE, openLeftOK = FALSE,
   openRightOK = FALSE, expectedDimscale = "Intervals")
 
-inferDimScale(dimtype, dimscale = NULL, labels, name)
+inferDimScale(dimtype, dimscale = NULL, labels, name, labelStart = TRUE)
 
 addIterationsToMetadata(object, iterations)
 
