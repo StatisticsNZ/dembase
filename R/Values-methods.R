@@ -620,6 +620,7 @@ setMethod("dplot",
               ## collapse unused dimensions - apart from any "iteration" or "quantile" dimension
               conditioning.vars <- all.vars(formula)[-1L]
               margin <- c(conditioning.vars, group.vars)
+              is.not.in.names <- !(margin %in% names(data))
               if (any(is.not.in.names))
                   stop(gettextf("'%s' does not contain a dimension called \"%s\"",
                                 "data", margin[is.not.in.names][1L]))

@@ -1,0 +1,190 @@
+---
+title: "Creating a Counts Object"
+author: "John Bryant and Junni L. Zhang"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating a Counts Object}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Introduction
+
+Most of the functions in packages `dembase`, `demest`, and `demlife` work with "demographic arrays".  A demographic array is a set of counts, rates, or other values, cross-classified along dimensions such as age, sex, and time, with some extra information about the cross-classifying dimensions.  To use packages `dembase`, `demest`, and `demlife`, the input data has to be formatted as demographic arrays. In this vignette we will see how this is done.
+
+The typical workflow starts with data arranged in a data.frame.  We then go through the following steps:
+
+1. Reformat individual columns in the data.frame, so that they data are in the form that `dembase` expects.
+2. Cross-tabulate the data, using a function such as `xtabs`.
+3. Use function `Counts` or `Values` to make the demographic array.
+
+As always with `R`, there are many ways of getting the job done.  We look at two approaches.  In the first, we go through the process step-by-step using only functions from base `R`.  In the second, we repeat the process using functions from the tidyverse (www.tidyverse.org).
+
+To make sense of this vignette you will need to have a basic knowledge of `R`. Hadley Wickham's paper on "tidy data" (https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf) would be useful background too. To understand the (optional) final section, you will need know about the tidyverse functions.  An excellent way to learn about these is through the book *R for Data Science* (www.r4ds.had.co.nz).
+
+
+## The Raw Data
+
+For the purposes of the vignette, we assume that our raw data come in the form of a data.frame.  In a real project, this data.frame would typically be the output from some other process.  We might, for instance, have read the data in from a csv file and then tidied it up.  Or we might have extracted the data from a database. 
+
+The data we will use in the vignette is sitting in package `dembase`:
+```{r}
+injuries.df <- demdata::nz.injuries
+```
+The data is counts of non-fatal injuries in New Zealand, classified by the age and sex of the victim, the year in which the injury occurred, and the cause of the injury:
+
+```{r}
+head(injuries.df)
+summary(injuries.df)
+```
+
+A data.frame holding data for a demographic array comes in a specific format: a single column of counts, rates, or other values, plus one or more columns holding the categorical variables that are used to classify the counts, rates, or other values.  In `injuries.df`, for example, there is a single column of counts (`count`), and four columns of classifying variables (`year`, `age`, `sex`, `cause`).
+
+A data.frame holding data for a single demographic array is a special case of "tidy data", as defined by Hadley Wickham (https://www.jstatsoft.org/article/view/v059i10/v59i10.pdf).  What makes the data.frame for a single array a special case is that it contains only one column of counts or values.  In tidy data more generally there can be multiple columns of counts or values.  For instance, in addition to the `counts` column, an extended version of `injuries.df` might contain `cost.per.injury` and `average.weeks.until.recovery` columns. 
+
+A data.frame with multiple columns of counts or values could be used to create multiple demographic arrays: one for each column of counts or values.  For instance, our imaginary extended version of `injuries.df` data.frame containing columns `year`, `age`, `sex`, `cause`, `count`, `cost.per.injury`, `average.weeks.until.recovery` could be used to create three demographic arrays: one based on the `count` column, one based on the `cost.per.injury` column, and one based on the `average.weeks.until.recovery` column.
+
+
+## What is a Demographic Array?
+
+A demographic array consists of cross-classified counts or other values, plus some 'metadata' (ie 'data about data').  Here, for example, is a demographic array called `death.rates`:
+
+```{r, echo = FALSE}
+death.rates <- demdata::VADeaths2
+death.rates <- dembase::Values(death.rates)
+```
+```{r}
+print(death.rates)
+```
+
+`death.rates` shows death rates, per thousand people, for the US state of Virginia during the year 1940.  The death rates are cross-classified by age, sex, and rural-urban residence:
+```{r}
+dim(death.rates)
+dimnames(death.rates)
+```
+
+The metadata for `death.rates` is
+```{r, echo = FALSE}
+dembase:::showMetaData(death.rates)
+```
+
+Some of the metadata is easy to understand.  `name` is the name of the dimension, `length` is the number of elements, `first` is the first label, and `last` is the last label.  (To see all the labels, use function `dimnames`.) `dimtype` and `dimscale`, however, need a little more explanation.
+
+The dimtype of a dimension is the kind of quantity being represented.  Dimensions with dimtypes "age" and "sex" record, not surprisingly, ages and sexes.  Dimtype "state" is a general-purpose dimtype, used with any sort of categorical variable. Dimensions with dimtype "state" are, for instance, used to represent ethnicities, labour force statuses ("employed", "unemployed", and "not in the labour force") and marital statuses ("single", "married", "separated/divorced", and "widowed"). A further dimtype which is not included in `death.rates` but which will see below is "time".  For more information on these and other dimtypes, see the help page in `dembase`,
+
+```{r, eval = FALSE}
+?dimtypes
+```
+
+The dimscale of a dimension describes the measurement scale.  A dimension with an "Intervals" dimscale, for instance, uses age groups or time periods.  A dimension with dimscale "Sexes" consists of the categories "Female" and "Male".  A dimension with dimscale "Categories" can have any sort of categories.
+
+A further dimscale not shown in `death.rates` is "Points".  This is used for 'exact' ages and 'exact' times.  Exact times are more common than exact ages.  Examples are 30 June 2017 or 31 December 2000. They are typically used to represent population counts, as in the population of New Zealand on 30 June 2017, or the number of 100-year-olds in China on 1 January 2000. In actual data, however, the day and month are typically omitted, so that people refer to the "population of New Zealand in 2000, 2001, 2002", when they mean, more precisely, "the population of New Zealand on 30 June 2017, 30 June 2001, and 30 June 2002".
+
+Finally, to reinforce the connection between data.frames and arrays, it might help to see `death.rates` reformatted as a data.frame:
+```{r}
+as.data.frame(death.rates, direction = "long")
+```
+Note how there is only one column of values.
+
+
+## Tabulation
+
+Next we convert our data.frame `injuries.df` into a multiway array.  There are lots of different functions in `R` for constructing multiway arrays, but when dealing with counts, one of the nicest is `xtabs`.  For a full description of `xtabs` see the help page,
+```{r, eval = FALSE}
+?xtabs
+```
+
+We get the tabulation we want by using
+```{r}
+injuries.xt <- xtabs(count ~ age + sex + cause + year,
+                     data = injuries.df,
+                     subset = age != "Total all ages",
+                     drop.unused.levels = TRUE)
+```
+
+The formula `count ~ age + sex + cause + year` translates to "add up the entries in the 'counts' column for every combination of 'age', 'sex', 'cause' and 'year'".  In `injuries.df`, there is only one value for 'counts' for each combination of 'age', 'sex', 'cause' and 'year', so no adding up actually occurs - only rearrangement. But in many datasets, some adding does happen.
+
+The `subset = age != "Total all ages"` part of the call to `xtabs` translates to "exclude all rows where the age columns is 'Total all ages'".  This is a common step of the data-preparation process. We don't want to include totals in the array.  Doing so would mean that we were double-counting.
+
+Rather than do the subsetting inside `xtabs` we might want to do it separately via the function `subset`, as in
+```{r, eval = FALSE}
+injuries.df <- subset(injuries.df, age != "Total all ages")
+injuries.xt <- xtabs(count ~ age + sex + cause + year,
+                     data = injuries.df,
+                     drop.unused.levels = TRUE)
+```
+
+The `drop.unused.levels = TRUE` part of the call to `xtabs` stops `xtabs` from including a category called "Total all ages" with nothing but 0s in the result.  The empty category gets included by default because age is a `factor`.  This behaviour is occasionally useful, but we don't want it here. 
+
+The result of the call to `xtabs` is a four-dimensional array,
+```{r}
+dim(injuries.xt)
+dimnames(injuries.xt)
+```
+
+The array is too large to print here, so we look at a single year's worth of data,
+```{r}
+injuries2013.xt <- injuries.xt[ , , , "2013"]
+dimnames(injuries2013.xt)
+injuries2013.xt
+```
+
+## Create Counts Object
+
+We are now ready to create a Counts object.  We start with the subset for 2013.
+
+```{r}
+library(dembase)
+injuries2013.ct <- Counts(injuries2013.xt)
+injuries2013.ct
+```
+
+The array part of `injuries2013.ct` is identical the xtabs result `injuries2013.xt`.  But as can be seen at the top of the printout of `injuries2013.ct`, it also has metadata. The `Counts` function inferred the metadata from the dimnames of `injuries2013.xt`.  The inference process generally works OK, but sometimes Counts needs assistance
+
+The most common situation where Counts needs assistance is when dealing with times with labels such as "2017, 2018, 2019".  The problem is that Counts can't tell whether these are (i) one-year periods or (ii) exact times, as in 31 December 2017, 31 December 2018, 31 December 2019.
+```{r, error = TRUE}
+library(dembase)
+injuries.ct <- Counts(injuries.xt)
+```
+
+In our case, time is measured using periods.  The appropriate dimscale is "Intervals".  We pass this information to `Counts` using the `dimscales` argument.  `dimscales` expects a named vector.  If we want, we can specify dimscales for all the dimensions.  But it is enough to just specify dimscales for the ambiguous cases.
+```{r}
+injuries.ct <- Counts(injuries.xt,
+                      dimscales = c(year = "Intervals"))
+```
+This time, `Counts` has all the information it needs, and our attempt to create `injuries.ct` is successful,
+```{r}
+summary(injuries.ct)
+```
+
+The best way to get understand the contents of a large Counts object is to plot it,
+```{r, fig.height = 4, fig.width = 4}
+plot(injuries.ct)
+```
+
+The plot shows the marginal totals.
+
+
+## The Tidyverse Way
+
+An elegant and succinct way to get to the same result is to use the functions from the tidyverse:
+
+```{r}
+library(dplyr)
+injuries.ct2 <- demdata::nz.injuries %>%
+  filter(age != "Total all ages") %>%
+  xtabs(count ~ age + sex + cause + year,
+        data = .,
+        drop.unused.levels = TRUE) %>%
+  Counts(dimscales = c(year = "Intervals"))
+
+all.equal(injuries.ct, injuries.ct2)
+```
+
+
+For more on the tidyverse, see, for instance, *R for Data Science* (www.r4ds.had.co.nz).

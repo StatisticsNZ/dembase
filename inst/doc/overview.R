@@ -107,7 +107,7 @@ slab(va.rates,
      elements = "Urban")
 
 ## ------------------------------------------------------------------------
-births <- demdata::nz.births
+births <- demdata::nz.births.reg
 popn <- demdata::nz.popn.reg
 births <- Counts(births,
                  dimscales = c(year = "Intervals"))
