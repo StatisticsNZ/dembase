@@ -243,6 +243,22 @@ checkDate <- function(date) {
 }
 
 
+
+## NO_TESTS
+checkLabelStart <- function(labelStart) {
+    if (!is.logical(labelStart))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "labelStart", "logical"))
+    if (!identical(length(labelStart), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "labelStart", 1L))
+    if (is.na(labelStart))
+        stop(gettextf("'%s' is missing",
+                      "labelStart"))
+    NULL
+}
+
+
 ## HAS_TESTS
 checkLastOpen <- function(lastOpen) {
     if (!is.logical(lastOpen))
@@ -442,6 +458,22 @@ completedMonths <- function(date, dob) {
 #' @name dateToAgeGroup
 NULL
 
+#' dateOfBirthToAgeCompleted - from date to years - (dateOfBirth, dateObs, completed)
+#' dateOfBirthToAgeExact - from date to years - (dateOfBirth, dateObs, completed)
+#' ageCompletedToAgeGroup - from years to multiyear age group - (age, breaks)
+#' ageExactToMonth - from exact years to months - (age, min, max)
+#' ageExactToQuarter - from exact years to quarters - (age, min, max)
+#' dateToYear - from date to years - (date, month, day, labelStart) 
+#' yearToPeriod - from years to multiyear age group - (year, breaks, labelStart)
+#' dateToMonth - from date to month - (date)
+#' dateToQuarter - from date to quarters - (date)
+#' dateOfBirthToTriangle - (dateOfBirth, dateObs, month, day, width)
+#' dateOfBirthToTriangleMonth - (dateOfBirth, dateObs)
+#' dateOfBirthToTriangleQuarter - (dateOfBirth, dateObs)
+#' 
+
+
+
 checkAndTidyBreaksDates <- function(breaks) {
     if (!methods::is(breaks, "Date"))
         stop(gettextf("'%s' does not have class \"%s\"",
@@ -456,112 +488,400 @@ checkAndTidyBreaksDates <- function(breaks) {
 }
         
 
-dateOfBirthToAge <- function(dateOfBirth, dateObs) {
-    l <- checkAndTidyDateBirthAndDateObs(dateOfBirth = dateOfBirth,
-                                         dateObs = dateObs)
-    date.birth <- l$date.birth
-    date.obs <- l$date.obs
-    if (!is.logical(exact))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "exact", class(exact)))
-    if (!identical(length(exact), 1L))
+
+dateOfBirthToAgeInner <- function(dateOfBirth, dateObs, completed = TRUE) {
+    l <- checkAndTidyDateOfBirthAndDateObs(dateOfBirth = dateOfBirth,
+                                           dateObs = dateObs)
+    date.bth <- l$dateOfBirth
+    date.obs <- l$dateObs
+    if (!is.logical(completed))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      "completed", "logical"))
+    if (!identical(length(completed), 1L))
         stop(gettextf("'%s' does not have length %d",
-                      "exact", 1L))
-    if (is.na(exact))
+                      "completed", 1L))
+    if (is.na(completed))
         stop(gettextf("'%s' is missing",
-                      "exact"))
-    
+                      "completed"))
+    year.obs <- as.integer(format(date.obs, "%Y"))
+    year.bth <- as.integer(format(date.bth, "%Y"))
+    month.obs <- as.integer(format(date.obs, "%m"))
+    month.bth <- as.integer(format(date.bth, "%m"))
+    day.obs <- as.integer(format(date.obs, "%d"))
+    day.bth <- as.integer(format(date.bth, "%d"))
+    is.29.feb.obs <- (month.obs == 2L) & (day.obs == 29L)
+    is.29.feb.bth <- (month.bth == 2L) & (day.bth == 29L)
+    day.obs.no.leap <- day.obs
+    day.bth.no.leap <- day.bth
+    day.obs.no.leap[is.29.feb.obs] <- 28L
+    day.bth.no.leap[is.29.feb.bth] <- 28L
+    diff.year <- year.obs - year.bth
+    diff.month <- month.obs - month.bth
+    diff.day <- day.obs.no.leap - day.bth.no.leap
+    had.birthday.this.year <- (diff.month > 0L) | ((diff.month == 0L) & (diff.day >= 0L))
+    completed.years <- diff.year + had.birthday.this.year - 1L
+    if (completed) {
+        as.character(completed.years)
+    }
+    else {
+        date.birthday.last.year <- as.Date("%d-%d-%d", year.obs - 1L, month.birth, day.bth)a
+        date.birthday.this.year <- as.Date("%d-%d-%d", year.obs, month.birth, day.bth)
+        date.birthday.next.year <- as.Date("%d-%d-%d", year.obs + 1L, month.birth, day.bth)
+        date.birthday.last.year <- as.integer(date.birthday.last.year)
+        date.birthday.this.year <- as.integer(date.birthday.this.year)
+        date.birthday.next.year <- as.integer(date.birthday.next.year)
+        days.since.last.birthday <- ifelse(had.birthday.this.year,
+                                           as.integer(date.obs) - date.birthday.this.year,
+                                           as.integer(date.obs) - date.birthday.last.year)
+        days.between.birthdays <- ifelse(had.birthday.this.year,
+                                         date.birthday.next.year - date.birthday.this.year,
+                                         date.birthday.this.year - date.birthday.last.year)
+        completed.years + days.since.last.birthday / days.between.birthdays
+    }
+}
 
+dateOfBirthtoAgeCompleted <- function(dateOfBirth, dateObs) {
+    dateOfBirthToAgeInner(dateOfBirth = dateOfBirth,
+                          dateObs = dateObs,
+                          completed = TRUE)
+}
+
+dateOfBirthtoAgeExact <- function(dateOfBirth, dateObs) {
+    dateOfBirthToAgeInner(dateOfBirth = dateOfBirth,
+                          dateObs = dateObs,
+                          completed = FALSE)
 }
 
 
-dateOfBirthToAgeMonth <- function(dateOfBirth, dateObs) {
+ageCompletedToAgeGroup <- function(age, breaks) {
+    is.already.na <- is.na(age)
+    age.num <- as.numeric(age)
+    is.new.na <- is.na(age.num) & !is.already.na
+    if (any(is.new.na)) {
+        num.na.first <- age[is.new.na][1L]
+        stop(gettextf("value \"%s\" from '%s' cannot be interpreted as a number",
+                      num.na.first, "age"))
+    }
+    age.int <- as.integer(age.num)
+    age.not.int <- age.int[!is.already.na] != age.num[!is.already.na]
+    if (any(age.not.int)) {
+        age.not.int.first <- age[!is.already.na][age.not.int][1L]
+        stop(gettextf("value \"%s\" from '%s' cannot be interpreted as an integer",
+                      age.not.int.first, "age"))
+    }
+    if (!is.numeric(breaks))
+        stop(gettextf("'%s' is non-numeric"))
+    if (any(is.na(breaks)))
+        stop(gettextf("'%s' has missing values",
+                      "breaks"))
+    if (any(duplicated(breaks)))
+        stop(gettextf("'%s' has duplicates",
+                      "breaks"))
+    breaks.int <- as.integer(breaks)
+    breaks.not.int <- breaks.int != breaks
+    if (any(breaks.not.int)) {
+        breaks.not.int.first <- breaks[breaks.not.int][1L]
+        stop(gettextf("value \"%s\" from '%s' is not an integer",
+                      breaks.not.int.first, "breaks"))
+    }
+    if (any(diff(breaks.int) < 0L))
+        stop(gettextf("'%s' non-increasing",
+                      "breaks"))
+    is.less.than.min <- age < min(breaks.int)
+    if (any(is.less.than.min))
+        stop(gettextf("'%s' has value [%s] that is less than the minimum value for breaks [%s]",
+                      "age", age[is.less.than.min], breaks[1L]))
+    is.greater.than.max <- age > max(breaks.int)
+    if (any(is.greater.than.max))
+        stop(gettextf("'%s' has value [%s] that is greater than the maximum value for breaks [%s]",
+                      "age", age[is.greater.than.max], breaks[length(breaks)]))
+    labels <- makeLabelsForIntervals(dimvalues = breaks.int,
+                                     labelStart = FALSE,
+                                     isAge = TRUE)
+    i <- findInterval(x = age,
+                      vec = breaks)
+    factor(labels[i], levels = labels)
+}
 
+ageExactToMonth <- function(age, min = NULL, max = NULL) {
+    if (!is.numeric(age))
+        stop(gettextf("'%s' is non-numeric",
+                      "age"))
+    n.age <- length(age)
+    if (all(is.na(age)))
+        return(rep(NA_character_, times = n.age))
+    pattern <- "^(<?)([0-9]+)y([0-9]+)m(\\+?)$"
+    if (is.null(min)) {
+        break.min.frac <- min(age, na.rm = TRUE)
+        break.min.completed.months <- as.integer(12 * break.min.frac)
+        break.min <- break.min.completed.months / 12
+        open.left <- FALSE
+    }
+    else {
+        year.min <- sub(pattern, "\\2", min, perl = TRUE)
+        month.min <- sub(pattern, "\\3", min, perl = TRUE)
+        year.min <- as.numeric(year.min)
+        month.min <- as.numeric(month.min)
+        if (is.na(year.min) || is.na(month.min))
+            stop(gettextf("cannot interpret value for '%s' [%s] as year-month age label",
+                          "min", min))
+        break.min <- year.min + month.min / 12
+        min.open.left <- identical(sub(pattern, "\\1", min, perl = TRUE), "<")
+    }
+    if (is.null(max)) {
+        break.max.frac <- max(age, na.rm = TRUE)
+        break.max.completed.months <- as.integer(12 * break.max.frac)
+        break.max <- (break.max.completed.months + 1) / 12
+        open.right <- FALSE
+    }
+    else {
+        year.max <- sub(pattern, "\\2", max, perl = TRUE)
+        month.max <- sub(pattern, "\\3", max, perl = TRUE)
+        year.max <- as.numeric(year.max)
+        month.max <- as.numeric(month.max)
+        if (is.na(year.max) || is.na(month.max))
+            stop(gettextf("cannot interpret value for '%s' [%s] as year-month age label",
+                          "max", max))
+        break.max <- year.max + (month.max + 1) / 12
+        open.right <- identical(sub(pattern, "\\4", min, perl = TRUE), "+")
+    }
+    breaks <- seq(from = break.min,
+                  to = break.max,
+                  by = 1 / 12)
+    if (open.left)
+        breaks <- c(-Inf, breaks)
+    if (open.right)
+        breaks <- c(breaks, Inf)
+    ageToAgeGroup(age = age,
+                  breaks = breaks)
+}
+
+ageExactToQuarter <- function(age, min = NULL, max = NULL) {
+    stop("not written yet")    
 }
 
 
-dateOfBirthToAgeQuarter <- function(dateOfBirth, dateObs) {
-
-
+checkAndTidyDate <- function(date) {
+    if (methods::is(date, "Date")) {
+        date
+    }
+    else if (is.character(date)) {
+        is.already.na <- is.na(date)
+        date.new <- suppressWarnings(as.Date(date))
+        is.na.new <- is.na(date.new) & !is.already.na
+        if (any(is.na.new))
+            stop(gettextf("value \"%s\" from '%s' cannot be interpreted as a date",
+                          date.new[is.na.new][1L], "date"))
+        date.new
+    }
+    else
+        stop(gettextf("'%s' has class \"%s\"",
+                      "date", class(date)))
 }
 
-dateOfBirthToAgeExact <- function(dateOfBirth, dateObs) {
 
-
+dateToYear <- function(date, month = 1, day = 1, labelStart = TRUE) {
+    date <- checkAndTidyDate(date = date,
+                             name = "date")
+    for (name in c("month", "day")) {
+        value <- get(name)
+        if (!is.numeric(value))
+            stop(gettextf("'%s' is non-numeric",
+                          name))
+        if (!identical(length(value), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          name, 1L))
+        if (is.na(value))
+            stop(gettextf("'%s' is missing",
+                          name))
+        if (!isTRUE(all.equal(as.integer(value), value)))
+            stop(gettextf("'%s' is not an integer",
+                          name))
+    }
+    is.valid.date <- !is.na(suppressWarnings(as.Date(paste(2000, month, day, sep = "-"))))
+    if (!is.valid.date)
+        stop(gettextf("'%s' [%s] and '%s' [%s] do not form a valid date",
+                      "month", month, "day", day))
+    if ((month == 2L) & (day == 29L))
+        day <- 28L
+    checkLabelStart(labelStart)
+    year.date <- as.integer(format(date, "%Y"))
+    month.date <- as.integer(format(date, "%m"))
+    day.date <- as.integer(format(date, "%d"))
+    is.29.feb <- (month.date == 2L) & (day.date == 29L)
+    day.date[is.29.feb] <- 28L
+    reached.month.day <- (month.date > month) | ((month.date == month) & (day.date >= day))
+    as.character(year.date + reached.month.day - labelStart)
 }
 
 
-
-collapseIntervalLabels <- function(labels, breaks, width, old) {
-
+yearToPeriod <- function(year, breaks, labelStart = TRUE) {
+    is.already.na <- is.na(year)
+    year.num <- as.numeric(year)
+    is.new.na <- is.na(year.num) & !is.already.na
+    if (any(is.new.na)) {
+        num.na.first <- year[is.new.na][1L]
+        stop(gettextf("value \"%s\" from '%s' cannot be interpreted as a number",
+                      num.na.first, "year"))
+    }
+    year.int <- as.integer(year.num)
+    year.not.int <- year.int[!is.already.na] != year.num[!is.already.na]
+    if (any(year.not.int)) {
+        year.not.int.first <- year[!is.already.na][year.not.int][1L]
+        stop(gettextf("value \"%s\" from '%s' cannot be interpreted as an integer",
+                      year.not.int.first, "year"))
+    }
+    if (!is.numeric(breaks))
+        stop(gettextf("'%s' is non-numeric"))
+    if (any(is.na(breaks)))
+        stop(gettextf("'%s' has missing values",
+                      "breaks"))
+    if (any(duplicated(breaks)))
+        stop(gettextf("'%s' has duplicates",
+                      "breaks"))
+    breaks.int <- as.integer(breaks)
+    breaks.not.int <- breaks.int != breaks
+    if (any(breaks.not.int)) {
+        breaks.not.int.first <- breaks[breaks.not.int][1L]
+        stop(gettextf("value \"%s\" from '%s' is not an integer",
+                      breaks.not.int.first, "breaks"))
+    }
+    if (any(diff(breaks.int) < 0L))
+        stop(gettextf("'%s' non-increasing",
+                      "breaks"))
+    is.less.than.min <- year < min(breaks.int)
+    if (any(is.less.than.min))
+        stop(gettextf("'%s' has value [%s] that is less than the minimum value for breaks [%s]",
+                      "year", year[is.less.than.min], breaks[1L]))
+    is.greater.than.max <- year > max(breaks.int)
+    if (any(is.greater.than.max))
+        stop(gettextf("'%s' has value [%s] that is greater than the maximum value for breaks [%s]",
+                      "year", year[is.greater.than.max], breaks[length(breaks)]))
+    checkLabelStart(labelStart)
+    labels <- makeLabelsForIntervals(dimvalues = breaks.int,
+                                     labelStart = labelStart,
+                                     isAge = FALSE)
+    i <- findInterval(x = year,
+                      vec = breaks)
+    factor(labels[i], levels = labels)
 }
 
-setOpenInterval <- function(labels, value, last = TRUE) {
 
-}
-
-
-## change setAgeMax, setAgeMin to work with labels, not demographic objects
-
-
-dateToYear <- function(date, dateStart, labelStart = TRUE) {
-
-}
 
 dateToQuarter <- function(date) {
-
+    date <- checkAndTidyDate(date = date,
+                             name = "date")
+    year <- format(date, "%Y")
+    month <- as.integer(format(date, "%m"))
+    quarter <- ((month - 1L) %/% 3L) + 1L
+    sprintf("%s-Q%d", year, quarter)
 }
 
 dateToMonth <- function(date) {
-
+    date <- checkAndTidyDate(date = date,
+                             name = "date")
+    year <- format(date, "%Y")
+    month <- as.integer(format(date, "%m"))
+    sprintf("%s-%02.0f", year, month)
 }
 
-set
-                         
-collapseAgeLabels <- function(age, breaks, 
-
-    ageToAgeGroup <- function(age, breaks, openLast = TRUE) {
-        
-
+## NOT WRITTEN YET
+dateOfBirthToTriangle <- function(dateOfBirth, dateObs, month = 1, day = 1, width = 1) {
+    l <- checkAndTidyDateOfBirthAndDateObs(dateOfBirth = dateOfBirth,
+                                           dateObs = dateObs)
+    date.bth <- l$dateOfBirth
+    date.obs <- l$dateObs
+    for (name in c("month", "day", "width")) {
+        value <- get(name)
+        if (!is.numeric(value))
+            stop(gettextf("'%s' is non-numeric",
+                          name))
+        if (!identical(length(value), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          name, 1L))
+        if (is.na(value))
+            stop(gettextf("'%s' is missing",
+                          name))
+        if (!isTRUE(all.equal(as.integer(value), value)))
+            stop(gettextf("'%s' is not an integer",
+                          name))
+        if (value < 1L)
+            stop(gettextf("'%s' is non-positive",
+                          name))
     }
+    is.valid.date <- !is.na(suppressWarnings(as.Date(paste(2000, month, day, sep = "-"))))
+    if (!is.valid.date)
+        stop(gettextf("'%s' [%s] and '%s' [%s] do not form a valid date",
+                      "month", month, "day", day))
+    if ((month == 2L) & (day == 29L))
+        day <- 28L
+
+    year.obs <- as.integer(format(date.obs, "%Y"))
+    year.bth <- as.integer(format(date.bth, "%Y"))
+    month.obs <- as.integer(format(date.obs, "%m"))
+    month.bth <- as.integer(format(date.bth, "%m"))
+    day.obs <- as.integer(format(date.obs, "%d"))
+    day.bth <- as.integer(format(date.bth, "%d"))
+    is.29.feb.obs <- (month.obs == 2L) & (day.obs == 29L)
+    is.29.feb.bth <- (month.bth == 2L) & (day.bth == 29L)
+    day.obs.no.leap <- day.obs
+    day.bth.no.leap <- day.bth
+    day.obs.no.leap[is.29.feb.obs] <- 28L
+    day.bth.no.leap[is.29.feb.bth] <- 28L
+
+    year.min <- min(year.bth) - 1L
+    year.max <- max(year.obs) + 1L
+    breaks <- seq(from = as.Date(sprintf("%d-%d-%d", year.min, month, day)),
+                  to = as.Date(sprintf("%d-%d-%d", year.max, month, day)),
+                  by = paste(width, "year"))
+    i.cohort.bth <- 
+    
 
 
 
-dateOfBirthToCohort <- function(dateOfBirth, breaks, firstOpen = FALSE, lastOpen = FALSE) {
-
-}
-
-
-
-dateToPeriod <- function(date, breaks, labelStart = TRUE, firstOpen = FALSE, lastOpen = FALSE) {
-
-}
-
-
-dateToTriangle <- function(dateOfBirth, dateObs, breaks, , 
-
-
-    checkAndTidyBreaksDates(breaks)
-    n.date <- length(date.birth)
-    n.break <- length(breaks)
-    if (n.break == 0L) {
-        ans <- rep("0+", times = n.date)
-        ans <- factor(ans)
-        return(ans)
+    
+    diff.year <- year.obs - year.bth
+    diff.month <- month.obs - month.bth
+    diff.day <- day.obs.no.leap - day.bth.no.leap
+    had.birthday.this.year <- (diff.month > 0L) | ((diff.month == 0L) & (diff.day >= 0L))
+    completed.years <- diff.year + had.birthday.this.year - 1L
+    if (completed) {
+        ans <- completed.years
     }
     else {
-        break.first <- breaks[1L]
-        break.last <- breaks[n.break]
-        seq.if.months <- seq.Date(from = break.first,
-                                  to = break.last
-                                  by = "1 month")
-        seq.if.months <- seq.Date(from = break.first,
-                                  to = break.last
-                                  by = "1 month")
-        
+        date.birthday.last.year <- as.Date("%d-%d-%d", year.obs - 1L, month.birth, day.bth)a
+        date.birthday.this.year <- as.Date("%d-%d-%d", year.obs, month.birth, day.bth)
+        date.birthday.next.year <- as.Date("%d-%d-%d", year.obs + 1L, month.birth, day.bth)
+        date.birthday.last.year <- as.integer(date.birthday.last.year)
+        date.birthday.this.year <- as.integer(date.birthday.this.year)
+        date.birthday.next.year <- as.integer(date.birthday.next.year)
+        days.since.last.birthday <- ifelse(had.birthday.this.year,
+                                           as.integer(date.obs) - date.birthday.this.year,
+                                           as.integer(date.obs) - date.birthday.last.year)
+        days.between.birthdays <- ifelse(had.birthday.this.year,
+                                         date.birthday.next.year - date.birthday.this.year,
+                                         date.birthday.this.year - date.birthday.last.year)
+        ans <- completed.years + days.since.last.birthday / days.between.birthdays
     }
-        rep("0+"
-    
+    as.character(ans)
+
+
+    year.date <- as.integer(format(date, "%Y"))
+    month.date <- as.integer(format(date, "%m"))
+    day.date <- as.integer(format(date, "%d"))
+    is.29.feb <- (month.date == 2L) & (day.date == 29L)
+    day.date[is.29.feb] <- 28L
+    reached.month.day <- (month.date > month) | ((month.date == month) & (day.date >= day))
+
+}
+
+dateOfBirthToTriangleMonths <- function(function(dateOfBirth, dateObs) {
+    stop("not written yet")
+}
+
+dateOfBirthToTriangleQuarters <- function(function(dateOfBirth, dateObs) {
+    stop("not written yet")
+}
 
 
 ## HAS_TESTS
@@ -2295,13 +2615,49 @@ makeLabelsForClosedIntervals <- function(dimvalues, labelStart, isAge) {
     else
         character()
 }
-        
-## HAS_TESTS
+
+makeMonthLabelsForAgeDimvalues <- function(dimvalues) {
+    finite.dimvalues <- dimvalues[is.finite(dimvalues)]
+    n.finite <- length(finite.dimvalues)
+    if (n.finite < 2L)
+        return(NULL)
+    finite.dimvalues.implied <- seq(from = finite.dimvalues[1L]
+                                    to = finite.dimvalues[n.finite],
+                                    by = 1 / 12)
+    if (!isTRUE(all.equal(finite.dimvalues, finite.dimvalues.implied)))
+        return(NULL)
+    year <- as.integer(finite.dimvalues[-n.finite])
+    month <- as.integer((finite.dimvalues[-n.finite] - year) * 12)
+    ans <- paste0(year, "y", month, "m")
+    if (is.infinite(dimvalues[1L])) {
+        label.first <- paste0("<", ans[1L])
+        ans <- c(label.first, ans)
+    }
+    if (is.infinite(dimvalues[length(dimvalues)])) {
+        dimvalue.last <- dimvalues.finite[n.finite]
+        year.last <- as.integer(dimvalue.last)
+        month.last <- as.integer((dimvalue.last - year) * 12)
+        label.last <- paste0(year.last, "y", month.last, "m", "+")
+        ans <- c(ans, label.last)
+    }
+    ans
+}
+
+
+
+## HAS_TESTS - needs more
 makeLabelsForIntervals <- function(dimvalues, labelStart, isAge) {
     n <- length(dimvalues)
     if (n > 0L) {
-        finite.dimvalues <- dimvalues[is.finite(dimvalues)]
-        if (!isAge) {
+        if (isAge) {
+            possible.ans <- makeMonthLabelsForAgeDimvalues(dimvalues)
+            if (!is.null(possible.ans))
+                return(possible.ans)
+            possible.ans <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+            if (!is.null(possible.ans))
+                return(possible.ans)
+        }
+        else {
             possible.ans <- makeIntervalLabelsForDateDimvalues(dimvalues)
             if (!is.null(possible.ans))
                 return(possible.ans)
@@ -2503,23 +2859,15 @@ inferDimScale <- function(dimtype, dimscale = NULL, labels, name, labelStart = T
                       length = n.possible)
     for (i in seq_len(n.possible)) {
         possible.dimscale <- possible.dimscales[i]
-        DimScale <- methods::new(possible.dimscale)
+        if (identical(possible.dimscale, "Intervals"))
+            DimScale <- methods::new("Intervals",
+                                     isAge = is.age,
+                                     labelStart = labelStart)
+        else 
+            DimScale <- methods::new(possible.dimscale)
         dimvalues <- inferDimvalues(DimScale = DimScale,
-                                    labels = labels,
-                                    labelStart = labelStart)
-        if (is.null(dimvalues))
-            answers[[i]] <- NULL
-        else {
-            if (possible.dimscale == "Intervals") {
-                answers[[i]] <- methods::new("Intervals",
-                                             dimvalues = dimvalues,
-                                             isAge = is.age,
-                                             labelStart = labelStart)
-            }
-            else
-                answers[[i]] <- methods::new(possible.dimscale,
-                                             dimvalues = dimvalues)
-        }
+                                    labels = labels)
+        ans[[i]] <- dimvalues
     }
     is.valid <- !sapply(answers, is.null)
     n.valid <- sum(is.valid)

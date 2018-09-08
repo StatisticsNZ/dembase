@@ -360,7 +360,9 @@ setMethod("incrementDimScale",
 ## HAS_TESTS
 setMethod("inferDimvalues",
           signature(DimScale = "Intervals", labels = "character"),
-          function(DimScale, labels, isAge, labelStart = TRUE) {
+          function(DimScale, labels) {
+              isAge <- DimScale@isAge
+              labelStart <- DimScale@labelStart
               n <- length(labels)
               if (identical(n, 0L))
                   return(numeric())
