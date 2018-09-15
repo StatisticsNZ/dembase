@@ -28,7 +28,7 @@ test_that("coercion from Points to Quantiles works", {
 
 test_that("coercion from Points to Intervals works", {
   expect_that(as(new("Points", dimvalues = 0:2), "Intervals"),
-              is_identical_to(new("Intervals", dimvalues = c(0, 1, 2, 3))))
+              is_identical_to(new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)))
   expect_that(as(new("Points", dimvalues = c(0.5, 3, 7.5, 12.5)), "Intervals"),
               throws_error("labels not valid for dimscale"))
   expect_that(as(new("Points"), "Intervals"),

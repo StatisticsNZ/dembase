@@ -81,74 +81,6 @@ test_that("getValidDimtypes works", {
 
 ## FUNCTIONS TO PREPARE DATA ########################################################
 
-test_that("ageToAgeGroup works", {
-    ans.obtained <- ageToAgeGroup(c(0, 50, 33, 110))
-    ans.expected <- factor(c("0-4", "50-54", "30-34", "100+"),
-                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- ageToAgeGroup(c(0, 50, 33, 99), firstOpen = TRUE, lastOpen = FALSE)
-    ans.expected <- factor(c("0-4", "50-54", "30-34", "95-99"),
-                           levels = c("<0", paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-")))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- ageToAgeGroup(c(0, 50, 33, 110), breaks = c(0, 1, seq(5, 90, 5)))
-    ans.expected <- factor(c("0", "50-54", "30-34", "90+"),
-                           levels = c(0, "1-4", paste(seq(5, 85, 5), seq(9, 89, 5), sep = "-"), "90+"))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- ageToAgeGroup(as.character(c(0, 50, 33, 110)))
-    ans.expected <- factor(c("0-4", "50-54", "30-34", "100+"),
-                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- ageToAgeGroup(integer())
-    ans.expected <- factor(character(),
-                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- ageToAgeGroup(factor(c(0, 50, 33, 110)))
-    ans.expected <- factor(c("0-4", "50-54", "30-34", "100+"),
-                           levels = c(paste(seq(0, 95, 5), seq(4, 99, 5), sep = "-"), "100+"))
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("ageToAgeGroup throws appropriate errors", {
-    expect_error(ageToAgeGroup(list("a", "b", "c")),
-                 "'age' has class \"list\"")
-    expect_error(ageToAgeGroup(c("1", NA, "b")),
-                 "value \"b\" from 'age' cannot be coerced to numeric")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = integer()),
-                 "'breaks' has length 0")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = "1"),
-                 "'breaks' is non-numeric")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, NA)),
-                 "'breaks' has missing values")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, 5, 5)),
-                 "'breaks' has duplicates")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, 5, 4)),
-                 "'breaks' is non-increasing")
-    expect_error(ageToAgeGroup(c(0, 1, 10), firstOpen = c(TRUE, FALSE)),
-                 "'firstOpen' does not have length 1")
-    expect_error(ageToAgeGroup(c(0, 1, 10), lastOpen = "TRUE"),
-                 "'lastOpen' has class \"character\"")
-    expect_error(ageToAgeGroup(c(0, 1, 10), firstOpen = NA),
-                 "'firstOpen' is missing")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
-                 "'age' has values less than the lowest value of 'breaks', but 'firstOpen' is FALSE")
-    expect_error(ageToAgeGroup(c(0, 1, 10), breaks = c(0, 5), lastOpen = FALSE),
-                 "'age' has values greater than or equal to the highest value of 'breaks', but 'lastOpen' is FALSE")
-})
-
-test_that("checkAndTidyYearStart works", {
-    checkAndTidyYearStart <- dembase:::checkAndTidyYearStart
-    expect_identical(checkAndTidyYearStart(2000),
-                     2000L)
-    expect_error(checkAndTidyYearStart("5"),
-                 "'yearStart' is non-numeric")
-    expect_error(checkAndTidyYearStart(5:6),
-                 "'yearStart' does not have length 1")
-    expect_error(checkAndTidyYearStart(as.numeric(NA)),
-                 "'yearStart' is missing")
-    expect_error(checkAndTidyYearStart(5.5),
-                 "'yearStart' is not an integer")
-})
-
 test_that("checkAndTidyDateAndDOB", {
     checkAndTidyDateAndDOB <- dembase:::checkAndTidyDateAndDOB
     dob <- as.Date("2000-06-30")
@@ -194,17 +126,6 @@ test_that("checkDate", {
                  "all elements of 'date' are missing")
 })
 
-test_that("checkLastOpen works", {
-    checkLastOpen <- dembase:::checkLastOpen
-    expect_null(checkLastOpen(TRUE))
-    expect_null(checkLastOpen(FALSE))
-    expect_error(checkLastOpen("wrong"),
-                 "'lastOpen' does not have type \"logical\"")
-    expect_error(checkLastOpen(c(TRUE, FALSE),
-                             "'lastOpen' does not have length 1"))
-    expect_error(checkLastOpen(NA),
-                 "'lastOpen' is missing")
-})
 
 test_that("cleanAgeGroup works", {
     x <- c("0 Year", "1 to 4 Years", "5 to 9 Years", "10 Years And Over")
@@ -228,569 +149,6 @@ test_that("cleanAgeGroupConc works", {
     ans.obtained <- cleanAgeGroupConc(x)
     ans.expected <- classconc::Concordance(data.frame(old = x, new = y))
     expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("completedYears works", {
-    completedYears <- dembase:::completedYears
-    ans.obtained <- completedYears(date = as.Date("2001-04-03"),
-                                   dob = as.Date("2001-01-01"))
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2000-01-31", "2000-02-01", "2000-12-31", "2001-01-01"))
-    dob <- as.Date(c("2000-01-01", "2000-01-01", "2000-01-01", "2000-01-01"))
-    ans.obtained <- completedYears(date = date, dob = dob)
-    ans.expected <- c(0L, 0L, 0L, 1L)
-    expect_identical(ans.expected, ans.obtained)
-    ans.obtained <- completedYears(date = as.Date(c("2001-02-28", "2001-02-27", "2001-03-01")),
-                                   dob = rep(as.Date("2000-02-29"), 3))
-    ans.expected <- c(1L, 0L, 1L)
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("completedMonths works", {
-    completedMonths <- dembase:::completedMonths
-    ans.obtained <- completedMonths(date = as.Date("2001-04-03"),
-                                         dob = as.Date("2001-01-01"))
-    ans.expected <- 3L
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2000-01-31", "2000-02-01", "2000-12-31", "2001-01-01"))
-    dob <- as.Date(c("2000-01-01", "2000-01-01", "2000-01-01", "2000-01-01"))
-    ans.obtained <- completedMonths(date = date, dob = dob)
-    ans.expected <- c(0L, 1L, 11L, 12L)
-    expect_identical(ans.expected, ans.obtained)
-    ans.obtained <- completedMonths(date = as.Date(c("2001-02-28", "2001-02-27", "2001-03-01")),
-                                         dob = rep(as.Date("2000-02-29"), 3))
-    ans.expected <- c(12L, 11L, 12L)
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("dateToAgeGroup works", {
-    dob <- as.Date("2000-06-30")
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-                      "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
-    ans.expected <- factor(c("0", 0, 0, 1, 1, 4, 5),
-                           levels = as.character(0:5))
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c("2000-06-30", "2000-08-30", "2001-01-01", "2001-12-31"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
-    ans.expected <- factor(c("2", "2", "1", "1"),
-                           levels = as.character(0:2))
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c(NA, "2000-08-30", "2001-01-01", "2001-12-31"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- dateToAgeGroup(date = date, dob = dob, lastOpen = FALSE)
-    ans.expected <- factor(c(NA, "2", "1", "1"),
-                           levels = as.character(0:2))
-    expect_identical(ans.obtained, ans.expected)
-    ## 5-year intervals
-    dob <- as.Date("2000-06-30")
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-                      "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- dateToAgeGroup(date = date, dob = dob, step = "5 years", lastOpen = TRUE)
-    ans.expected <- factor(c("0-4", "0-4", "0-4", "0-4", "0-4", "0-4", "5+"),
-                           levels = c("0-4", "5+"))
-    expect_identical(ans.obtained, ans.expected)
-    ## quarter intervals
-    dob <- as.Date("2000-01-01")
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-07-01"))
-    ans.obtained <- dateToAgeGroup(date = date, dob = dob, step = "quarter", lastOpen = TRUE)
-    ans.expected <- factor(c("0.25-0.5", "0.5-0.75", "1.25-1.5", "1.5+"),
-                           levels = c("0-0.25", "0.25-0.5", "0.5-0.75", "0.75-1", "1-1.25", "1.25-1.5", "1.5+"))
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("datesToCohorts works", {
-    dob <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-                      "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- datesToCohorts(dob = dob)
-    ans.expected <- factor(c("2000", 2000, 2001, 2001, 2001, 2005, 2005),
-                           levels = as.character(2000:2005))
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c("2000-06-30", "2000-07-01", "2001-07-01"))
-    ans.obtained <- datesToCohorts(dob = dob, step = "6 months")
-    ans.expected <- factor(c("2000-2000.5", "2000.5-2001", "2001.5-2002"),
-                           levels = c("2000-2000.5", "2000.5-2001", "2001-2001.5", "2001.5-2002"))
-    expect_identical(ans.obtained, ans.expected)    
-    dob <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
-    ans.obtained <- datesToCohorts(dob = dob, step = "quarter")
-    ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
-                           levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
-    expect_identical(ans.obtained, ans.expected)    
-    dob <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
-    ans.obtained <- datesToCohorts(dob = dob, step = "quarter", monthStart = "April")
-    ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
-                           levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
-    expect_identical(ans.obtained, ans.expected)    
-})
-
-test_that("datesToPeriods works", {
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-                      "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- datesToPeriods(date = date)
-    ans.expected <- factor(c("2000", 2000, 2001, 2001, 2001, 2005, 2005),
-                           levels = as.character(2000:2005))
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-07-01"))
-    ans.obtained <- datesToPeriods(date = date, step = "6 months")
-    ans.expected <- factor(c("2000-2000.5", "2000.5-2001", "2001.5-2002"),
-                           levels = c("2000-2000.5", "2000.5-2001", "2001-2001.5", "2001.5-2002"))
-    expect_identical(ans.obtained, ans.expected)    
-    date <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
-    ans.obtained <- datesToPeriods(date = date, step = "quarter")
-    ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
-                           levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
-    expect_identical(ans.obtained, ans.expected)    
-    date <- as.Date(c("2000-06-30", "2000-01-03","2000-07-01"))
-    ans.obtained <- datesToPeriods(date = date, step = "quarter", monthStart = "April")
-    ans.expected <- factor(c("2000.25-2000.5", "2000-2000.25", "2000.5-2000.75"),
-                           levels = c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75"))
-    expect_identical(ans.obtained, ans.expected)    
-})
-
-test_that("datesToTriangles works", {
-    dob <- as.Date("2000-06-30")
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-                      "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- datesToTriangles(date = date, dob = dob)
-    ans.expected <- factor(c("TL", "TL", "TU", "TL", "TL", "TU", "TL"),
-                           levels = c("TL", "TU"))
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c("2000-06-30", "2000-08-30", "2001-01-01", "2001-12-31"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- datesToTriangles(date = date, dob = dob)
-    ans.expected <- factor(c("TL", "TU", "TL", "TU"),
-                           levels = c("TL", "TU"))
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c(NA, "2000-08-30", "2001-01-01", "2001-12-31"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- datesToTriangles(date = date, dob = dob)
-    ans.expected <- factor(c(NA, "TU", "TL", "TU"),
-                           levels = c("TL", "TU"))
-    expect_identical(ans.obtained, ans.expected)
-    ## 5-year intervals
-    dob <- as.Date("2000-06-30")
-    date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
-                      "2001-07-01", "2005-01-01", "2005-12-01"))
-    ans.obtained <- datesToTriangles(date = date, dob = dob, step = "5 years")
-    ans.expected <- factor(c("TL", "TL", "TL", "TL", "TL", "TU", "TL"),
-                           levels = c("TL", "TU"))
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("iIntervalSinceBirthYears works", {
-    iIntervalSinceBirthYears <- dembase:::iIntervalSinceBirthYears
-    date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthYears(date = date,
-                                            dob = dob,
-                                            stepNum = 1L,
-                                            monthStartNum = 1L,
-                                            yearStart = 2000L)
-    ans.expected <- c(2L, 7L, 1L, 6L)
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthYears(date = date,
-                                            dob = dob,
-                                            stepNum = 5L,
-                                            monthStartNum = 1L,
-                                            yearStart = 2000L)
-    ans.expected <- c(1L, 2L, 1L, 2L)
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthYears(date = date,
-                                            dob = dob,
-                                            stepNum = 1L,
-                                            monthStartNum = 7L,
-                                            yearStart = 2000L)
-    ans.expected <- c(3L, 8L, 2L, 6L)
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c(NA, "2000-08-30"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- iIntervalSinceBirthYears(date = date,
-                                            dob = dob,
-                                            stepNum = 1L,
-                                            monthStartNum = 1L,
-                                            yearStart = 2000L)
-    ans.expected <- c(NA, 4L)
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("iIntervalSinceBirthMonths works", {
-    iIntervalSinceBirthMonths <- dembase:::iIntervalSinceBirthMonths
-    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthMonths(date = date,
-                                              dob = dob,
-                                              stepNum = 1L)
-    ans.expected <- c(22L, 10L, 12L, 61L)
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthMonths(date = date,
-                                              dob = dob,
-                                              stepNum = 6L)
-    ans.expected <- c(4L, 2L, 2L, 11L)
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthMonths(date = date,
-                                              dob = dob,
-                                              stepNum = 3L)
-    ans.expected <- c(8L, 4L, 4L, 21L)
-    expect_identical(ans.obtained, ans.expected)
-    date <- as.Date(c("2001-10-03", "2000-10-01", "2000-12-13", "2005-01-01"))
-    dob <- as.Date(rep("2000-01-01", 4))
-    ans.obtained <- iIntervalSinceBirthMonths(date = date,
-                                              dob = dob,
-                                              stepNum = 3L)
-    ans.expected <- c(8L, 4L, 4L, 21L)
-    expect_identical(ans.obtained, ans.expected)
-    dob <- as.Date(c(NA, "2000-08-30"))
-    date <- as.Date(c("2002-06-30", "2003-07-01"))
-    ans.obtained <- iIntervalSinceBirthMonths(date = date,
-                                              dob = dob,
-                                              stepNum = 3L)
-    ans.expected <- c(NA, 13L)
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("isLeapYear works", {
-    isLeapYear <- dembase:::isLeapYear
-    ans.obtained <- isLeapYear(c(1999, 2000, 2100, 2004, 2003))
-    ans.expected <- c(FALSE, TRUE, FALSE, TRUE, FALSE)
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("makeIntervalLabelsForDateDimvalues works", {
-    makeIntervalLabelsForDateDimvalues <- dembase:::makeIntervalLabelsForDateDimvalues
-    dateToFracYear <- dembase:::dateToFracYear
-    ## quarters
-    dates <- as.Date(c("2004-01-01", "2004-04-01", "2004-07-01"))
-    dimvalues <- dateToFracYear(dates)
-    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
-    ans.expected <- c("2004-Q1", "2004-Q2")
-    expect_identical(ans.obtained, ans.expected)
-    dates <- as.Date(c("2018-10-01", "2019-01-01", "2019-04-01"))
-    dimvalues <- dateToFracYear(dates)
-    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
-    ans.expected <- c("2018-Q4", "2019-Q1")
-    expect_identical(ans.obtained, ans.expected)
-    ## months
-    dates <- as.Date(c("2004-01-01", "2004-02-01", "2004-03-01"))
-    dimvalues <- dateToFracYear(dates)
-    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
-    ans.expected <- c("2004-01", "2004-02")
-    expect_identical(ans.obtained, ans.expected)
-    dates <- as.Date(c("2018-12-01", "2019-01-01", "2019-02-01"))
-    dimvalues <- dateToFracYear(dates)
-    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
-    ans.expected <- c("2018-12", "2019-01")
-    expect_identical(ans.obtained, ans.expected)
-    ## days
-    dates <- as.Date(c("2004-01-01", "2004-01-02", "2004-01-03"))
-    dimvalues <- dateToFracYear(dates)
-    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
-    ans.expected <- c("2004-01-01", "2004-01-02")
-    expect_identical(ans.obtained, ans.expected)
-    dates <- as.Date(c("2018-12-31", "2019-01-01", "2019-01-02"))
-    dimvalues <- dateToFracYear(dates)
-    ans.obtained <- makeIntervalLabelsForDateDimvalues(dimvalues)
-    ans.expected <- c("2018-12-31", "2019-01-01")
-    expect_identical(ans.obtained, ans.expected)
-})
-
-
-
-test_that("makeDateVecYears works", {
-    makeDateVecYears <- dembase:::makeDateVecYears
-    ## one year, starting 1 Jan
-    ans.obtained <- makeDateVecYears(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                     stepNum = 1L,
-                                     monthStartNum = 1L,
-                                     yearStart = 2000L)
-    ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2018-01-01"),
-                        by = "1 year")
-    expect_identical(ans.obtained, ans.expected)
-    ## change start date
-    ans.obtained <- makeDateVecYears(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                     stepNum = 1L,
-                                     monthStartNum = 1L,
-                                     yearStart = 2010L)
-    ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2018-01-01"),
-                        by = "1 year")
-    expect_identical(ans.obtained, ans.expected)
-    ## 5 years
-    ans.obtained <- makeDateVecYears(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                     stepNum = 5L,
-                                     monthStartNum = 1L,
-                                     yearStart = 2000L)
-    ans.expected <- seq(from = as.Date("2000-01-01"),
-                        to = as.Date("2020-01-01"),
-                        by = "5 years")
-    expect_identical(ans.obtained, ans.expected)
-    ## 5 years, start in 2001
-    ans.obtained <- makeDateVecYears(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                     stepNum = 5L,
-                                     monthStartNum = 1L,
-                                     yearStart = 2001L)
-    ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2021-01-01"),
-                        by = "5 years")
-    expect_identical(ans.obtained, ans.expected)
-    ## 5 years, start in July 2001
-    ans.obtained <- makeDateVecYears(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                     stepNum = 5L,
-                                     monthStartNum = 7L,
-                                     yearStart = 2001L)
-    ans.expected <- seq(from = as.Date("1996-07-01"),
-                        to = as.Date("2021-07-01"),
-                        by = "5 years")
-    expect_identical(ans.obtained, ans.expected)
-    ## 5 years, start in 1 July 2001 - single observation
-    ans.obtained <- makeDateVecYears(date = as.Date("2016-07-01"),
-                                     stepNum = 5L,
-                                     monthStartNum = 7L,
-                                     yearStart = 2001L)
-    ans.expected <- seq(from = as.Date("2016-07-01"),
-                        to = as.Date("2021-07-01"),
-                        by = "5 years")
-    expect_identical(ans.obtained, ans.expected)
-    ## 5 years, start in 1 July 2001 - single observation
-    ans.obtained <- makeDateVecYears(date = as.Date("2016-06-30"),
-                                     stepNum = 5L,
-                                     monthStartNum = 7L,
-                                     yearStart = 2001L)
-    ans.expected <- seq(from = as.Date("2011-07-01"),
-                        to = as.Date("2016-07-01"),
-                        by = "5 years")
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("makeDateVecMonths works", {
-    makeDateVecMonths <- dembase:::makeDateVecMonths
-    ## 1 month
-    ans.obtained <- makeDateVecMonths(dates = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                      stepNum = 1L)
-    ans.expected <- seq(from = as.Date("2001-04-01"),
-                        to = as.Date("2017-06-01"),
-                        by = "month")
-    expect_identical(ans.obtained, ans.expected)
-    ## 1 quarter
-    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-05-04"), as.Date("2001-04-03")),
-                                      stepNum = 3L)
-    ans.expected <- seq(from = as.Date("2001-04-01"),
-                        to = as.Date("2017-07-01"),
-                        by = "quarter")
-    expect_identical(ans.obtained, ans.expected)
-    ## 1 quarter
-    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-06-30"), as.Date("2001-04-01"),
-                                               as.Date("2018-11-24")),
-                                      stepNum = 3L)
-    ans.expected <- seq(from = as.Date("2001-04-01"),
-                        to = as.Date("2019-01-01"),
-                        by = "quarter")
-    expect_identical(ans.obtained, ans.expected)
-    ## 20 February 2000
-    ans.obtained <- makeDateVecMonths(date = as.Date("2000-02-29"),
-                                      step = 1L)
-    ans.expected <- seq(from = as.Date("2000-02-01"),
-                        to = as.Date("2000-03-01"),
-                        by = "1 month")
-    expect_identical(ans.obtained, ans.expected)
-    ## date 31 December
-    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-12-31"), as.Date("2001-04-03")),
-                                      step = 2L)
-    ans.expected <- seq(from = as.Date("2001-03-01"),
-                        to = as.Date("2018-01-01"),
-                        by = "2 months")
-    expect_identical(ans.obtained, ans.expected)
-    ## 6 months
-    ans.obtained <- makeDateVecMonths(date = c(as.Date("2017-12-31"), as.Date("2001-04-03")),
-                                      step = 6L)
-    ans.expected <- seq(from = as.Date("2001-01-01"),
-                        to = as.Date("2018-01-01"),
-                        by = "6 months")
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("makeAgeLabels works", {
-    makeAgeLabels <- dembase:::makeAgeLabels
-    ans.obtained <- makeAgeLabels(stepNum = 1L,
-                                  stepUnit = "years",
-                                  nAgeInterval = 3,
-                                  lastOpen = TRUE)
-    ans.expected <- c("0", "1", "2+")
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabels(stepNum = 1L,
-                                  stepUnit = "years",
-                                  nAgeInterval = 3,
-                                  lastOpen = FALSE)
-    ans.expected <- c("0", "1", "2")
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabels(stepNum = 5L,
-                                  stepUnit = "years",
-                                  nAgeInterval = 3,
-                                  lastOpen = TRUE)
-    ans.expected <- c("0-4", "5-9", "10+")
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabels(stepNum = 1L,
-                                  stepUnit = "years",
-                                  nAgeInterval = 4,
-                                  lastOpen = FALSE)
-    ans.expected <- c("0", "1", "2", "3")
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- makeAgeLabels(stepNum = 3L,
-                                  stepUnit = "months",
-                                  nAgeInterval = 4,
-                                  lastOpen = FALSE)
-    ans.expected <- c("0-0.25", "0.25-0.5", "0.5-0.75", "0.75-1")
-    expect_identical(ans.obtained, ans.expected)    
-    ans.obtained <- makeAgeLabels(stepNum = 6L,
-                                  stepUnits = "months",
-                                  nAgeInterval = 4,
-                                  lastOpen = TRUE)
-    ans.expected <- c("0-0.5", "0.5-1", "1-1.5", "1.5+")
-    expect_identical(ans.obtained, ans.expected)    
-})
-
-test_that("makePeriodLabelsYears works", {
-    makePeriodLabelsYears <- dembase:::makePeriodLabelsYears
-    vec <- as.Date(c("2000-01-01", "2001-01-01", "2002-01-01"))
-    stepNum <- 1L
-    ans.obtained <- makePeriodLabelsYears(dateVec = vec,
-                                          stepNum = stepNum)
-    ans.expected <- c("2000", "2001")
-    expect_identical(ans.obtained, ans.expected)
-    vec <- as.Date(c("2000-07-01", "2001-07-01", "2002-07-01"))
-    step <- 1L
-    ans.obtained <- makePeriodLabelsYears(dateVec = vec,
-                                          stepNum = step)
-    ans.expected <- c("2001", "2002")
-    expect_identical(ans.obtained, ans.expected)
-    dateVec <- as.Date(c("2000-07-01", "2005-07-01", "2010-07-01"))
-    stepNum <- 5L
-    ans.obtained <- makePeriodLabelsYears(dateVec = dateVec,
-                                          stepNum = stepNum)
-    ans.expected <- c("2001-2005", "2006-2010")
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("makePeriodLabelsFromVec works with step lengths < 1 year", {
-    makePeriodLabelsMonths <- dembase:::makePeriodLabelsMonths
-    ## 6 month start on 1 Jan
-    dateVec <- as.Date(c("2000-01-01", "2000-07-01", "2001-01-01", "2001-07-01", "2002-01-01"))
-    stepNum <- 6L
-    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
-                                            stepNum = stepNum)
-    ans.expected <- c("2000-2000.5", "2000.5-2001", "2001-2001.5", "2001.5-2002")
-    expect_identical(ans.obtained, ans.expected)
-    ## 6 month start on 1 July
-    dateVec <- as.Date(c("2000-07-01", "2001-01-01", "2001-07-01", "2002-01-01"))
-    stepNum <- 6L
-    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
-                                            stepNum = stepNum)
-    ans.expected <- c("2000.5-2001", "2001-2001.5", "2001.5-2002")
-    expect_identical(ans.obtained, ans.expected)
-    ## quarter start on 1 Jan
-    dateVec <- as.Date(c("2000-01-01", "2000-04-01", "2000-07-01", "2000-10-01", "2001-01-01"))
-    stepNum <- 3L
-    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
-                                            stepNum = stepNum)
-    ans.expected <- c("2000-2000.25", "2000.25-2000.5", "2000.5-2000.75", "2000.75-2001")
-    expect_identical(ans.obtained, ans.expected)
-    ## month start on 1 Feb
-    dateVec <- as.Date(c("2000-02-01", "2000-03-01", "2000-04-01", "2000-05-01"))
-    stepNum <- 1L
-    ans.obtained <- makePeriodLabelsMonths(dateVec = dateVec,
-                                            stepNum = stepNum)
-    ans.expected <- c("2000.0833-2000.1667", "2000.1667-2000.25", "2000.25-2000.3333")
-    expect_identical(ans.obtained, ans.expected)
-})
-
-
-test_that("makeStepUnitsAndStepNum works", {
-    makeStepUnitsAndStepNum <- dembase:::makeStepUnitsAndStepNum
-    expect_identical(makeStepUnitsAndStepNum("year"),
-                     list(stepUnits = "years", stepNum = 1L))
-    expect_identical(makeStepUnitsAndStepNum("5 years"),
-                     list(stepUnits = "years", stepNum = 5L))
-    expect_identical(makeStepUnitsAndStepNum("2 mon"),
-                     list(stepUnits = "months", stepNum = 2L))
-    expect_identical(makeStepUnitsAndStepNum("1 quarter"),
-                     list(stepUnits = "months", stepNum = 3L))
-    expect_identical(makeStepUnitsAndStepNum("2 q"),
-                     list(stepUnits = "months", stepNum = 6L))
-    expect_identical(makeStepUnitsAndStepNum("4 qu"),
-                     list(stepUnits = "months", stepNum = 12L))
-    expect_error(makeStepUnitsAndStepNum(5),
-                 "'step' does not have type \"character\"")
-    expect_error(makeStepUnitsAndStepNum(c("year", "month")),
-                 "'step' does not have length 1")
-    expect_error(makeStepUnitsAndStepNum(as.character(NA)),
-                 "'step' is missing")
-    expect_error(makeStepUnitsAndStepNum("1 years months"),
-                 "invalid value for 'step'")
-    expect_error(makeStepUnitsAndStepNum("1 week"),
-                 "invalid value for 'step' : invalid units")
-    expect_error(makeStepUnitsAndStepNum("2.5 years"),
-                 "invalid value for 'step' : non-integer number of units")
-    expect_error(makeStepUnitsAndStepNum("0 years"),
-                 "invalid value for 'step' : non-positive number of units")
-    expect_error(makeStepUnitsAndStepNum("5 months"),
-                 "invalid value for 'step' : one year cannot be divided into intervals of length \"5 months\"")
-    expect_error(makeStepUnitsAndStepNum("3 quarters"),
-                 "invalid value for 'step' : one year cannot be divided into intervals of length \"3 quarters\"")
-})
-
-test_that("monthStartNum works", {
-    monthStartNum <- dembase:::monthStartNum
-    expect_identical(monthStartNum("January"),
-                     1L)
-    expect_identical(monthStartNum("Mar"),
-                     3L)
-    expect_error(monthStartNum(5),
-                 "'monthStart' does not have type \"character\"")
-    expect_error(monthStartNum(c("Jan", "Feb")),
-                 "'monthStart' does not have length 1")
-    expect_error(monthStartNum(as.character(NA)),
-                 "'monthStart' is missing")
-    expect_error(monthStartNum("wrong"),
-                 "invalid value for 'monthStart' : \"wrong\" is not a valid month")
-})
-
-test_that("yearToPeriod works", {
-    ans.obtained <- yearToPeriod(c(2000, 2049, 2033),
-                                 breaks = seq(2000, 2050, 5))
-    ans.expected <- factor(c("2000-2005", "2045-2050", "2030-2035"),
-                           levels = paste(seq(2000, 2045, 5), seq(2005, 2050, 5), sep = "-"))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- yearToPeriod(c(2000, 2049, 2033),
-                                 breaks = seq(1995, 2050, 5),
-                                 labelStart = FALSE)
-    ans.expected <- factor(c("1995-2000", "2045-2050", "2030-2035"),
-                           levels = paste(seq(2000, 2045, 5), seq(2005, 2050, 5), sep = "-"))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- yearToPeriod(c(1999, 2005, 2033, 2099),
-                                 breaks = c(2000, 2010, 2020),
-                                 firstOpen = TRUE, lastOpen = TRUE)
-    ans.expected <- factor(c("<2000", "2000-2010", "2020+", "2020+"),
-                           levels = c("<2000", "2000-2010", "2010-2020", "2020+"))
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("yearToPeriod throws appropriate errors", {
-    expect_error(yearToPeriod(list("a", "b", "c"), breaks = c(2000, 2005)),
-                 "'year' has class \"list\"")
-    expect_error(yearToPeriod(c("1", NA, "b"), breaks = c(2000, 2005)),
-                 "value \"b\" from 'year' cannot be coerced to numeric")
-    expect_error(yearToPeriod(c(0, 1, 10), breaks = c(5, 100), firstOpen = FALSE),
-                 "'year' has values less than the lowest value of 'breaks', but 'firstOpen' is FALSE")
 })
 
 
@@ -1127,7 +485,7 @@ test_that("checkAndTidyAlong works", {
     metadata <- new("MetaData",
                     nms = c("cohort", "sex"),
                     dimtypes = c("cohort", "state"),
-                    DimScales = list(new("Intervals", dimvalues = 0:4),
+                    DimScales = list(new("Intervals", dimvalues = 0:4, isAge = TRUE),
                     new("Categories", dimvalues = c("a", "b"))))
     expect_identical(checkAndTidyAlong(NULL,
                                        metadata = metadata,
@@ -1136,7 +494,7 @@ test_that("checkAndTidyAlong works", {
     metadata <- new("MetaData",
                     nms = "age",
                     dimtypes = "age",
-                    DimScales = list(new("Intervals", dimvalues = 0:4)))
+                    DimScales = list(new("Intervals", dimvalues = 0:4, isAge = TRUE)))
     expect_identical(checkAndTidyAlong(NULL,
                                        metadata = metadata,
                                        numericDimScales = TRUE),
@@ -1196,14 +554,14 @@ test_that("checkAndTidyDimColExtCat works", {
     dimension <- "region"
     names <- c("region", "age")
     DimScales <- list(new("Categories", dimvalues = c("a", "b")),
-                      new("Intervals", dimvalues = 0:2))
+                      new("Intervals", dimvalues = 0:2, isAge = TRUE))
     expect_identical(checkAndTidyDimColExtCat(dimension = dimension,
                                               names = names,
                                               DimScales = DimScales),
                      1L)
     dimension <- NULL
     names <- c("age", "region")
-    DimScales <- list(new("Intervals", dimvalues = 0:2),
+    DimScales <- list(new("Intervals", dimvalues = 0:2, isAge = TRUE),
                       new("Categories", dimvalues = c("a", "b")))
     expect_identical(checkAndTidyDimColExtCat(dimension = dimension,
                                               names = names,
@@ -1334,7 +692,7 @@ test_that("permuteToMatchIntervalOrPointMetadata works", {
     m <- new("MetaData",
              nms = c("age", "sex"),
              dimtypes = c("age", "state"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("m", "f"))))
     expect_identical(permuteToMatchIntervalOrPointMetadata(a, metadata = m),
                      a[c(1,3,2), ])
@@ -1349,7 +707,7 @@ test_that("permuteToMatchIntervalOrPointMetadata works", {
     m <- new("MetaData",
              nms = c("age", "sex"),
              dimtypes = c("age", "state"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("m", "f"))))
     expect_identical(permuteToMatchIntervalOrPointMetadata(a, metadata = m),
                      a[c(1,3,2), ])
@@ -1361,7 +719,7 @@ test_that("permuteToMatchIntervalOrPointMetadata works", {
     m <- new("MetaData",
              nms = c("age", "time"),
              dimtypes = c("age", "time"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
              new("Points", dimvalues = c(2000, 2005))))
     expect_identical(permuteToMatchIntervalOrPointMetadata(a, metadata = m),
                      a[c(1,3,2), 2:1])
@@ -2303,14 +1661,14 @@ test_that("makeMetaDataSubarraysBefore works", {
                      new("MetaData",
                          nms = c("age", "sex", "region"),
                          dimtypes = c("age", "sex", "state"),
-                         DimScales = list(new("Intervals", dimvalues = c(0, 5, 10)),
+                         DimScales = list(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE),
                              new("Sexes", dimvalues = c("f", "m")),
                              new("Categories", dimvalues = "c"))))
     expect_identical(ans.obtained[[4]],
                      new("MetaData",
                          nms = c("age", "sex", "region"),
                          dimtypes = c("age", "sex", "state"),
-                         DimScales = list(new("Intervals", dimvalues = c(10, 15, 20, Inf)),
+                         DimScales = list(new("Intervals", dimvalues = c(10, 15, 20, Inf), isAge = TRUE),
                              new("Sexes", dimvalues = c("f", "m")),
                              new("Categories", dimvalues = "b"))))
     x <- Counts(array(1,
@@ -2332,14 +1690,14 @@ test_that("makeMetaDataSubarraysBefore works", {
                      new("MetaData",
                          nms = c("age", "sex", "region"),
                          dimtypes = c("age", "sex", "state"),
-                         DimScales = list(new("Intervals", dimvalues = c(0, 5, 10)),
+                         DimScales = list(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE),
                              new("Sexes", dimvalues = "f"),
                              new("Categories", dimvalues = "a"))))
     expect_identical(ans.obtained[[2]],
                      new("MetaData",
                          nms = c("age", "sex", "region"),
                          dimtypes = c("age", "sex", "state"),
-                         DimScales = list(new("Intervals", dimvalues = c(0, 5, 10)),
+                         DimScales = list(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE),
                              new("Sexes", dimvalues = "f"),
                              new("Categories", dimvalues = "b"))))
     x <- Counts(array(1,
@@ -2367,7 +1725,7 @@ test_that("checkAge works", {
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)))
     expect_identical(checkAge(x, openRightOK = TRUE),
                      NULL)
     x <- new("MetaData",
@@ -2400,27 +1758,27 @@ test_that("checkAge works", {
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)))
     expect_error(checkAge(x, regular = TRUE),
                  "dimension with dimtype \"age\" is not regular")
     ## age dimension has expected dimscale
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)))
     expect_error(checkAge(x, expectedDimscale = "Points"),
                  "dimension with dimtype \"age\" has dimscale \"Intervals\"")
     ## age dimension only open on left or right if permitted
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)))
     expect_error(checkAge(x),
                  "last age group is open")
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(-Inf, 0, 1, 5, 10, Inf))))
+             DimScales = list(new("Intervals", dimvalues = c(-Inf, 0, 1, 5, 10, Inf), isAge = TRUE)))
     expect_error(checkAge(x, openRightOK = TRUE),
                  "first age group is open")
     expect_identical(checkAge(x, openLeftOK = TRUE, openRight = TRUE),
@@ -2896,6 +2254,7 @@ test_that("isValidPointLabelsDate works", {
     expect_false(isValidPointLabelsDate(c("2010-03-05", NA)))
 })
 
+
 test_that("makeLabelsForClosedIntervals works", {
     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
     expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10), ageLike = TRUE, labelStart = TRUE),
@@ -2968,6 +2327,92 @@ test_that("makeLabelsForIntervals works", {
   dimvalues <- dateToFracYear(dates)
   expect_identical(makeLabelsForIntervals(dimvalues, labelStart = TRUE),
                    c("2014-Q1", "2014-Q2"))
+})
+
+test_that("makeMonthLabelsForAgeDimvalues works with valid inputs", {
+    makeMonthLabelsForAgeDimvalues <- dembase:::makeMonthLabelsForAgeDimvalues
+    ## closed both ends, starting in Jan, ending in Dec
+    dimvalues <- seq(from = 20, to = 22, by = 1/12)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- paste0(rep(20:21, each = 12), "-", rep(0:11, times = 2), "m")
+    expect_identical(ans.obtained, ans.expected)
+    ## rounded to 3dp
+    dimvalues <- round(seq(from = 20, to = 22, by = 1/12), 3)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- paste0(rep(20:21, each = 12), "-", rep(0:11, times = 2), "m")
+    expect_identical(ans.obtained, ans.expected)
+    ## two values
+    dimvalues <- c(20 + 5/12, 20 + 6/12)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- "20-5m"
+    expect_identical(ans.obtained, ans.expected)
+    ## open on left
+    dimvalues <- c(-Inf, 20 + 5/12, 20 + 6/12)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- c("<20-5m", "20-5m")
+    expect_identical(ans.obtained, ans.expected)
+    ## open on right
+    dimvalues <- c(18 + 1/12, 18 + 2/12, 18 + 3/12, Inf)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- c("18-1m", "18-2m", "18-3m+")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeMonthLabelsForAgeDimvalues returns NULL with invalid inputs", {
+    makeMonthLabelsForAgeDimvalues <- dembase:::makeMonthLabelsForAgeDimvalues
+    ## only one finite
+    dimvalues <- c(-Inf, 20, Inf)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## not multiples of 1/12
+    dimvalues <- round(seq(from = 20, to = 22, by = 1/10), 3)
+    ans.obtained <- makeMonthLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeQuarterLabelsForAgeDimvalues works with valid inputs", {
+    makeQuarterLabelsForAgeDimvalues <- dembase:::makeQuarterLabelsForAgeDimvalues
+    ## closed both ends, starting in Jan, ending in Dec
+    dimvalues <- seq(from = 20, to = 22, by = 1/4)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- paste0(rep(20:21, each = 4), "-", rep(0:3, times = 2), "q")
+    expect_identical(ans.obtained, ans.expected)
+    ## rounded to 3dp
+    dimvalues <- round(seq(from = 20, to = 22, by = 1/4), 3)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- paste0(rep(20:21, each = 4), "-", rep(0:3, times = 2), "q")
+    expect_identical(ans.obtained, ans.expected)
+    ## two values
+    dimvalues <- c(20 + 1/4, 20 + 2/4)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- "20-1q"
+    expect_identical(ans.obtained, ans.expected)
+    ## open on left
+    dimvalues <- c(-Inf, 20 + 3/4, 21)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- c("<20-3q", "20-3q")
+    expect_identical(ans.obtained, ans.expected)
+    ## open on right
+    dimvalues <- c(18 + 1/4, 18 + 2/4, 18 + 3/4, Inf)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- c("18-1q", "18-2q", "18-3q+")
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("makeQuarterLabelsForAgeDimvalues returns NULL with invalid inputs", {
+    makeQuarterLabelsForAgeDimvalues <- dembase:::makeQuarterLabelsForAgeDimvalues
+    ## only one finite
+    dimvalues <- c(-Inf, 20, Inf)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## not multiples of 1/4
+    dimvalues <- round(seq(from = 20, to = 22, by = 1/10), 3)
+    ans.obtained <- makeQuarterLabelsForAgeDimvalues(dimvalues)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("monthAndYearToDimvalues works", {
@@ -3363,7 +2808,7 @@ test_that("asDataFrame works", {
 
 test_that("intervalsToPoints works", {
   intervalsToPoints <- dembase:::intervalsToPoints
-  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 1, 2, 3))),
+  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)),
                     new("Points", dimvalues = c(0.5, 1.5, 2.5)))
   expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 1, 5, 10, 15))),
                    new("Points", dimvalues = c(0.5, 3, 7.5, 12.5)))
@@ -3380,7 +2825,7 @@ test_that("intervalsToPoints works", {
 test_that("pointsToIntervals works", {
   pointsToIntervals <- dembase:::pointsToIntervals
   expect_that(pointsToIntervals(new("Points", dimvalues = c(0.5, 1.5, 2.5))),
-              is_identical_to(new("Intervals", dimvalues = c(0, 1, 2, 3))))
+              is_identical_to(new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)))
   expect_that(pointsToIntervals(new("Points", dimvalues = c(0.5, 3, 7.5, 12.5))),
               is_identical_to(new("Intervals", dimvalues = c(0, 1, 5, 10, 15))))
   expect_that(pointsToIntervals(new("Points")),
@@ -4415,7 +3860,7 @@ test_that("mergeMetadata works", {
                          dimtypes = c("origin", "destination", "age", "sex"),
                          DimScales = list(new("Categories", dimvalues = c("a", "b")),
                          new("Categories", dimvalues = c("a", "b")),
-                         new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+                         new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
                          new("Sexes", dimvalues = c("m", "f")))))
 })
 
@@ -6606,7 +6051,7 @@ test_that("uniformWeightsForExpandIntervals works", {
                     nms = c("sex", "age"),
                     dimtypes = c("sex", "age"),
                     DimScales = list(new("Sexes", dimvalues = c("Female", "Male")),
-                                     new("Intervals", dimvalues = c(0, 5, 10, Inf))))
+                                     new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)))
     breaks <- c(0, 1, 5, 10, Inf)
     dimension <- 2L
     ans.obtained <- uniformWeightsForExpandIntervals(breaks = breaks,
@@ -6617,7 +6062,7 @@ test_that("uniformWeightsForExpandIntervals works", {
     metadata <- new("MetaData",
                     nms = "age",
                     dimtypes = "age",
-                    DimScales = list(new("Intervals", dimvalues = c(0, 5, 10))))
+                    DimScales = list(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)))
     breaks <- c(0, 1, 5, 9, 10)
     dimension <- 1L
     ans.obtained <- uniformWeightsForExpandIntervals(breaks = breaks,

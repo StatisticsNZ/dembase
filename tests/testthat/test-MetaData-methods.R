@@ -137,11 +137,11 @@ test_that("dimscales<- works", {
     expect_identical(dimscales(m),
                      c(age = "Intervals", sex = "Sexes"))
     expect_identical(DimScales(m)[[1]],
-                     new("Intervals", dimvalues = c(0, 1, 2, 3)))
+                     new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE))
     m <- metadata(x)
     dimscales(m)["age"] <- "Intervals"
     expect_identical(DimScales(m)[[1]],
-                     new("Intervals", dimvalues = c(0, 1, 2, 3)))
+                     new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE))
     m <- metadata(x)
     expect_error(dimscales(m) <- rep("Categories", 3),
                  paste("number of items to replace",
@@ -158,7 +158,7 @@ test_that("limits works", {
     metadata <- new("MetaData",
                     nms = c("age", "sex", "time", "region"),
                     dimtypes = c("age", "state", "time", "state"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf)),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE),
                         new("Categories", dimvalues = c("f", "m")),
                         new("Points", dimvalues = 2000),
                         new("Categories", dimvalues = character())))
@@ -172,7 +172,7 @@ test_that("limits works", {
     metadata <- new("MetaData",
                     nms = "age",
                     dimtypes = "age",
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))))
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)))
     ans.obtained <- limits(metadata)
     ans.expected <- data.frame(age = c("0", "10+"),
                                row.names = c("first", "last"))

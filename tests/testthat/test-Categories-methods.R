@@ -25,7 +25,7 @@ test_that("coercion from Categories to Triangles works", {
 
 test_that("coercion from Categories to Intervals works", {
   expect_that(as(new("Categories", dimvalues = c("0-4", "5-9")), "Intervals"),
-              is_identical_to(new("Intervals", dimvalues = c(0, 5, 10))))
+              is_identical_to(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)))
   expect_that(as(new("Categories"), "Intervals"),
               is_identical_to(new("Intervals")))
   expect_that(as(new("Categories", dimvalues = c("a", "b")), "Intervals"),

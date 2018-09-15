@@ -394,10 +394,10 @@ test_that("DimScales method works", {
                sex = c("Male", "Female")))
   x <- Counts(a)
   expect_that(DimScales(x),
-              is_identical_to(list(age = new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+              is_identical_to(list(age = new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
                                    sex = new("Sexes", dimvalues = c("Male", "Female")))))
   expect_that(DimScales(x, use.names = FALSE),
-              is_identical_to(list(new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+              is_identical_to(list(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
                                    new("Sexes", dimvalues = c("Male", "Female")))))
 })
 

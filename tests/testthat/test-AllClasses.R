@@ -9,7 +9,7 @@ test_that("valid objects of class MetaData are created correctly", {
                               DimScales = list(
                                 new("Categories", dimvalues = c("Region 1", "Region 2")),
                                 new("Sexes", dimvalues = c("Male", "Female")),
-                                new("Intervals", dimvalues = c(0, 5, 10, Inf))))))
+                                new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)))))
   expect_error(validObject(new("MetaData")), "must have at least 1 dimension")
 })
 
@@ -22,7 +22,7 @@ test_that("dimtypes validity tests for MetaData work as expected", {
                     DimScales = list(
                         new("Categories", dimvalues = c("Region 1", "Region 2")),
                         new("Categories", dimvalues = c("Male", "Female")),
-                        new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                        new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
                 throws_error("'dimtypes' has missing values"))
     expect_that(new("MetaData",
                     nms = c("region", "sex", "age"),
@@ -30,7 +30,7 @@ test_that("dimtypes validity tests for MetaData work as expected", {
                     DimScales = list(
                         new("Categories", dimvalues = c("Region 1", "Region 2")),
                         new("Categories", dimvalues = c("Male", "Female")),
-                        new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                        new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
                 throws_error("\"wrong\" is not a valid dimtype"))
     expect_that(new("MetaData",
                     nms = c("region", "sex", "age"),
@@ -38,15 +38,15 @@ test_that("dimtypes validity tests for MetaData work as expected", {
                     DimScales = list(
                         new("Categories", dimvalues = c("Region 1", "Region 2")),
                         new("Categories", dimvalues = c("Male", "Female")),
-                        new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                        new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
                 throws_error("\"wrong1\" is not a valid dimtype"))
     expect_that(new("MetaData",
                     nms = c("age1", "sex", "age2"),
                     dimtypes = c("age", "state", "age"),
                     DimScales = list(
-                        new("Intervals", dimvalues = c(0, 5, 10)),
+                        new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE),
                         new("Categories", dimvalues = c("Male", "Female")),
-                        new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                        new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
                 throws_error("more than one dimension with dimtype \"age\""))
     expect_that(new("MetaData",
                     nms = c("region", "sex", "age"),
@@ -54,7 +54,7 @@ test_that("dimtypes validity tests for MetaData work as expected", {
                     DimScales = list(
                         new("Categories", dimvalues = c("Region 1", "Region 2")),
                         new("Sexes", dimvalues = c("Male", "Female")),
-                        new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                        new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
                 throws_error("'dimtypes' has names"))
 })
 
@@ -65,7 +65,7 @@ test_that("DimScales validity tests for MetaData work as expected", {
                   DimScales = list(
                     "wrong",
                     new("Categories", dimvalues = c("Male", "Female")),
-                    new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                    new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
               throws_error("'DimScales' has element not of class \"DimScale\""))
   expect_that(new("MetaData",
                   nms = c("region", "sex", "age"),
@@ -73,7 +73,7 @@ test_that("DimScales validity tests for MetaData work as expected", {
                   DimScales = list(
                     a = new("Categories", dimvalues = c("Region 1", "Region 2")),
                     b = new("Categories", dimvalues = c("Male", "Female")),
-                    c = new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                    c = new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
               throws_error("'DimScales' has names"))
 })
 
@@ -84,7 +84,7 @@ test_that("dimtypes and names have the same length", {
                   DimScales = list(
                     new("Categories", dimvalues = c("Region 1", "Region 2")),
                     new("Categories", dimvalues = c("Male", "Female")),
-                    new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                    new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
               throws_error("'dimtypes' and 'names' have different lengths"))
 })
 
@@ -96,8 +96,8 @@ test_that("DimScales and names have the same length", {
                               DimScales = list(
                                 new("Categories", dimvalues = c("Region 1", "Region 2")),
                                 new("Categories", dimvalues = c("Male", "Female")),
-                                new("Intervals", dimvalues = c(0, 5, 10, Inf)),
-                                new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                                new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
+                                new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
               throws_error("'DimScales' and 'names' have different lengths"))
 })
 
@@ -107,9 +107,9 @@ test_that("dimensions have dimscales permitted for dimtypes", {
                   nms = c("region", "sex", "age"),
                   dimtypes = c("state", "state", "age"),
                   DimScales = list(
-                    new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+                    new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
                     new("Categories", dimvalues = c("Male", "Female")),
-                    new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
+                    new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))),
               throws_error(paste("dimension \"region\" has dimtype \"state\"",
                                  "but dimscale \"Intervals\"")))
   expect_that(validObject(new("MetaData",
@@ -245,8 +245,8 @@ test_that("triangle dimension works as expected", {
                               nms = c("age", "time", "triangle"),
                               dimtypes = c("age", "time", "triangle"),
                               DimScales = list(
-                                  new("Intervals", dimvalues = c(0, 5, 10, Inf)),
-                                  new("Intervals", dimvalues = c(0, 5, 10)),
+                                  new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
+                                  new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE),
                                   new("Triangles", dimvalues = c("Upper", "Lower"))))))
   expect_error(new("MetaData",
                   nms = c("sex", "triangle"),
@@ -266,7 +266,7 @@ test_that("triangle dimension works as expected", {
                   nms = c("age", "time", "triangle"),
                   dimtypes = c("age", "time", "triangle"),
                   DimScales = list(
-                    new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+                    new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
                     new("Points", dimvalues = c(2000, 2005, 2010)),
                     new("Triangles", dimvalues = c("Upper", "Lower")))),
                "has dimension with dimtype \"triangle\" but dimension with dimtype \"time\" has dimscale \"Points\"")
@@ -274,7 +274,7 @@ test_that("triangle dimension works as expected", {
                    nms = c("age", "time", "triangle"),
                    dimtypes = c("age", "time", "triangle"),
                    DimScales = list(
-                    new("Intervals", dimvalues = c(0, 5, 10, Inf)),
+                    new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE),
                     new("Intervals", dimvalues = 2000:2005),
                     new("Triangles", dimvalues = c("Upper", "Lower")))),
               "has dimension with dimtype \"triangle\" but does not have regular age-time plan")
@@ -293,7 +293,7 @@ test_that("validity tests for DemographicArray object work", {
                                 DimScales = list(
                                   new("Categories", dimvalues = c("Region 1", "Region 2")),
                                   new("Categories", dimvalues = c("Male", "Female")),
-                                  new("Intervals", dimvalues = c(0, 5, 10, Inf)))))),
+                                  new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE))))),
               is_true())
   expect_that(new("Counts",
                   array("a",
@@ -307,7 +307,7 @@ test_that("validity tests for DemographicArray object work", {
                     DimScales = list(
                       new("Categories", dimvalues = c("Region 1", "Region 2")),
                       new("Categories", dimvalues = c("Male", "Female")),
-                      new("Intervals", dimvalues = c(0, 5, 10, Inf))))),
+                      new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)))),
               throws_error("does not have type \"numeric\""))
   expect_that(new("Counts",
                   array(1:12,
@@ -334,7 +334,7 @@ test_that("validity tests for DemographicArray object work", {
                     DimScales = list(
                       new("Categories", dimvalues = c("Region 1", "Region 2", "extra")),
                       new("Categories", dimvalues = c("Male", "Female")),
-                      new("Intervals", dimvalues = c(0, 5, 10, Inf))))),
+                      new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)))),
               throws_error("'.Data' and 'metadata' have different dimensions"))
   expect_that(new("Counts",
                   array(1:12,
@@ -348,7 +348,7 @@ test_that("validity tests for DemographicArray object work", {
                     DimScales = list(
                       new("Categories", dimvalues = c("Region 1", "Region 2")),
                       new("Categories", dimvalues = c("Male", "Female")),
-                      new("Intervals", dimvalues = c(0, 5, 10, Inf))))),
+                      new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)))),
               throws_error("'.Data' and 'metadata' have different dimnames"))
 })
 
@@ -498,7 +498,7 @@ test_that("validity tests for CountsWithSubtotals inherited from HasSubtotals wo
     x.wrong@metadataSubtotals <- new("MetaData",
                                      nms = "age",
                                      dimtypes = "age",
-                                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10))))
+                                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)))
     expect_error(validObject(x.wrong),
                  "length of 'subtotals' inconsistent with dimensions of 'metadataSubtotals'")
     ## 'dimBefore' consistent with dim(object)
@@ -511,7 +511,7 @@ test_that("validity tests for CountsWithSubtotals inherited from HasSubtotals wo
     x.wrong@metadataSubtotals <- new("MetaData",
                                      nms = "age",
                                      dimtypes = "age",
-                                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10))))
+                                     DimScales = list(new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)))
     x.wrong@subtotals <- 1:2
     x.wrong@.Data[c(1,2,4,5)] <- NA
     expect_error(validObject(x.wrong))

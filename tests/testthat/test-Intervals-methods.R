@@ -52,13 +52,13 @@ test_that("coercion from Intervals to Iterations works", {
 })
 
 test_that("Extract works", {
-    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf))[1:2],
-                     new("Intervals", dimvalues = c(0, 5, 10)))
-    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf))[2:3],
+    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[1:2],
+                     new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE))
+    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[2:3],
                      new("Intervals", dimvalues = c(5, 10, Inf)))
-    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf))[c(1L, 3L, 0L)],
+    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[c(1L, 3L, 0L)],
                      new("Categories", dimvalues = c("0-4", "10+")))
-    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf))[c(0L, -2L)],
+    expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[c(0L, -2L)],
                      new("Categories", dimvalues = c("0-4", "10+")))
     expect_error(new("Intervals", dimvalues = 0:5)[c(0L, NA)],
                  "'i' has missing values")
@@ -276,7 +276,7 @@ test_that("canMakeDimScalesCompatible works when 'collapse' is FALSE", {
 test_that("collapseDimScale works", {
     collapseDimScale <- dembase:::collapseDimScale
     x <- new("Intervals", dimvalues = c(0, 1, 5, 10))
-    y <- new("Intervals", dimvalues = c(0, 5, 10))
+    y <- new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)
     expect_identical(collapseDimScale(x, index = c(1L, 1L, 2L)), y)
     expect_identical(collapseDimScale(x, index = c(1L, 0L, 2L)),
                      new("Categories", dimvalues = c("0", "5-9")))
@@ -301,7 +301,7 @@ test_that("dbindDimScales works", {
     expect_identical(dbindDimScales(e1 = new("Intervals", dimvalues = c(0, 1, 5, 10)),
                                     e2 = new("Intervals", dimvalues = c(10, Inf)),
                                     along = "age"),
-                     new("Intervals", dimvalues = c(0, 1, 5, 10, Inf)))
+                     new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE))
     expect_identical(dbindDimScales(e1 = new("Intervals", dimvalues = c(2010, 2015, 2020)),
                                     e2 = new("Intervals", dimvalues = c(2000, 2005, 2010)),
                                     along = "period"),
@@ -322,14 +322,14 @@ test_that("dbindDimScales works", {
 
 test_that("e1IsFirstDimScale works", {
     e1IsFirstDimScale <- dembase:::e1IsFirstDimScale
-    e1 <- new("Intervals", dimvalues = c(0, 5, 10))
+    e1 <- new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(10, Inf))
     expect_true(e1IsFirstDimScale(e1 = e1, e2 = e2))
     e1 <- new("Intervals", dimvalues = numeric())
     e2 <- new("Intervals", dimvalues = numeric())
     expect_true(e1IsFirstDimScale(e1 = e1, e2 = e2))
     e1 <- new("Intervals", dimvalues = c(10, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, 10))
+    e2 <- new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)
     expect_false(e1IsFirstDimScale(e1 = e1, e2 = e2))
     e1 <- new("Intervals", dimvalues = c(10, Inf))
     e2 <- new("Intervals", dimvalues = c(0, 5, 11))
@@ -344,7 +344,7 @@ test_that("extendDimScale works", {
     x <- new("Intervals", dimvalues = c(-5, 0, 1, 5, Inf))
     y <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_identical(extendDimScale(x, index = 2:4), y)
-    x <- new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))
+    x <- new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)
     y <- new("Intervals", dimvalues = c(1, 5, 10, Inf))
     expect_identical(extendDimScale(x, index = 2:4), y)
     x <- new("Intervals", dimvalues = c(0, 5, 10, 15))
@@ -560,7 +560,7 @@ test_that("mergeDimScales method for Intervals works", {
     e2 <- new("Intervals", dimvalues = c(0, 1, 2, 5, Inf))
     expect_identical(mergeDimScales(e1, e2), e2)
     mergeDimScales <- dembase:::mergeDimScales
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5, 10, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5, 10, Inf), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 2, 5, Inf))
     expect_identical(mergeDimScales(e1, e2),
                      new("Intervals", dimvalues = c(0, 1, 2, 5, 10, Inf)))
@@ -576,7 +576,7 @@ test_that("stepLengths method for Intervals works", {
   stepLengths <- dembase:::stepLengths
   expect_that(stepLengths(new("Intervals", dimvalues = c(1, 2, 4))),
               is_identical_to(c(1, 2)))
-  expect_that(stepLengths(new("Intervals", dimvalues = c(0, 5, 10, Inf))),
+  expect_that(stepLengths(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)),
               is_identical_to(c(5, 5, Inf)))
   expect_that(stepLengths(new("Intervals", dimvalues = c(-Inf, 0, 5, 10, Inf))),
               is_identical_to(c(Inf, 5, 5, Inf)))

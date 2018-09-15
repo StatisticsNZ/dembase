@@ -508,12 +508,12 @@ test_that("makeMissingAgeTimeDimScale works with time and cohort both Intervals 
     ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2000, 2001, 2002, 2003)),
                                                cohort = new("Intervals", dimvalues = c(2000, 2001)),
                                                triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
-    ans.expected <- new("Intervals", dimvalues = c(0, 1, 2, 3))
+    ans.expected <- new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2005, 2010)),
                                                cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)),
                                                triangle = new("Triangles", dimvalues = c("Lower", "Upper")))
-    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10))
+    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMissingAgeTimeDimScale(time = new("Intervals", dimvalues = c(2010, 2015)),
                                                cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)),
@@ -526,11 +526,11 @@ test_that("makeMissingAgeTimeDimScale works with time Points and cohort Interval
     makeMissingAgeTimeDimScale <- dembase:::makeMissingAgeTimeDimScale
     ans.obtained <- makeMissingAgeTimeDimScale(time = new("Points", dimvalues = c(2001, 2002, 2003)),
                                                cohort = new("Intervals", dimvalues = c(2000, 2001)))
-    ans.expected <- new("Intervals", dimvalues = c(0, 1, 2, 3))
+    ans.expected <- new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMissingAgeTimeDimScale(time = new("Points", dimvalues = c(2005, 2010)),
                                                cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))
-    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10))
+    ans.expected <- new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeMissingAgeTimeDimScale(time = new("Points", dimvalues = c(2010, 2015)),
                                                cohort = new("Intervals", dimvalues = c(2000, 2005, 2010)))

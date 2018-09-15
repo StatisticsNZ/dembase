@@ -60,6 +60,8 @@ setAs(from = "Intervals", to = "Iterations",
 setMethod("[",
           signature(x = "Intervals", i = "integer"),
           function(x, i) {
+              isAge <- x@isAge
+              labelStart <- x@labelStart
               if (any(is.na(i)))
                   stop(gettextf("'%s' has missing values", "i"))
               n <- length(x)
@@ -73,7 +75,10 @@ setMethod("[",
                       lower.after <- lower.before[i]
                       final.after <- dv.before[max(i) + 1L]
                       dv.after <- c(lower.after, final.after)
-                      methods::new(class(x), dimvalues = dv.after)
+                      methods::new(class(x),
+                                   dimvalues = dv.after,
+                                   isAge = isAge,
+                                   labelStart = labelStart)
                   }
                   else {
                       dv.before <- labels(x)
@@ -251,8 +256,12 @@ setMethod("canMakeDimScalesCompatible",
 setMethod("collapseDimScale",
           signature(object = "Intervals", index = "integer"),
           function(object, index) {
+              isAge <- object@isAge
+              labelStart <- object@labelStart
               if (all(index == 0L))
-                  return(methods::new("Intervals"))
+                  return(methods::new("Intervals",
+                                      isAge = isAge,
+                                      labelStart = labelStart))
               i.last.positive <- max(which(index > 0L))
               right.trimmed.index <- index[seq_len(i.last.positive)]
               no.gaps.or.permutations <- all(diff(right.trimmed.index) %in% c(0L, 1L))
@@ -263,10 +272,14 @@ setMethod("collapseDimScale",
                   index <- match(seq_along(index), index, nomatch = 0L)
                   index <- c(index, i.last.upper)
                   dv.after <- dv.before[index]
-                  methods::new(class(object), dimvalues = dv.after)
+                  methods::new(class(object),
+                               dimvalues = dv.after,
+                               isAge = isAge,
+                               labelStart = labelStart)
               }
               else {
-                  object <- methods::new("Categories", dimvalues = labels(object))
+                  object <- methods::new("Categories",
+                                         dimvalues = labels(object))
                   methods::callGeneric()
               }
           })
@@ -275,8 +288,13 @@ setMethod("collapseDimScale",
 setMethod("dbindDimScales",
           signature(e1 = "Intervals", e2 = "Intervals"),
           function(e1, e2, along) {
+              isAge <- e1@isAge
+              labelStart <- e1@labelStart
               dimvalues <- combineDimvaluesForIntervals(e1 = e1, e2 = e2, along = along)
-              methods::new("Intervals", dimvalues = dimvalues)
+              methods::new("Intervals",
+                           dimvalues = dimvalues,
+                           isAge = isAge,
+                           labelStart = labelStart)
           })
 
 ## HAS_TESTS
@@ -302,12 +320,17 @@ setMethod("extendDimScale",
                   return(object)
               if (!all(diff(index) %in% c(0L, 1L)))
                   stop(gettextf("'%s' has gaps", "index"))
+              isAge <- object@isAge
+              labelStart <- object@labelStart
               dimvalues <- dimvalues(object)
               last.lower <- max(index)
               last.upper <- max(index) + 1L
               index <- c(index, last.upper)
               dimvalues <- dimvalues[index]
-              methods::new(class(object), dimvalues = dimvalues)
+              methods::new(class(object),
+                           dimvalues = dimvalues,
+                           isAge = isAge,
+                           labelStart = labelStart)
           })
 
 ## HAS_TESTS
@@ -316,6 +339,8 @@ setMethod("extendDimScale",
 setMethod("incrementDimScale",
           signature(object = "Intervals"),
           function(object, n) {
+              isAge <- object@isAge
+              labelStart <- object@labelStart
               n <- checkAndTidyNIncrement(n)
               forward <- n > 0L
               dv <- object@dimvalues
@@ -354,7 +379,10 @@ setMethod("incrementDimScale",
                   dimvalues <- seq(to = dv[1L],
                                    by = step,
                                    length.out = -n + 1L)
-              methods::new("Intervals", dimvalues = dimvalues)
+              methods::new("Intervals",
+                           dimvalues = dimvalues,
+                           isAge = isAge,
+                           labelStart = labelStart)
           })
 
 ## HAS_TESTS
@@ -445,7 +473,7 @@ setMethod("inferDimvalues",
               lower <- extractNumbersFromStartOfStrings(labels[!decoded.labels])
               if (any(is.na(lower)))
                   return(NULL)
-              possible.labels <- makeLabelsForClosedIntervals(dimvalues = lower,
+              possible.labels <- makeLabelsForClosedIntervals(dimvalues = c(lower, dimvalues[n]),
                                                               labelStart = labelStart,
                                                               isAge = isAge)
               if (identical(possible.labels, labels[!decoded.labels])) {
@@ -571,6 +599,8 @@ setMethod("makePairIndices",
 setMethod("mergeDimScales",
           signature(e1 = "Intervals", e2 = "Intervals"),
           function(e1, e2) {
+              isAge <- e1@isAge
+              labelStart <- e1@labelStart
               dv1 <- dimvalues(e1)
               dv2 <- dimvalues(e2)
               dv12 <- intersect(dv1, dv2)
@@ -579,7 +609,10 @@ setMethod("mergeDimScales",
               dv <- sort(union(dv1, dv2))
               dv <- dv[dv >= min12]
               dv <- dv[dv <= max12]
-              methods::new("Intervals", dimvalues = dv)
+              methods::new("Intervals",
+                           dimvalues = dv,
+                           isAge = isAge,
+                           labelStart = labelStart)
           })
 
 ## HAS_TESTS
