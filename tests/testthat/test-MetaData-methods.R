@@ -45,14 +45,14 @@ test_that("ageMax<- works", {
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)))
     x.new <- x
     ageMax(x.new) <- Inf
     expect_identical(x.new,
                      new("MetaData",
                          nms = "age",
                          dimtypes = "age",
-                         DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)))))
+                         DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf))Q)))
 })
 
 test_that("ageMin works", {
@@ -67,7 +67,7 @@ test_that("ageMin<- works", {
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)))
     x.new <- x
     ageMin(x.new) <- -Inf
     expect_identical(x.new,
@@ -211,7 +211,7 @@ test_that("setAgeMax works", {
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)))
     expect_identical(setAgeMax(x, value = Inf),
                      new("MetaData",
                          nms = "age",
@@ -223,7 +223,7 @@ test_that("setAgeMin works", {
     x <- new("MetaData",
              nms = "age",
              dimtypes = "age",
-             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5))))
+             DimScales = list(new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)))
     expect_identical(setAgeMin(x, value = -5),
                      new("MetaData",
                          nms = "age",

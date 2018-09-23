@@ -1096,6 +1096,132 @@ test_that("makeAgeLabels works", {
     expect_identical(ans.obtained, ans.expected)    
 })
 
+
+
+## HAS_TESTS
+monthAndYearToDimvalues <- function(month, year) {
+    n <- length(month)
+    stopifnot(n > 0L)
+    stopifnot(length(year) == n)
+    stopifnot(all(month %in% base::month.abb))
+    stopifnot(is.integer(year))
+    stopifnot(all(diff(year) %in% 0:1))
+    ## assume months are in correct order
+    last.month <- month[n]
+    last.year <- year[n]
+    i.last.month <- match(last.month, base::month.abb)
+    last.month.is.dec <- identical(i.last.month, 12L)
+    if (last.month.is.dec) {
+        extra.month <- "Jan"
+        extra.year <- last.year + 1L
+    }
+    else {
+        extra.month <- base::month.abb[i.last.month + 1L]
+        extra.year <- last.year
+    }
+    year <- c(year, extra.year)
+    month <- c(month, extra.month)
+    month <- match(month, base::month.abb)
+    date.start.month <- sprintf("%d-%d-1", year, month)
+    date.start.month <- as.Date(date.start.month,
+                                format = "%Y-%m-%d")
+    date.end.month <- date.start.month - 1L
+    frac.year <- dateToFracYear(date.end.month)
+    year + frac.year - (frac.year == 1)
+}
+
+
+
+
+test_that("monthAndYearToDimvalues works", {
+    monthAndYearToDimvalues <- dembase:::monthAndYearToDimvalues
+    ans.obtained <- monthAndYearToDimvalues(month = c("Dec", base::month.abb, "Jan"),
+                                            year = c(2003L, rep(2004L, 12), 2005L))
+    ans.expected <- c(2003 + (365-31)/365,
+                      2004,
+                      2004 + 31/366,
+                      2004 + (31+29)/366,
+                      2004 + (31+29+31)/366,
+                      2004 + (31+29+31+30)/366,
+                      2004 + (31+29+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31+30)/366,
+                      2005,
+                      2005 + 31/365)
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
+
+## HAS_TESTS
+monthLabelsToDimvalues <- function(x) {
+    m <- regexpr("\\d{4}", x)
+    if (any(m == -1L))
+        return(NULL)
+    obs.years <- regmatches(x, m)
+    obs.years <- as.integer(obs.years)
+    if (any(diff(obs.years) < 0L))
+        return(NULL)
+    min.obs.year <- min(obs.years)
+    max.obs.year <- max(obs.years)
+    max.obs.year.plus.1 <- max.obs.year + 1L
+    poss.years <- seq(from = min.obs.year, to = max.obs.year.plus.1)
+    poss.years <- rep(poss.years, each = 12L)
+    n.year <- max.obs.year.plus.1 - min.obs.year + 1L
+    poss.months <- rep(base::month.abb, times = n.year)
+    poss.labels <- paste(poss.months, poss.years, sep = "-")
+    i <- match(x, poss.labels, nomatch = 0L)
+    i.first <- i[1L]
+    s <- seq(from = i.first, along.with = x)
+    is.valid.months <- isTRUE(all.equal(i, s))
+    if (!is.valid.months)
+        return(NULL)
+    month <- poss.months[i]
+    year <- poss.years[i]
+    monthAndYearToDimvalues(month = month,
+                            year = year)
+}
+
+
+
+test_that("monthLabelsToDimvalues", {
+    monthLabelsToDimvalues <- dembase:::monthLabelsToDimvalues
+    ans.obtained <- monthLabelsToDimvalues(paste(c("Dec", base::month.abb, "Jan"),
+                                                 c(2003L, rep(2004L, 12), 2005L),
+                                                 sep = "-"))
+    ans.expected <- c(2003 + (365-31)/365,
+                      2004,
+                      2004 + 31/366,
+                      2004 + (31+29)/366,
+                      2004 + (31+29+31)/366,
+                      2004 + (31+29+31+30)/366,
+                      2004 + (31+29+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31)/366,
+                      2004 + (31+29+31+30+31+30+31+31+30+31+30)/366,
+                      2005,
+                      2005 + 31/365)
+    expect_equal(ans.obtained, ans.expected)
+    ans.obtained <- monthLabelsToDimvalues(c("Dec-01", "Dec-01"))
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- monthLabelsToDimvalues(c("Dec-2001", "Nov-2000"))
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- monthLabelsToDimvalues(c("Dec-2001", "Dec-2001"))
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
+
 ## HAS_TESTS
 monthStartNum <- function(monthStart) {
     if (!is.character(monthStart))

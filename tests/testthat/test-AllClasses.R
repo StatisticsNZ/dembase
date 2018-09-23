@@ -1139,7 +1139,7 @@ test_that("SummaryDemographicArray works", {
     m <- new("MetaData",
              nms = c("age", "sex"),
              dimtypes = c("age", "state"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("f", "m"))))
     x <- new("SummaryDemographicArray",
              metadata = m,
@@ -1357,7 +1357,7 @@ test_that("validity tests for Population inherited from Population work", {
     ## time dimension has dimscale "Points"
     x <- Counts(array(1L,
                       dim = c(2, 2, 2),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           reg = c("a", "b"),
                           age = c("0-4", "5+"))))
     expect_error(new("Population", .Data = x@.Data, metadata = x@metadata),
@@ -1376,7 +1376,7 @@ test_that("can create valid object of class BirthsMovementsNoParentChild", {
     x <- Counts(array(1L,
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("20-24", "25-29"),
-                          time = c("2001-2005", "2006-2010"),
+                          time = c("2000-2005", "2005-2010"),
                           triangle = c("TL", "TU"))))
     x <- new("BirthsMovementsNoParentChild",
              .Data = x@.Data,
@@ -1386,7 +1386,7 @@ test_that("can create valid object of class BirthsMovementsNoParentChild", {
     expect_is(x, "BirthsMovements")
     x <- Counts(array(1L,
                       dim = 2L,
-                      dimnames = list(time = c("2001-2005", "2006-2010"))))
+                      dimnames = list(time = c("2000-2005", "2005-2010"))))
     x <- new("BirthsMovementsNoParentChild",
              .Data = x@.Data,
              metadata = x@metadata,
@@ -1436,7 +1436,7 @@ test_that("validity tests for BirthsMovementsNoParentChild inherited from iMinAg
                  "'iMinAge' is less than 2")
     x <- Counts(array(1L,
                       dim = 2L,
-                      dimnames = list(time = c("2001-2005", "2006-2010"))))
+                      dimnames = list(time = c("2000-2005", "2005-2010"))))
     x <- new("BirthsMovementsNoParentChild",
              .Data = x@.Data,
              metadata = x@metadata,
@@ -1482,7 +1482,7 @@ test_that("validity tests for BirthsMovementsHasParentChild inherited from HasPa
     x <- Counts(array(1L,
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("20-24", "25-29"),
-                          time = c("2001-2005", "2006-2010"),
+                          time = c("2000-2005", "2005-2010"),
                           triangle = c("TL", "TU"))))
     expect_error(new("BirthsMovementsHasParentChild",
                      .Data = x@.Data,
@@ -1875,7 +1875,7 @@ test_that("can create valid object of class EntriesMovements", {
                       dimnames = list(reg = c("a", "b", "c"),
                           triangle = c("TL", "TU"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("EntriesMovements", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "EntriesMovements")
@@ -1887,7 +1887,7 @@ test_that("can create valid object of class EntriesTransitions", {
                       dim = c(3, 2, 2),
                       dimnames = list(reg = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("EntriesTransitions", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "EntriesTransitions")
@@ -1897,7 +1897,7 @@ test_that("can create valid object of class EntriesTransitions", {
                       dimnames = list(reg_orig = c("a", "b", "c"),
                           reg_dest = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("EntriesTransitions", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "EntriesTransitions")
@@ -1909,7 +1909,7 @@ test_that("can create valid object of class ExitsMovements", {
                       dimnames = list(reg = c("a", "b", "c"),
                           triangle = c("TL", "TU"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("ExitsMovements", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "ExitsMovements")
@@ -1921,7 +1921,7 @@ test_that("can create valid object of class ExitsTransitions", {
                       dim = c(3, 2, 2),
                       dimnames = list(reg = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("ExitsTransitions", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "ExitsTransitions")
@@ -1931,7 +1931,7 @@ test_that("can create valid object of class ExitsTransitions", {
                       dimnames = list(reg_orig = c("a", "b", "c"),
                           reg_dest = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("ExitsTransitions", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "ExitsTransitions")
@@ -1943,7 +1943,7 @@ test_that("can create valid object of class NetMovements", {
                       dimnames = list(reg = c("a", "b", "c"),
                           triangle = c("TL", "TU"),
                           age = c("0-4", "5+"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("NetMovements", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "NetMovements")
@@ -1955,7 +1955,7 @@ test_that("can create valid object of class Accession", {
                       dimnames = list(reg = c("a", "b", "c"),
                           sex = c("f", "m"),
                           age = c("5", "10"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("Accession", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "Accession")
@@ -1967,7 +1967,7 @@ test_that("tests for Accession inherited from AgeIsPoints work", {
                       dimnames = list(reg = c("a", "b", "c"),
                           sex = c("f", "m"),
                           age = c("0-4", "5-9"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     expect_error(new("Accession", .Data = x@.Data, metadata = x@metadata),
                  "dimension with dimtype \"age\" has dimscale \"Intervals\"")
 })
@@ -1979,7 +1979,7 @@ test_that("can create valid object of class Exposure", {
                           sex = c("f", "m"),
                           age = c("0-4", "5+"),
                           triangle = c("TL", "TU"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     x <- new("Exposure", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
     expect_is(x, "Exposure")
@@ -1992,7 +1992,7 @@ test_that("validity tests for Exposure inherited from IsDouble work", {
                           sex = c("f", "m"),
                           age = c("0-4", "5+"),
                           triangle = c("TL", "TU"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     expect_error(new("Exposure", .Data = x@.Data, metadata = x@metadata),
                  "does not have type \"double\"")
 })
@@ -2029,7 +2029,7 @@ test_that("can create valid object of class Movements", {
                            dim = c(1, 2, 2),
                            dimnames = list(age = "5-9",
                                triangle = c("TL", "TU"),
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     births <- new("BirthsMovementsNoParentChild",
                   .Data = births@.Data,
                   metadata = births@metadata,
@@ -2037,7 +2037,7 @@ test_that("can create valid object of class Movements", {
     deaths <- Counts(array(c(0L, 1L, 2L),
                            dim = c(3, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
-                                           time = c("2001-2005", "2006-2010"),
+                                           time = c("2000-2005", "2005-2010"),
                                            triangle = c("TL", "TU"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
@@ -2063,7 +2063,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                            dim = c(1, 2, 2, 2),
                            dimnames = list(age = "5-9",
                                            reg = c("a", "b"),
-                                           time = c("2001-2005", "2006-2010"),
+                                           time = c("2000-2005", "2005-2010"),
                                            triangle = c("TL", "TU"))))
     births <- new("BirthsMovementsNoParentChild",
                   .Data = births@.Data,
@@ -2074,7 +2074,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                              reg_orig = c("a", "b"),
                                              reg_dest = c("a", "b"),
-                                             time = c("2001-2005", "2006-2010"),
+                                             time = c("2000-2005", "2005-2010"),
                                              triangle = c("TL", "TU"))))
     internal <- new("InternalMovementsOrigDest",
                     .Data = internal@.Data,
@@ -2083,7 +2083,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                            dim = c(3, 2, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            reg = c("a", "b"),
-                                           time = c("2001-2005", "2006-2010"),
+                                           time = c("2000-2005", "2005-2010"),
                                            triangle = c("TL", "TU"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
@@ -2147,7 +2147,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                                  dim = c(3, 2, 2, 3),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
                                                  triangle = c("TL", "TU"),
-                                                 time = c("2001-2005", "2006-2010"),
+                                                 time = c("2000-2005", "2005-2010"),
                                                  reg = c("a", "b", "c"))))
     wrong.deaths <- new("ExitsMovements",
                         .Data = wrong.deaths@.Data,
@@ -2207,7 +2207,7 @@ test_that("can create valid object of class Transitions", {
     births <- Counts(array(1L,
                            dim = c(1, 2, 2, 2),
                            dimnames = list(age = "5-9",
-                               time = c("2001-2005", "2006-2010"),
+                               time = c("2000-2005", "2005-2010"),
                                eth_orig = c("a", "b"),
                                eth_dest = c("a", "b"))))
     births <- new("BirthsTransitionsNoParentChild",
@@ -2217,7 +2217,7 @@ test_that("can create valid object of class Transitions", {
     deaths <- Counts(array(c(0L, 1L, 2L),
                            dim = c(3, 2, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
-                                           time = c("2001-2005", "2006-2010"),
+                                           time = c("2000-2005", "2005-2010"),
                                            eth_orig = c("a", "b"),
                                            eth_dest = c("a", "b"))))
     deaths <- new("ExitsTransitions",

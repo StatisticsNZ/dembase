@@ -29,37 +29,37 @@ test_that("accession works with Movements - with age, account contains births", 
                            dimnames = list(age = "5-9",
                                            sex = c("m", "f"),
                                            reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                              sex = c("m", "f"),
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 4, 3),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 4:1,
-                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+                                           time = c("2000-2005", "2005-2010", "2010-2015"))))
     immigration <- Counts(array(rpois(n = 72, lambda = 5),
                                 dim = c(3, 2, 4, 2),
                                 dimnames = list(age = c("0-4", "5-9", "10+"),
                                                 sex = c("m", "f"),
                                                 reg = 1:4,
-                                                time = c("2001-2005", "2006-2010"))))
+                                                time = c("2000-2005", "2005-2010"))))
     emigration <- Counts(array(rpois(n = 72, lambda = 5),
                                dim = c(3, 2, 4, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
                                                sex = c("m", "f"),
                                                reg = 1:4,
-                                               time = c("2001-2005", "2006-2010"))))
+                                               time = c("2000-2005", "2005-2010"))))
     reclassification <- Counts(array(c(1, -1),
                                      dim = c(3, 2, 2, 4),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
                                                      sex = c("m", "f"),
-                                                     time = c("2001-2005", "2006-2010"),
+                                                     time = c("2000-2005", "2005-2010"),
                                                      reg = 1:4)))
     x <- Movements(population = population,
                    births = births,
@@ -143,30 +143,30 @@ test_that("accession works with Movements - with age, account does not contain b
                                              sex = c("m", "f"),
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 4, 3),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 4:1,
-                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+                                           time = c("2000-2005", "2005-2010", "2010-2015"))))
     immigration <- Counts(array(rpois(n = 72, lambda = 5),
                                 dim = c(3, 2, 4, 2),
                                 dimnames = list(age = c("0-4", "5-9", "10+"),
                                                 sex = c("m", "f"),
                                                 reg = 1:4,
-                                                time = c("2001-2005", "2006-2010"))))
+                                                time = c("2000-2005", "2005-2010"))))
     emigration <- Counts(array(rpois(n = 72, lambda = 5),
                                dim = c(3, 2, 4, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
                                                sex = c("m", "f"),
                                                reg = 1:4,
-                                               time = c("2001-2005", "2006-2010"))))
+                                               time = c("2000-2005", "2005-2010"))))
     reclassification <- Counts(array(c(1, -1),
                                      dim = c(3, 2, 2, 4),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
                                                      sex = c("m", "f"),
-                                                     time = c("2001-2005", "2006-2010"),
+                                                     time = c("2000-2005", "2005-2010"),
                                                      reg = 1:4)))
     x <- Movements(population = population,
                    internal = internal,
@@ -224,7 +224,7 @@ test_that("accession works with Movements - with age, account does not contain b
                                dimnames = list(age = "0",
                                                sex = c("f", "m"),
                                                reg = as.character(1:4),
-                                               time = c("2001-2005", "2006-2010"))),
+                                               time = c("2000-2005", "2005-2010"))),
                          dimscales = c(age = "Points"))
     ans.expected <- dbind(ans.expected, acc.births, along = "age")
     expect_identical(ans.obtained, ans.expected)
@@ -249,37 +249,37 @@ test_that("accession works with Movements - with age", {
                            dimnames = list(age = "5-9",
                                            sex = c("m", "f"),
                                            reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                              sex = c("m", "f"),
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 4, 3),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 4:1,
-                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+                                           time = c("2000-2005", "2005-2010", "2010-2015"))))
     immigration <- Counts(array(rpois(n = 72, lambda = 5),
                                 dim = c(3, 2, 4, 2),
                                 dimnames = list(age = c("0-4", "5-9", "10+"),
                                                 sex = c("m", "f"),
                                                 reg = 1:4,
-                                                time = c("2001-2005", "2006-2010"))))
+                                                time = c("2000-2005", "2005-2010"))))
     emigration <- Counts(array(rpois(n = 72, lambda = 5),
                                dim = c(3, 2, 4, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
                                                sex = c("m", "f"),
                                                reg = 1:4,
-                                               time = c("2001-2005", "2006-2010"))))
+                                               time = c("2000-2005", "2005-2010"))))
     reclassification <- Counts(array(c(1, -1),
                                      dim = c(3, 2, 2, 4),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
                                                      sex = c("m", "f"),
-                                                     time = c("2001-2005", "2006-2010"),
+                                                     time = c("2000-2005", "2005-2010"),
                                                      reg = 1:4)))
     x <- Movements(population = population,
                    births = births,
@@ -337,37 +337,37 @@ test_that("accession works with Movements - with age", {
                            dimnames = list(age = "5-9",
                                            sex = c("m", "f"),
                                            reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                              sex = c("m", "f"),
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 4, 3),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            sex = c("m", "f"),
                                            reg = 4:1,
-                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+                                           time = c("2000-2005", "2005-2010", "2010-2015"))))
     immigration <- Counts(array(rpois(n = 72, lambda = 5),
                                 dim = c(3, 2, 4, 2),
                                 dimnames = list(age = c("0-4", "5-9", "10+"),
                                                 sex = c("m", "f"),
                                                 reg = 1:4,
-                                                time = c("2001-2005", "2006-2010"))))
+                                                time = c("2000-2005", "2005-2010"))))
     emigration <- Counts(array(rpois(n = 72, lambda = 5),
                                dim = c(3, 2, 4, 2),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
                                                sex = c("m", "f"),
                                                reg = 1:4,
-                                               time = c("2001-2005", "2006-2010"))))
+                                               time = c("2000-2005", "2005-2010"))))
     reclassification <- Counts(array(c(1, -1),
                                      dim = c(3, 2, 2, 4),
                                      dimnames = list(age = c("0-4", "5-9", "10+"),
                                                      sex = c("m", "f"),
-                                                     time = c("2001-2005", "2006-2010"),
+                                                     time = c("2000-2005", "2005-2010"),
                                                      reg = 1:4)))
     x0 <- Movements(population = population,
                    births = births,

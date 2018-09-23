@@ -527,29 +527,29 @@ test_that("canMakeOrigDestParentChildCompatible works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region_orig = c("a", "b"),
                           region_dest = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     expect_true(canMakeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE))
     ## orig-dest only; need to permute, and extend
     x <- Values(array(0,
                       dim = c(2, 3, 2),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           region_orig = c("a", "b", "c"),
                           region_dest = c("c", "b"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     expect_true(canMakeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE))
     ## orig-dest and parent-child; need to subset and permute
     x <- Values(array(0,
                       dim = c(2, 2, 3, 2, 3, 2),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           eth_child = 1:2,
                           eth_parent = 3:1,
                           age = c("0-9", "10+"),
@@ -560,12 +560,12 @@ test_that("canMakeOrigDestParentChildCompatible works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           eth = 2:1,
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     expect_true(canMakeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE))
     ## y has parent dimension
     x <- Counts(array(0,
                       dim = c(2, 2, 3, 3, 3, 2),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           eth_child = 1:2,
                           eth_parent = 3:1,
                           age = c("0-4", "5-9", "10+"),
@@ -577,7 +577,7 @@ test_that("canMakeOrigDestParentChildCompatible works", {
                           eth_parent = 2:1,
                           eth_child = 1:2,
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     expect_error(canMakeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE),
                  "'y' has dimension with dimtype \"parent\"")
 })
@@ -1513,38 +1513,38 @@ test_that("makeOrigDestParentChildCompatible works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region_orig = c("a", "b"),
                           region_dest = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE)
     ans.expected <- x
     expect_identical(ans.obtained, ans.expected)
     ## orig-dest only; need to permute, and extend
     x <- Values(array(0,
                       dim = c(2, 3, 3),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           region_orig = c("a", "b", "c"),
                           region_dest = c("a", "b", "c"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE)
     ans.expected <- Values(array(0,
                                  dim = c(3, 2, 2, 2),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
                                      region_orig = c("a", "b"),
                                      region_dest = c("a", "b"),
-                                     time = c("2001-2005", "2006-2010"))))
+                                     time = c("2000-2005", "2005-2010"))))
     expect_identical(ans.obtained, ans.expected)
     ## orig-dest and parent-child; need to subset and permute
     x <- Values(array(0,
                       dim = c(2, 3, 3, 2, 3, 3),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           eth_child = 3:1,
                           eth_parent = 3:1,
                           age = c("0-9", "10+"),
@@ -1555,7 +1555,7 @@ test_that("makeOrigDestParentChildCompatible works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           eth = 2:1,
                           region = c("c", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeOrigDestParentChildCompatible(x = x, y = y, subset = TRUE)
     ans.expected <- Values(array(0,
                                  dim = c(3, 2, 2, 2, 2, 2),
@@ -1564,7 +1564,7 @@ test_that("makeOrigDestParentChildCompatible works", {
                                      eth_child = 2:1,
                                      region_orig = c("c", "b"),
                                      region_dest = c("c", "b"),
-                                     time = c("2001-2005", "2006-2010"))))
+                                     time = c("2000-2005", "2005-2010"))))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1576,12 +1576,12 @@ test_that("makeOrigDestParentChildTransform works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region_orig = c("a", "b"),
                           region_dest = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeOrigDestParentChildTransform(x = x, y = y, subset = TRUE)
     ans.expected <- new("ExtendTransform",
                         dims = 1:4,
@@ -1592,14 +1592,14 @@ test_that("makeOrigDestParentChildTransform works", {
     ## orig-dest only; need to permute, and extend
     x <- Values(array(0,
                       dim = c(2, 3, 3),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           region_orig = c("a", "b", "c"),
                           region_dest = c("a", "b", "c"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeOrigDestParentChildTransform(x = x, y = y, subset = TRUE)
     ans.expected <- new("ExtendTransform",
                         dims = c(0L, 2L, 3L, 1L),
@@ -1610,7 +1610,7 @@ test_that("makeOrigDestParentChildTransform works", {
     ## orig-dest and parent-child; need to subset and permute
     x <- Values(array(0,
                       dim = c(2, 3, 3, 2, 3, 3),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           eth_child = 3:1,
                           eth_parent = 3:1,
                           age = c("0-9", "10+"),
@@ -1621,7 +1621,7 @@ test_that("makeOrigDestParentChildTransform works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           eth = 2:1,
                           region = c("c", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeOrigDestParentChildTransform(x = x, y = y, subset = TRUE)
     ans.expected <- new("ExtendTransform",
                         dims = c(4L, 3:2, 5:6, 1L),
@@ -1754,12 +1754,12 @@ test_that("makePairTransformsDbind works", {
     expect_identical(ans.obtained, ans.expected)
     e1 <- Values(array(1:4,
                        dim = c(2, 2),
-                       dimnames = list(time = c("2001-2005", "2006-2010"),
+                       dimnames = list(time = c("2000-2005", "2005-2010"),
                            iteration = 1:2)))
     e2 <- Values(array(1:8,
                        dim = c(2, 2, 2),
                        dimnames = list(sex = c("m", "f"),
-                           time = c("2001-2005", "2006-2010"),
+                           time = c("2000-2005", "2005-2010"),
                            iteration = 1:2)))
     ans.obtained <- makePairTransformsDbind(e1 = e1, e2 = e2, along = "iteration")
     ans.expected <- list(new("ExtendTransform",
@@ -2161,7 +2161,7 @@ test_that("tfr works", {
                       dimnames = list(age = c("15-19", "20-24", "25-29"),
                           sex = c("f", "m"),
                           triangle = c("TL", "TU"),
-                          time = c("2001-2005", "2006-2010", "2011-2015"),
+                          time = c("2000-2005", "2005-2010", "2010-2015"),
                           region = c("a", "b", "c"))))
     ans.obtained <- tfr(x)
     ans.expected <- collapseDimension(Counts(2.5 * x), margin = c("time", "region"))
@@ -2170,7 +2170,7 @@ test_that("tfr works", {
                       dim = c(2, 3, 2),
                       dimnames = list(gender = c("f", "m"),
                           age = c("15-19", "20-24", "25-34"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- tfr(x)
     ans.expected <- collapseDimension(Counts(rep(c(5, 5, 10), each = 2) * x),
                                       margin = "time")
@@ -2179,7 +2179,7 @@ test_that("tfr works", {
                       dim = c(2, 3, 2),
                       dimnames = list(sexx = c("f", "m"),
                           age = c("15-19", "20-24", "25-34"),
-                          time = c("2001-2005", "2006-2010"))),
+                          time = c("2000-2005", "2005-2010"))),
                 dimtypes = c(sexx = "sex"))
     x[1] <- NA
     ans.obtained <- tfr(x)
@@ -2190,7 +2190,7 @@ test_that("tfr works", {
                       dim = c(2, 3, 2),
                       dimnames = list(sexx = c("f", "m"),
                           age = c("15-19", "20-24", "25-34"),
-                          time = c("2001-2005", "2006-2010"))),
+                          time = c("2000-2005", "2005-2010"))),
                 dimtypes = c(sexx = "sex"))
     expect_error(tfr(x),
                  "negative values")

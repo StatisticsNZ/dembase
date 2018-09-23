@@ -40,7 +40,7 @@ test_that("Population works", {
                  "'population' does not have dimension with dimtype \"time\"")
     x <- Counts(array(1L,
                       dim = c(2, 2, 2),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           reg = c("a", "b"),
                           age = c("0-4", "5+"))))
     expect_error(Population(x),

@@ -7,7 +7,7 @@ test_that("Accession works with valid inputs", {
                             dim = c(3, 3, 2),
                             dimnames = list(age = c("5", "10", "15"),
                                 region = 1:3,
-                                time = c("2001-2005", "2006-2010"))))
+                                time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- Accession(accession = accession)
     set.seed(1)
@@ -18,7 +18,7 @@ test_that("Accession works with valid inputs", {
     accession <- Counts(array(c(1L, NA),
                             dim = c(3, 2),
                             dimnames = list(region = 1:3,
-                                time = c("2001-2005", "2006-2010"))))
+                                time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- Accession(accession = accession)
     set.seed(1)
@@ -37,12 +37,12 @@ test_that("BirthsMovements works with valid inputs", {
                            dim = c(3, 3, 2),
                            dimnames = list(age = c("15-19", "20-24", "25-29"),
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(20, 3, 2, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- BirthsMovements(births = births,
@@ -54,7 +54,7 @@ test_that("BirthsMovements works with valid inputs", {
                                  dim = c(3, 3, 2, 2),
                                  dimnames = list(age = c("15-19", "20-24", "25-29"),
                                      region = 1:3,
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     ans.expected <- new("BirthsMovementsNoParentChild",
                         .Data = ans.expected@.Data,
@@ -69,13 +69,13 @@ test_that("BirthsMovements works with valid inputs", {
                                region = 1:3,
                                eth_child = 1:2,
                                eth_parent = 1:2,
-                               time = c("2001-2005", "2006-2010", "2011-2015"))))
+                               time = c("2000-2005", "2005-2010", "2010-2015"))))
     template <- Counts(array(0L,
                              dim = c(20, 3, 2, 2, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
                                  region = 1:3,
                                  eth = 2:1,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- BirthsMovements(births = births,
@@ -94,12 +94,12 @@ test_that("BirthsMovements works with valid inputs", {
     births <- Counts(array(10L,
                            dim = c(3, 2),
                            dimnames = list(region = 1:3,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(20, 3, 2, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     ans.obtained <- BirthsMovements(births = births,
                                     template = template)
@@ -114,7 +114,7 @@ test_that("BirthsMovements raises appropriate errors", {
                            dim = c(3, 3, 4),
                            dimnames = list(age = c("15-19", "20-24", "25-29"),
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010", "2011-2015", "2016-2020"))))
+                               time = c("2000-2005", "2005-2010", "2010-2015", "2015-2020"))))
     template <- Counts(array(0L,
                              dim = c(11, 3, 2, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 10), seq(9, 99, 10), sep = "-"), "100+"),
@@ -132,7 +132,7 @@ test_that("BirthsMovements raises appropriate errors", {
                              dim = c(20, 3, 2, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(BirthsMovements(births = births, template = template),
                  "'births' is incompatible with 'population")
@@ -147,12 +147,12 @@ test_that("BirthsTransitions works with valid inputs", {
                            dimnames = list(age = c("15-19", "20-24", "25-29"),
                                            region_orig = 1:3,
                                            region_dest = 1:3,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(20, 3, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
                                              region = 1:3,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     ans.obtained <- BirthsTransitions(births = births,
                                       template = template)
     ans.expected <- Counts(array(10L,
@@ -160,7 +160,7 @@ test_that("BirthsTransitions works with valid inputs", {
                                  dimnames = list(age = c("15-19", "20-24", "25-29"),
                                                  region_orig = 1:3,
                                                  region_dest = 1:3,
-                                                 time = c("2001-2005", "2006-2010"))))
+                                                 time = c("2000-2005", "2005-2010"))))
     ans.expected <- new("BirthsTransitionsNoParentChild",
                         .Data = ans.expected@.Data,
                         metadata = ans.expected@metadata,
@@ -173,13 +173,13 @@ test_that("BirthsTransitions works with valid inputs", {
                                            region = 1:3,
                                            eth_child = 1:2,
                                            eth_parent = 1:2,
-                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+                                           time = c("2000-2005", "2005-2010", "2010-2015"))))
     template <- Counts(array(0L,
                              dim = c(20, 3, 2, 2),
                              dimnames = list(age = c(paste(seq(0, 90, 5), seq(4, 94, 5), sep = "-"), "95+"),
                                              region = 1:3,
                                              eth = 2:1,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     ans.obtained <- BirthsTransitions(births = births,
                                       template = template)
     births <- aperm(births, perm = c("age", "region", "eth_parent", "eth_child", "time"))
@@ -199,12 +199,12 @@ test_that("EntriesMovements works with valid inputs", {
                             dim = c(3, 3, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
-                                time = c("2001-2005", "2006-2010"))))
+                                time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                             dim = c(3, 3, 2, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
-                                time = c("2001-2005", "2006-2010"),
+                                time = c("2000-2005", "2005-2010"),
                                 triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- EntriesMovements(entries = entries,
@@ -217,7 +217,7 @@ test_that("EntriesMovements works with valid inputs", {
                                  dim = c(3, 3, 2, 2),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
                                      region = 1:3,
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     ans.expected <- new("EntriesMovements",
                         .Data = ans.expected@.Data,
@@ -231,12 +231,12 @@ test_that("EntriesMovements throws appropriate errors", {
                             dim = c(3, 3, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 2:4,
-                                time = c("2001-2005", "2006-2010"))))
+                                time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                             dim = c(3, 3, 2, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
-                                time = c("2001-2005", "2006-2010"),
+                                time = c("2000-2005", "2005-2010"),
                                 triangle = c("TL", "TU"))))
     set.seed(1)
     expect_error(EntriesMovements(entries = entries,
@@ -253,12 +253,12 @@ test_that("EntriesTransitions works with valid inputs", {
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                             region_orig = 1:3,
                                             region_dest = 1:3,
-                                            time = c("2001-2005", "2006-2010"))))
+                                            time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2),
                              dimnames = list(region = 1:3,
                                              age = c("0-4", "5-9", "10+"),
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     ans.obtained <- EntriesTransitions(entries = entries,
                                        template = template,
                                        name = "immigration")
@@ -267,7 +267,7 @@ test_that("EntriesTransitions works with valid inputs", {
                                  dimnames = list(region_orig = 1:3,
                                                  region_dest = 1:3,
                                                  age = c("0-4", "5-9", "10+"),
-                                                 time = c("2001-2005", "2006-2010"))))
+                                                 time = c("2000-2005", "2005-2010"))))
     ans.expected <- new("EntriesTransitions",
                         .Data = ans.expected@.Data,
                         metadata = ans.expected@metadata)
@@ -281,12 +281,12 @@ test_that("ExitsMovements works with valid inputs", {
                           dim = c(3, 3, 2),
                           dimnames = list(age = c("0-4", "5-9", "10+"),
                               region = 1:3,
-                              time = c("2001-2005", "2006-2010"))))
+                              time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- ExitsMovements(exits = exits,
@@ -299,7 +299,7 @@ test_that("ExitsMovements works with valid inputs", {
                                  dim = c(3, 3, 2, 2),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
                                      region = 1:3,
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     ans.expected <- new("ExitsMovements",
                         .Data = ans.expected@.Data,
@@ -313,12 +313,12 @@ test_that("ExitsMovements throws appropriate errors", {
                           dim = c(3, 3, 2),
                           dimnames = list(age = c("0-4", "5-9", "10+"),
                               region = 2:4,
-                              time = c("2001-2005", "2006-2010"))))
+                              time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     expect_error(ExitsMovements(exits = exits,
@@ -333,7 +333,7 @@ test_that("Exposure works with valid inputs", {
                             dim = c(3, 3, 2, 2),
                             dimnames = list(age = c("0-4", "5-9", "10+"),
                                 region = 1:3,
-                                time = c("2001-2005", "2006-2010"),
+                                time = c("2000-2005", "2005-2010"),
                                 triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- Exposure(exposure = exposure)
@@ -345,7 +345,7 @@ test_that("Exposure works with valid inputs", {
     exposure <- Counts(array(c(1, NA),
                             dim = c(3, 2),
                             dimnames = list(region = 1:3,
-                                time = c("2001-2005", "2006-2010"))))
+                                time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- Exposure(exposure = exposure)
     set.seed(1)
@@ -365,12 +365,12 @@ test_that("InternalMovements works with valid inputs - orig-dest", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- InternalMovements(internal = internal, template = template)
@@ -390,12 +390,12 @@ test_that("InternalMovements works with valid inputs - orig-dest", {
                                  region_dest = 1:3,
                                  status_orig = 1:2,
                                  status_dest = 1:2,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- InternalMovements(internal = internal, template = template)
@@ -418,12 +418,12 @@ test_that("InternalMovements throws appropriate errors - orig-dest", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(InternalMovements(internal = internal, template = template),
                  "'internal' is incompatible with 'population' :")
@@ -433,12 +433,12 @@ test_that("InternalMovements throws appropriate errors - orig-dest", {
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  triangle = c("TL", "TU"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(InternalMovements(internal = internal, template = template),
                  "'internal' does not have class \"Net\" or \"Pool\" and does not have dimensions with dimtype \"origin\" or \"destination\"")
@@ -455,13 +455,13 @@ test_that("InternalMovements works with valid inputs - Net", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "net")
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- InternalMovements(internal = internal, template = template)
@@ -482,13 +482,13 @@ test_that("InternalMovements works with valid inputs - Net", {
                                  region_dest = 1:3,
                                  status_orig = 1:2,
                                  status_dest = 1:2,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "net")
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- InternalMovements(internal = internal, template = template)
@@ -512,13 +512,13 @@ test_that("InternalMovements throws appropriate errors - Net", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "net")
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(InternalMovements(internal = internal, template = template),
                  "'internal' is incompatible with 'population' :")
@@ -529,12 +529,12 @@ test_that("InternalMovements throws appropriate errors - Net", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "net")
     template <- Counts(array(0L,
                              dim = c(3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(InternalMovements(internal = internal, template = template),
                  "no \"between\" dimensions from 'internal' found in 'population'")
@@ -549,13 +549,13 @@ test_that("InternalMovements works with valid inputs - Pool", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "pool")
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- InternalMovements(internal = internal, template = template)
@@ -577,13 +577,13 @@ test_that("InternalMovements works with valid inputs - Pool", {
                                  region_dest = 1:3,
                                  status_orig = 1:2,
                                  status_dest = 1:2,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "Pool")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- InternalMovements(internal = internal, template = template)
@@ -609,13 +609,13 @@ test_that("InternalMovements throws appropriate errors - Pool", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "Pool")
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(InternalMovements(internal = internal, template = template),
                  "'internal' is incompatible with 'population' :")
@@ -626,12 +626,12 @@ test_that("InternalMovements throws appropriate errors - Pool", {
                                  triangle = c("TL", "TU"),
                                  region_orig = 1:3,
                                  region_dest = 1:3,
-                                 time = c("2001-2005", "2006-2010"))))
+                                 time = c("2000-2005", "2005-2010"))))
     internal <- collapseOrigDest(internal, to = "pool")
     template <- Counts(array(0L,
                              dim = c(3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     expect_error(InternalMovements(internal = internal, template = template),
                  "no \"between\" dimensions from 'internal' found in 'population'")
@@ -643,12 +643,12 @@ test_that("NetMovements works with valid inputs", {
                         dim = c(3, 3, 2),
                         dimnames = list(age = c("0-4", "5-9", "10+"),
                             region = 1:3,
-                            time = c("2001-2005", "2006-2010"))))
+                            time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     ans.obtained <- NetMovements(net = net,
@@ -662,7 +662,7 @@ test_that("NetMovements works with valid inputs", {
                                  dim = c(3, 3, 2, 2),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
                                      region = 1:3,
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     ans.expected <- new("NetMovements",
                         .Data = ans.expected@.Data,
@@ -676,12 +676,12 @@ test_that("NetMovements throws appropriate errors", {
                         dim = c(3, 3, 2),
                         dimnames = list(age = c("0-4", "5-9", "10+"),
                             region = 2:4,
-                            time = c("2001-2005", "2006-2010"))))
+                            time = c("2000-2005", "2005-2010"))))
     template <- Counts(array(0L,
                              dim = c(3, 3, 2, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                  region = 1:3,
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     set.seed(1)
     expect_error(NetMovements(net = net,
@@ -695,7 +695,7 @@ test_that("Net works", {
                            dim = c(3, 3, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     ans.obtained <- Net(object, between = "region")
     ans.expected <- new("Net",
                         .Data = object@.Data,
@@ -706,13 +706,13 @@ test_that("Net works", {
                            dim = c(3, 3, 2),
                            dimnames = list(eth = 1:3,
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     ans.obtained <- Net(object,  between = 1:2)
     ans.expected <- Counts(array(as.integer(NA),
                                  dim = c(3, 3, 2),
                                  dimnames = list(eth = 1:3,
                                      region = 1:3,
-                                     time = c("2001-2005", "2006-2010"))))
+                                     time = c("2000-2005", "2005-2010"))))
     ans.expected <- new("Net",
                         .Data = ans.expected@.Data,
                         metadata = ans.expected@metadata,
@@ -743,21 +743,21 @@ test_that("Net throws appropriate errors", {
                            dim = c(3, 3, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     expect_error(Net(object, between = integer()),
                  "'between' has length 0")
     expect_error(Net(Counts(array(c(1, NA),
                                    dim = c(3, 1, 2),
                                    dimnames = list(age = c("0-4", "5-9", "10+"),
                                        region = 1,
-                                       time = c("2001-2005", "2006-2010")))),
+                                       time = c("2000-2005", "2005-2010")))),
                       between = "region"),
                  "\"between\" dimension \"region\" has length 1")
     expect_error(Net(Counts(array(c(1, NA),
                                    dim = c(3, 3, 2),
                                    dimnames = list(age = c("0-4", "5-9", "10+"),
                                        region = 1:3,
-                                       time = c("2001-2005", "2006-2010")))),
+                                       time = c("2000-2005", "2005-2010")))),
                       between = "time"),
                  "\"between\" dimension \"time\" has dimtype \"time\"")
 })
@@ -768,7 +768,7 @@ test_that("Pool works", {
                            dimnames = list(direction = c("Out", "In"),
                                age = c("0-4", "5-9", "10+"),
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     ans.obtained <- Pool(object, direction = "direction", between = "region")
     ans.expected <- new("Pool",
                         .Data = object@.Data,
@@ -780,14 +780,14 @@ test_that("Pool works", {
                            dim = c(3, 3, 2, 2),
                            dimnames = list(eth = 1:3,
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"),
+                               time = c("2000-2005", "2005-2010"),
                                type = c("outs", "ins"))))
     ans.obtained <- Pool(object, direction = "type", between = 1:2)
     ans.expected <- Counts(array(1,
                                  dim = c(3, 3, 2, 2),
                                  dimnames = list(eth = 1:3,
                                      region = 1:3,
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      type = c("Out", "In"))))
     ans.expected <- new("Pool",
                         .Data = ans.expected@.Data,
@@ -824,7 +824,7 @@ test_that("Pool throws appropriate errors", {
                            dimnames = list(direction = c("Out", "In"),
                                age = c("0-4", "5-9", "10+"),
                                region = 1:3,
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     expect_error(Pool(object, direction = c("direction", "age"), between = "region"),
                  "'direction' has length 2")
     expect_error(Pool(object, direction = "direction", between = integer()),
@@ -834,7 +834,7 @@ test_that("Pool throws appropriate errors", {
                                    dimnames = list(direction = c("Out", "In", "Wrong"),
                                        age = c("0-4", "5-9", "10+"),
                                        region = 1:3,
-                                       time = c("2001-2005", "2006-2010")))),
+                                       time = c("2000-2005", "2005-2010")))),
                       direction = 1, between = 3),
                  "\"direction\" dimension has length 3")
     expect_error(Pool(Counts(array(c(1, NA),
@@ -842,7 +842,7 @@ test_that("Pool throws appropriate errors", {
                                    dimnames = list(direction = c("In", "Wrong"),
                                        age = c("0-4", "5-9", "10+"),
                                        region = 1:3,
-                                       time = c("2001-2005", "2006-2010")))),
+                                       time = c("2000-2005", "2005-2010")))),
                       direction = 1, between = 3),
                  "\"direction\" dimension has invalid categories")
     expect_error(Pool(Counts(array(c(1, NA),
@@ -850,7 +850,7 @@ test_that("Pool throws appropriate errors", {
                                    dimnames = list(direction = c("Out", "In"),
                                        age = c("0-4", "5-9", "10+"),
                                        region = character(),
-                                       time = c("2001-2005", "2006-2010")))),
+                                       time = c("2000-2005", "2005-2010")))),
                       direction = 1, between = 3),
                  "\"between\" dimension \"region\" has length 0")
     expect_error(Pool(Counts(array(c(1, NA),
@@ -858,7 +858,7 @@ test_that("Pool throws appropriate errors", {
                                    dimnames = list(direction = c("Out", "In"),
                                        age = c("0-4", "5-9", "10+"),
                                        region = 1:3,
-                                       time = c("2001-2005", "2006-2010")))),
+                                       time = c("2000-2005", "2005-2010")))),
                       direction = "direction", between = "time"),
                  "\"between\" dimension \"time\" has dimtype \"time\"")
 })

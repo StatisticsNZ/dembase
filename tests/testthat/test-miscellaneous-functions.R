@@ -2246,10 +2246,11 @@ test_that("isValidPointLabelsDate works", {
     expect_true(isValidPointLabelsDate(character()))
     expect_true(isValidPointLabelsDate("2010-03-05"))
     expect_true(isValidPointLabelsDate(c("2010-03-05", "2010-03-06")))
+    expect_true(isValidPointLabelsDate(c("2010-03-06", "2010-03-05"), ordered = FALSE))
     expect_true(isValidPointLabelsDate(c("2010-03-06", "2010-03-05")))
     expect_false(isValidPointLabelsDate(c("2010-03-06", "2010-03-05"), ordered = TRUE))
     expect_true(isValidPointLabelsDate(c("2010-03-05", "2010-03-07")))
-    expect_false(isValidPointLabelsDate(c("2010-03-05", "2010-03-04")))
+    expect_false(isValidPointLabelsDate(c("2010-03-05", "2010-03-04"), ordered = TRUE))
     expect_false(isValidPointLabelsDate(c("2010-03-05", "wrong")))
     expect_false(isValidPointLabelsDate(c("2010-03-05", NA)))
 })
@@ -2257,39 +2258,39 @@ test_that("isValidPointLabelsDate works", {
 
 test_that("makeLabelsForClosedIntervals works", {
     makeLabelsForClosedIntervals <- dembase:::makeLabelsForClosedIntervals
-    expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10), ageLike = TRUE, labelStart = TRUE),
+    expect_identical(makeLabelsForClosedIntervals(c(0, 5, 10), isAge = TRUE, labelStart = TRUE),
                      c("0-4", "5-9"))
     expect_identical(makeLabelsForClosedIntervals(c(2000, 2005, 2010),
-                                                  ageLike = FALSE, labelStart = TRUE),
+                                                  isAge = FALSE, labelStart = TRUE),
                      c("2000-2005", "2005-2010"))
     expect_identical(makeLabelsForClosedIntervals(2001:2004,
-                                                  ageLike = FALSE, labelStart = TRUE),
+                                                  isAge = FALSE, labelStart = TRUE),
                      c("2001", "2002", "2003"))
-    expect_identical(makeLabelsForClosedIntervals(2001:2004, ageLike = FALSE,
+    expect_identical(makeLabelsForClosedIntervals(2001:2004, isAge = FALSE,
                                                   labelStart = FALSE),
                      c("2002", "2003", "2004"))
-    expect_identical(makeLabelsForClosedIntervals(c(1:4, 5.1), ageLike = TRUE, labelStart = TRUE),
+    expect_identical(makeLabelsForClosedIntervals(c(1:4, 5.1), isAge = TRUE, labelStart = TRUE),
                      c("1", "2", "3", "4-5.1"))
     expect_identical(makeLabelsForClosedIntervals(c(0.01, 1.01, 2.01),
-                                                  ageLike = TRUE, labelStart = TRUE),
+                                                  isAge = TRUE, labelStart = TRUE),
                      c("0.01-1.01", "1.01-2.01"))
-    expect_identical(makeLabelsForClosedIntervals(c(0.1, 5, 10), ageLike = TRUE,
+    expect_identical(makeLabelsForClosedIntervals(c(0.1, 5, 10), isAge = TRUE,
                                                   labelStart = TRUE),
                      c("0.1-5", "5-9"))
     expect_identical(makeLabelsForClosedIntervals(c(-10, -5, 0),
-                                                  ageLike = FALSE, labelStart = TRUE),
+                                                  isAge = FALSE, labelStart = TRUE),
                      c("-10--5", "-5-0"))
-    expect_identical(makeLabelsForClosedIntervals(numeric(), ageLike = TRUE,
+    expect_identical(makeLabelsForClosedIntervals(numeric(), isAge = TRUE,
                                                   labelStart = TRUE),
                      character())
-    expect_identical(makeLabelsForClosedIntervals(2000:2004, ageLike = FALSE,
+    expect_identical(makeLabelsForClosedIntervals(2000:2004, isAge = FALSE,
                                                   labelStart = TRUE),
                      as.character(2000:2003))
-    expect_identical(makeLabelsForClosedIntervals(2000:2004, ageLike = FALSE,
+    expect_identical(makeLabelsForClosedIntervals(2000:2004, isAge = FALSE,
                                                   labelStart = FALSE),
                      as.character(2001:2004))
     expect_identical(makeLabelsForClosedIntervals(c(2000:2004, 2005.1),
-                                                  ageLike = FALSE, labelStart = TRUE),
+                                                  isAge = FALSE, labelStart = TRUE),
                      c("2000", "2001", "2002", "2003",
                        "2004-2005.1"))
 })
@@ -2297,35 +2298,35 @@ test_that("makeLabelsForClosedIntervals works", {
 test_that("makeLabelsForIntervals works", {
   makeLabelsForIntervals <- dembase:::makeLabelsForIntervals
   dateToFracYear <- dembase:::dateToFracYear
-  expect_identical(makeLabelsForIntervals(c(0, 5, Inf), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(0, 5, Inf), labelStart = TRUE, isAge = TRUE),
               c("0-4", "5+"))
-  expect_identical(makeLabelsForIntervals(c(0, 5, 10), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(0, 5, 10), labelStart = TRUE, isAge = TRUE),
               c("0-4", "5-9"))
-  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10), labelStart = TRUE, isAge = TRUE),
               c("<0", "0-4", "5-9"))
-  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10, Inf), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(-Inf, 0, 5, 10, Inf), labelStart = TRUE, isAge = TRUE),
               c("<0", "0-4", "5-9", "10+"))
-  expect_identical(makeLabelsForIntervals(c(2000, 2005, Inf), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(2000, 2005, Inf), labelStart = TRUE, isAge = FALSE),
               c("2000-2005", "2005+"))
-  expect_identical(makeLabelsForIntervals(numeric(), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(numeric(), labelStart = TRUE, isAge = TRUE),
               character())
-  expect_identical(makeLabelsForIntervals(c(2000, Inf), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(2000, Inf), labelStart = TRUE, isAge = FALSE),
                    "2000+")
-  expect_identical(makeLabelsForIntervals(c(2000, 2001, Inf), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(2000, 2001, Inf), labelStart = TRUE, isAge = FALSE),
                    c("2000", "2001+"))
-  expect_identical(makeLabelsForIntervals(c(1995, 2000, Inf), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(1995, 2000, Inf), labelStart = TRUE, isAge = FALSE),
                    c("1995-2000", "2000+"))
-  expect_identical(makeLabelsForIntervals(c(-Inf, 0), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(-Inf, 0), labelStart = TRUE, isAge = FALSE),
                    "<0")
-  expect_identical(makeLabelsForIntervals(0:5, labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(0:5, labelStart = TRUE, isAge = TRUE),
                    as.character(0:4))
-  expect_identical(makeLabelsForIntervals(2000:2005, labelStart = FALSE),
+  expect_identical(makeLabelsForIntervals(2000:2005, labelStart = FALSE, isAge = FALSE),
                    as.character(2001:2005))
-  expect_identical(makeLabelsForIntervals(c(2000:2002, 2004.5), labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(c(2000:2002, 2004.5), labelStart = TRUE, isAge = FALSE),
                    c("2000", "2001", "2002-2004.5"))
-  dates <- as.Date(c("2014-01-01", "2014-04-01", "2014-07-01"))
+  dates <- as.Date(c("2014-01-01", "2014-04-01", "2014-07-01"), isAge = FALSE)
   dimvalues <- dateToFracYear(dates)
-  expect_identical(makeLabelsForIntervals(dimvalues, labelStart = TRUE),
+  expect_identical(makeLabelsForIntervals(dimvalues, labelStart = TRUE, isAge = FALSE),
                    c("2014-Q1", "2014-Q2"))
 })
 
@@ -2415,60 +2416,6 @@ test_that("makeQuarterLabelsForAgeDimvalues returns NULL with invalid inputs", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("monthAndYearToDimvalues works", {
-    monthAndYearToDimvalues <- dembase:::monthAndYearToDimvalues
-    ans.obtained <- monthAndYearToDimvalues(month = c("Dec", base::month.abb, "Jan"),
-                                            year = c(2003L, rep(2004L, 12), 2005L))
-    ans.expected <- c(2003 + (365-31)/365,
-                      2004,
-                      2004 + 31/366,
-                      2004 + (31+29)/366,
-                      2004 + (31+29+31)/366,
-                      2004 + (31+29+31+30)/366,
-                      2004 + (31+29+31+30+31)/366,
-                      2004 + (31+29+31+30+31+30)/366,
-                      2004 + (31+29+31+30+31+30+31)/366,
-                      2004 + (31+29+31+30+31+30+31+31)/366,
-                      2004 + (31+29+31+30+31+30+31+31+30)/366,
-                      2004 + (31+29+31+30+31+30+31+31+30+31)/366,
-                      2004 + (31+29+31+30+31+30+31+31+30+31+30)/366,
-                      2005,
-                      2005 + 31/365)
-    expect_equal(ans.obtained, ans.expected)
-})
-
-test_that("monthLabelsToDimvalues", {
-    monthLabelsToDimvalues <- dembase:::monthLabelsToDimvalues
-    ans.obtained <- monthLabelsToDimvalues(paste(c("Dec", base::month.abb, "Jan"),
-                                                 c(2003L, rep(2004L, 12), 2005L),
-                                                 sep = "-"))
-    ans.expected <- c(2003 + (365-31)/365,
-                      2004,
-                      2004 + 31/366,
-                      2004 + (31+29)/366,
-                      2004 + (31+29+31)/366,
-                      2004 + (31+29+31+30)/366,
-                      2004 + (31+29+31+30+31)/366,
-                      2004 + (31+29+31+30+31+30)/366,
-                      2004 + (31+29+31+30+31+30+31)/366,
-                      2004 + (31+29+31+30+31+30+31+31)/366,
-                      2004 + (31+29+31+30+31+30+31+31+30)/366,
-                      2004 + (31+29+31+30+31+30+31+31+30+31)/366,
-                      2004 + (31+29+31+30+31+30+31+31+30+31+30)/366,
-                      2005,
-                      2005 + 31/365)
-    expect_equal(ans.obtained, ans.expected)
-    ans.obtained <- monthLabelsToDimvalues(c("Dec-01", "Dec-01"))
-    ans.expected <- NULL
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- monthLabelsToDimvalues(c("Dec-2001", "Nov-2000"))
-    ans.expected <- NULL
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- monthLabelsToDimvalues(c("Dec-2001", "Dec-2001"))
-    ans.expected <- NULL
-    expect_identical(ans.obtained, ans.expected)
-})
-
 test_that("timeUnitsFromDimScales works when units are days", {
     timeUnitsFromDimScales <- dembase:::timeUnitsFromDimScales
     dateToFracYear <- dembase:::dateToFracYear
@@ -2490,6 +2437,12 @@ test_that("timeUnitsFromDimScales works when units are days", {
     dimvalues <- dateToFracYear(dates)
     expect_identical(timeUnitsFromDimScales(dimvalues),
                      dates)
+    dates <- as.Date(c("2001-05-01", "2001-05-03"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, successive = FALSE),
+                     dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues),
+                     NULL)
 })
 
 test_that("timeUnitsFromDimScales works when units are months", {
@@ -2513,6 +2466,12 @@ test_that("timeUnitsFromDimScales works when units are months", {
     dimvalues <- dateToFracYear(dates)
     expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month"),
                      dates)
+    dates <- as.Date(c("2001-05-01", "2001-07-01"))
+    dimvalues <- dateToFracYear(dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = TRUE),
+                     NULL)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "month", successive = FALSE),
+                     dates)
 })
 
 test_that("timeUnitsFromDimScales works when units are quarters", {
@@ -2520,11 +2479,11 @@ test_that("timeUnitsFromDimScales works when units are quarters", {
     dateToFracYear <- dembase:::dateToFracYear
     dates <- as.Date(c("2000-01-01", "2000-04-01", "2020-10-01"))
     dimvalues <- dateToFracYear(dates)
-    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "quarter"),
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "quarter", successive = FALSE),
                      dates)
-    expect_identical(timeUnitsFromDimScales(round(dimvalues, 3), unit = "q"),
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 3), unit = "q", successive = FALSE),
                      dates)
-    expect_identical(timeUnitsFromDimScales(round(dimvalues, 4), unit = "quarter"),
+    expect_identical(timeUnitsFromDimScales(round(dimvalues, 4), unit = "quarter", successive = FALSE),
                      dates)
     expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu"),
                      NULL)
@@ -2536,34 +2495,36 @@ test_that("timeUnitsFromDimScales works when units are quarters", {
     dimvalues <- dateToFracYear(dates)
     expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu"),
                      dates)
+    expect_identical(timeUnitsFromDimScales(dimvalues, unit = "qu", successive = FALSE),
+                     dates)
 })
 
 
 ## FUNCTIONS FOR INFERRING DIMVALUES FOR INTERVALS ###################################
 
 test_that("extractNumberFromOpenInterval works", {
-  extractNumberFromOpenInterval <- dembase:::extractNumberFromOpenInterval
-  expect_that(extractNumberFromOpenInterval("100+"),
-              is_identical_to(100))
-  expect_that(extractNumberFromOpenInterval("100.5+", which = "last"),
-              is_identical_to(100.5))
-  expect_that(extractNumberFromOpenInterval("-20+"),
-              is_identical_to(-20))
-  expect_that(extractNumberFromOpenInterval("<-20", which = "first"),
-              is_identical_to(-20))
-  expect_that(extractNumberFromOpenInterval("<0", which = "first"),
-              is_identical_to(0))
-  expect_that(extractNumberFromOpenInterval("0 or less", which = "first"),
-              is_identical_to(NULL))
-  expect_that(extractNumberFromOpenInterval("0 OR LESS", which = "first"),
-              is_identical_to(NULL))
-  expect_that(extractNumberFromOpenInterval("0ORLESS", which = "first"),
-              is_identical_to(NULL))
-  expect_error(extractNumberFromOpenInterval("0 or less", which = "wrong"),
-              sprintf("'arg' should be one of %s, %s",
-                      dQuote("first"), dQuote("last")))
-  expect_error(extractNumberFromOpenInterval(c("0 or less", "0 or less"), which = "first"),
-              "'name' does not have length 1")
+    extractNumberFromOpenInterval <- dembase:::extractNumberFromOpenInterval
+    expect_identical(extractNumberFromOpenInterval("100+", which = "last"),
+                     100)
+    expect_identical(extractNumberFromOpenInterval("100.5+", which = "last"),
+                     100.5)
+    expect_identical(extractNumberFromOpenInterval("-20+", which = "last"),
+                     -20)
+    expect_identical(extractNumberFromOpenInterval("<-20", which = "first"),
+                     -20)
+    expect_identical(extractNumberFromOpenInterval("<0", which = "first"),
+                     0)
+    expect_identical(extractNumberFromOpenInterval("0 or less", which = "first"),
+                     NULL)
+    expect_identical(extractNumberFromOpenInterval("0 OR LESS", which = "first"),
+                     NULL)
+    expect_identical(extractNumberFromOpenInterval("0ORLESS", which = "first"),
+                     NULL)
+    expect_error(extractNumberFromOpenInterval("0 or less", which = "wrong"),
+                 sprintf("'arg' should be one of %s, %s",
+                         dQuote("first"), dQuote("last")))
+    expect_error(extractNumberFromOpenInterval(c("0 or less", "0 or less"), which = "first"),
+                 "'name' does not have length 1")
 })
 
 test_that("extractNumbersFromEndOfStrings works", {
@@ -2572,8 +2533,6 @@ test_that("extractNumbersFromEndOfStrings works", {
               is_identical_to(4))
   expect_that(extractNumbersFromEndOfStrings(c("0-4", "5-9", "10+")),
               is_identical_to(c(4, 9, NA)))
-  expect_that(extractNumbersFromEndOfStrings("0 to 4", " to "),
-              is_identical_to(4))
   expect_that(extractNumbersFromEndOfStrings("-5--1"),
               is_identical_to(-1))
   expect_that(extractNumbersFromEndOfStrings("0.5-1.5"),
@@ -2656,11 +2615,11 @@ test_that("inferDimScale works", {
                                    dimscale = "Intervals",
                                    labels = c("0-4", "5+"),
                                    name = "age"),
-                     new("Intervals", dimvalues = c(0, 5, Inf)))
+                     new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE, labelStart = TRUE))
     expect_identical(inferDimScale(dimtype = "age",
                                    dimscale = NULL,
                                    labels = c("0-4", "5+")),
-                     new("Intervals", dimvalues = c(0, 5, Inf)))
+                     new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE))
     expect_message(inferDimScale(dimtype = "age",
                                  dimscale = NULL,
                                  labels = c("0", "1"),
@@ -2675,7 +2634,7 @@ test_that("inferDimScale works", {
                                    dimscale = "Intervals",
                                    labels = c("0", "1"),
                                    name = "year"),
-                     new("Intervals", dimvalues = c(0, 1, 2)))
+                     new("Intervals", dimvalues = c(0, 1, 2), isAge = FALSE))
     expect_error(inferDimScale(dimtype = "time",
                                dimscale = NULL,
                                labels = c("0", "1"),
@@ -2810,42 +2769,16 @@ test_that("intervalsToPoints works", {
   intervalsToPoints <- dembase:::intervalsToPoints
   expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)),
                     new("Points", dimvalues = c(0.5, 1.5, 2.5)))
-  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 1, 5, 10, 15))),
+  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 1, 5, 10, 15), isAge = TRUE)),
                    new("Points", dimvalues = c(0.5, 3, 7.5, 12.5)))
-  expect_identical(intervalsToPoints(new("Intervals")),
+  expect_identical(intervalsToPoints(new("Intervals", isAge = FALSE)),
                    new("Points"))
-  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 5))),
+  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 5), isAge = TRUE)),
               new("Points", dimvalues = 2.5))
-  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(-2, 0, 2, 4))),
+  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(-2, 0, 2, 4), isAge = TRUE)),
                    new("Points", dimvalues = c(-1, 1, 3)))
-  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 5, Inf))),
+  expect_identical(intervalsToPoints(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)),
                    new("Points", dimvalues = c(2.5, 7.5)))
-})
-
-test_that("pointsToIntervals works", {
-  pointsToIntervals <- dembase:::pointsToIntervals
-  expect_that(pointsToIntervals(new("Points", dimvalues = c(0.5, 1.5, 2.5))),
-              is_identical_to(new("Intervals", dimvalues = c(0, 1, 2, 3), isAge = TRUE)))
-  expect_that(pointsToIntervals(new("Points", dimvalues = c(0.5, 3, 7.5, 12.5))),
-              is_identical_to(new("Intervals", dimvalues = c(0, 1, 5, 10, 15))))
-  expect_that(pointsToIntervals(new("Points")),
-              is_identical_to(new("Intervals")))
-  expect_that(pointsToIntervals(new("Points", dimvalues = 2.5)),
-              is_identical_to(new("Intervals", dimvalues = c(0, 5))))
-  expect_that(pointsToIntervals(new("Points", dimvalues = c(-1, 1, 3))),
-              is_identical_to(new("Intervals", dimvalues = c(-2, 0, 2, 4))))
-})
-
-test_that("intervalsBetweenPoints works", {
-    intervalsBetweenPoints <- dembase:::intervalsBetweenPoints
-    expect_identical(intervalsBetweenPoints(new("Points", dimvalues = c(0, 1, 5, 10))),
-                     new("Intervals", dimvalues = c(0, 1, 5, 10)))
-    expect_error(intervalsBetweenPoints(new("Intervals")),
-                 "'object' has class \"Intervals\"")
-    expect_error(intervalsBetweenPoints(new("Points")),
-                 "'object' has 0 points")
-    expect_error(intervalsBetweenPoints(new("Points", dimvalues = 0)),
-                 "'object' has 1 point")
 })
 
 
@@ -3060,12 +2993,12 @@ test_that("consistentDimtypes works", {
     e1 <- Counts(array(0,
                        dim = c(2, 1, 2),
                        dimnames = list(age = c("0-4", "5+"),
-                           time = "2001-2005",
+                           time = "2000-2005",
                            triangle = c("Lower", "Upper"))))
     e2 <- Counts(array(0,
                        dim = c(2, 1, 2),
                        dimnames = list(age = c("0-4", "5+"),
-                           time = "2001-2005",
+                           time = "2000-2005",
                            triangle = c("Lower", "Upper"))),
                  dimtypes = c(triangle = "state"))
     expect_error(consistentDimtypes(e1, e2),
@@ -3152,40 +3085,40 @@ test_that("haveNamesInCommon works", {
 
 test_that("internalDetailGreaterOrEqual works", {
     internalDetailGreaterOrEqual <- dembase:::internalDetailGreaterOrEqual
-    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
-    e2 <- new("Intervals", dimvalues = c(0L, 1L, 5L))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0L, 1L, 5L), isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 2))
+    e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, Inf), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(0, 0.5, 1, 1.5, 2))
-    e2 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 0.5, 1, 1.5, 2), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, Inf), isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
-    e2 <- new("Intervals", dimvalues = c(-1, 0, 2, 5, 10, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(-1, 0, 2, 5, 10, Inf), isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(-Inf, 0))
-    e2 <- new("Intervals", dimvalues = c(-Inf, 0, Inf))
+    e1 <- new("Intervals", dimvalues = c(-Inf, 0), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(-Inf, 0, Inf), isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(-Inf, 0, Inf))
-    e2 <- new("Intervals")
+    e1 <- new("Intervals", dimvalues = c(-Inf, 0, Inf), isAge = TRUE)
+    e2 <- new("Intervals", isAge = TRUE)
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals")
-    e2 <- new("Intervals", dimvalues = c(-Inf, 0, Inf))
+    e1 <- new("Intervals", isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(-Inf, 0, Inf), isAge = TRUE)
     expect_error(internalDetailGreaterOrEqual(e1, e2),
                 "one dimension has 2 intervals but other has none")
     e1 <- new("Intervals")
     e2 <- new("Intervals")
     expect_true(internalDetailGreaterOrEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(0, 5))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     expect_error(internalDetailGreaterOrEqual(e1, e2),
                  "one dimension has break \\[1\\] that other does not")
-    e1 <- new("Intervals", dimvalues = c(0, 5))
-    e2 <- new("Intervals", dimvalues = 0:5)
+    e1 <- new("Intervals", dimvalues = c(0, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = 0:5, isAge = TRUE)
     expect_error(internalDetailGreaterOrEqual(e1, e2),
                  "one dimension has breaks \\[1, 2, 3, 4\\] that other does not")
 })
@@ -3202,25 +3135,25 @@ test_that("isPositiveScalar works", {
 
 test_that("limitsEqual works", {
     limitsEqual <- dembase:::limitsEqual
-    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     expect_true(limitsEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
-    e2 <- new("Intervals", dimvalues = c(0L, 1L, 5L))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0L, 1L, 5L), isAge = TRUE)
     expect_true(limitsEqual(e1, e2))
-    e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 2))
+    e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)
     expect_error(limitsEqual(e1, e2),
                 "one dimension starts at -Inf and other starts at 0")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 2))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 2, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)
+    e2 <- new("Intervals", dimvalues = c(0, 1, 2, Inf), isAge = TRUE)
     expect_error(limitsEqual(e1, e2),
                 "one dimension ends at 2 and other ends at Inf")
     e1 <- new("Intervals")
-    e2 <- new("Intervals", dimvalues = c(-Inf, 0, Inf))
+    e2 <- new("Intervals", dimvalues = c(-Inf, 0, Inf), isAge = TRUE)
     expect_error(limitsEqual(e1, e2),
                  "one dimension has 2 intervals but other has none")
-    e1 <- new("Intervals", dimvalues = c(-Inf, 0, Inf))
+    e1 <- new("Intervals", dimvalues = c(-Inf, 0, Inf), isAge = TRUE)
     e2 <- new("Intervals")
     expect_error(limitsEqual(e1, e2),
                  "one dimension has 2 intervals but other has none")
@@ -3231,28 +3164,28 @@ test_that("limitsEqual works", {
 
 test_that("limitsGreaterOrEqual works", {
   limitsGreaterOrEqual <- dembase:::limitsGreaterOrEqual
-  e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
-  e2 <- new("Intervals", dimvalues = c(0, 1, 5))
+  e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
+  e2 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
   expect_true(limitsGreaterOrEqual(e1, e2))
-  e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, 5, Inf))
-  e2 <- new("Intervals", dimvalues = c(0, 1, 5))
+  e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, 5, Inf), isAge = TRUE)
+  e2 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
   expect_true(limitsGreaterOrEqual(e1, e2))
-  e1 <- new("Intervals", dimvalues = c(0, 1, 2))
-  e2 <- new("Intervals", dimvalues = c(0, 1, 2, 5))
+  e1 <- new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)
+  e2 <- new("Intervals", dimvalues = c(0, 1, 2, 5), isAge = TRUE)
   expect_error(limitsGreaterOrEqual(e1, e2),
                "one dimension ends at 2 and other ends at 5")
-  e1 <- new("Intervals", dimvalues = c(0, 1, 2))
-  e2 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, 5))
+  e1 <- new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)
+  e2 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 2, 5), isAge = TRUE)
   expect_error(limitsGreaterOrEqual(e1, e2),
                "one dimension starts at 0 and other starts at -Inf")
   e1 <- new("Intervals")
   e2 <- new("Intervals")
   expect_true(limitsGreaterOrEqual(e1, e2))
-  e1 <- new("Intervals", dimvalues = c(0, Inf))
+  e1 <- new("Intervals", dimvalues = c(0, Inf), isAge = TRUE)
   e2 <- new("Intervals")
   expect_true(limitsGreaterOrEqual(e1, e2))
   e1 <- new("Intervals")
-  e2 <- new("Intervals", dimvalues = c(-Inf, 0))
+  e2 <- new("Intervals", dimvalues = c(-Inf, 0), isAge = TRUE)
   expect_error(limitsGreaterOrEqual(e1, e2),
                "one dimension has 1 interval but other has none")
 })
@@ -3373,40 +3306,40 @@ test_that("combineDbindMetadataValues works", {
                         nms = c("sex", "age", "region"),
                         dimtypes = c("sex", "age", "state"),
                         DimScales = list(new("Sexes", dimvalues = c("m", "f")),
-                            new("Intervals", dimvalues = as.numeric(0:4)),
+                            new("Intervals", dimvalues = as.numeric(0:4), isAge = TRUE),
                             new("Categories", dimvalues = c("a", "b", "c"))))
     expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("combineDimvaluesForIntervals works", {
     combineDimvaluesForIntervals <- dembase:::combineDimvaluesForIntervals
-    expect_identical(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(0, 1, 5)),
-                                                  new("Intervals", dimvalues = c(5, 10)),
-                                               along = "age"),
+    expect_identical(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE),
+                                                  new("Intervals", dimvalues = c(5, 10), isAge = TRUE),
+                                                  along = "age"),
                      c(0, 1, 5, 10))
-    expect_identical(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(2000, 2005)),
-                                               new("Intervals", dimvalues = c(1995, 2000)),
-                                               along = "year"),
+    expect_identical(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(2000, 2005), isAge = FALSE),
+                                                  new("Intervals", dimvalues = c(1995, 2000), isAge = FALSE),
+                                                  along = "year"),
                      c(1995, 2000, 2005))
     expect_identical(combineDimvaluesForIntervals(new("Intervals"),
-                                               new("Intervals", dimvalues = c(1995, 2000)),
-                                               along = "year"),
+                                                  new("Intervals", dimvalues = c(1995, 2000), isAge = FALSE),
+                                                  along = "year"),
                      c(1995, 2000))
     expect_identical(combineDimvaluesForIntervals(new("Intervals"),
-                                               new("Intervals"),
-                                               along = "year"),
+                                                  new("Intervals"),
+                                                  along = "year"),
                      numeric())
-    expect_error(combineDimvaluesForIntervals(new("Intervals", dimvalues = 0:3),
-                                           new("Intervals", dimvalues = 2:4),
-                                           along = "age"),
+    expect_error(combineDimvaluesForIntervals(new("Intervals", dimvalues = 0:3, isAge = TRUE),
+                                              new("Intervals", dimvalues = 2:4, isAge = TRUE),
+                                              along = "age"),
                  "\"age\" dimensions overlap")
-    expect_error(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(2005, 2010)),
-                                           new("Intervals", dimvalues = c(2007, 2020)),
-                                           along = "time"),
+    expect_error(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(2005, 2010), isAge = FALSE),
+                                              new("Intervals", dimvalues = c(2007, 2020), isAge = FALSE),
+                                              along = "time"),
                  "\"time\" dimensions overlap")
-    expect_error(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(2005, 2006)),
-                                           new("Intervals", dimvalues = c(2007, 2020)),
-                                           along = "time"),
+    expect_error(combineDimvaluesForIntervals(new("Intervals", dimvalues = c(2005, 2006), isAge = FALSE),
+                                              new("Intervals", dimvalues = c(2007, 2020), isAge = FALSE),
+                                              along = "time"),
                  "gap between \"time\" dimensions")
 })
 
@@ -3482,31 +3415,28 @@ test_that("dbind works", {
     expect_identical(dbind(x, y, z, along = "reg"), ans)
     x <- Counts(array(1:6,
                       dim = c(3, 2),
-                      dimnames = list(period = c("2001-2005", "2006-2010",
-                                          "2011-2015"),
+                      dimnames = list(period = c("2000-2005", "2005-2010", "2010-2015"),
                           reg = c("a", "b"))))
     y <- Counts(array(1:4,
                       dim = c(2, 2),
-                      dimnames = list(sex = c("m", "f"), period = c("2001-2010",
-                                                             "2011-2015"))))
+                      dimnames = list(sex = c("m", "f"), period = c("2000-2010", "2010-2015"))))
     ans <- Counts(array(c(3L, 3L, 9L, 6L, 3L, 7L),
                         dim = c(2, 3),
-                        dimnames = list(period = c("2001-2010", "2011-2015"),
+                        dimnames = list(period = c("2000-2010", "2010-2015"),
                             reg = c("a", "b", "y"))))
     expect_identical(dbind(x, y, along = "reg"), ans)
     expect_identical(dbind(args = list(x, y), along = "reg"), ans)
     x <- Counts(array(1:6,
                       dim = c(3, 2),
-                      dimnames = list(period = c("2001-2005", "2006-2010",
-                                          "2011-2015"),
+                      dimnames = list(period = c("2000-2005", "2005-2010", "2010-2015"),
                           reg = c("a", "b"))))
     y <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(sex = c("m", "f"),
-                          period = c("2001-2010", "2011-2015"))))
+                          period = c("2000-2010", "2010-2015"))))
     ans <- Counts(array(c(3L, 3L, 9L, 6L, 3L, 7L),
                         dim = c(2, 3),
-                        dimnames = list(period = c("2001-2010", "2011-2015"),
+                        dimnames = list(period = c("2000-2010", "2010-2015"),
                             reg = c("a", "b", "my.name"))))
     expect_identical(dbind(x, my.name = y, along = "reg"), ans)
     x <- Values(array(1:4,
@@ -3709,12 +3639,12 @@ test_that("addIterationsToMetadata works", {
     x <- new("MetaData",
              nms = c("age", "sex"),
              dimtypes = c("age", "state"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("a", "b"))))
     y <- new("MetaData",
              nms = c("age", "sex", "iteration"),
              dimtypes = c("age", "state", "iteration"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("a", "b")),
              new("Iterations", dimvalues = c(1L, 3L, 5L))))
     expect_identical(addIterationsToMetadata(x, iteration = c(1L, 3L, 5L)),
@@ -3722,12 +3652,12 @@ test_that("addIterationsToMetadata works", {
     x <- new("MetaData",
              nms = c("age", "iteration"),
              dimtypes = c("age", "state"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("a", "b"))))
     y <- new("MetaData",
              nms = c("age", "iteration", "iteration.1"),
              dimtypes = c("age", "state", "iteration"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE),
              new("Categories", dimvalues = c("a", "b")),
              new("Iterations", dimvalues = c(1L, 3L, 5L))))
     expect_identical(addIterationsToMetadata(x, iteration = c(1L, 3L, 5L)),
@@ -3747,24 +3677,10 @@ test_that("addIterationsToMetadata works", {
     z <- new("MetaData",
              nms = c("age", "quantile"),
              dimtypes = c("age", "quantile"),
-             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf)),
+             DimScales = list(new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE),
              new("Quantiles", dimvalues = c(0.1, 0.5, 0.9))))
     expect_error(addIterationsToMetadata(z, iteration = 1:3),
                  "'object' has dimension with dimtype \"quantile\"")
-})
-
-test_that("incrementDimvaluesMonths works", {
-    incrementDimvaluesMonths <- dembase:::incrementDimvaluesMonths
-    ans.obtained <- incrementDimvaluesMonths(start = 2000,
-                                             forward = TRUE,
-                                             n = 3)
-    ans.expected <- c(2000, 2000 + 31/366, 2000 + 60/366, 2000 + 91/366)
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- incrementDimvaluesMonths(start = 2000,
-                                             forward = FALSE,
-                                             n = 3)
-    ans.expected <- c(2000 - 92/365, 2000 - 61/365, 2000 - 31/365, 2000)
-    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("incrementDimvaluesForTimeUnits works with quarters", {
@@ -3870,11 +3786,11 @@ test_that("mergeMetadata works", {
 test_that("ageDimBirthsCompatibleWithPopn works", {
     ageDimBirthsCompatibleWithPopn <- dembase:::ageDimBirthsCompatibleWithPopn
     name <- "age"
-    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5))
+    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     namesPopn <- c("time", "age")
     dimtypesPopn <- c("time", "age")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)))
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE))
     nameComponent <- "births"
     expect_true(ageDimBirthsCompatibleWithPopn(name = name,
                                                DimScale = DimScale,
@@ -3884,7 +3800,7 @@ test_that("ageDimBirthsCompatibleWithPopn works", {
                                                nameComponent = nameComponent))
     ## 'population' has name
     name <- "age"
-    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5))
+    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     namesPopn <- c("time", "sex")
     dimtypesPopn <- c("time", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
@@ -3899,7 +3815,7 @@ test_that("ageDimBirthsCompatibleWithPopn works", {
                      "'births' has dimension \"age\" but 'population' does not")
     ## dimension in 'population' has dimtype "age"
     name <- "age"
-    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5))
+    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     namesPopn <- c("time", "age")
     dimtypesPopn <- c("time", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
@@ -3914,11 +3830,11 @@ test_that("ageDimBirthsCompatibleWithPopn works", {
                      "\"age\" dimension of 'births' has dimtype \"age\" but \"age\" dimension of 'population' has dimtype \"state\"")
     ## dimvalues aligned
     name <- "age"
-    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5))
+    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     namesPopn <- c("time", "age")
     dimtypesPopn <- c("time", "age")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100), Inf)))
+                          new("Intervals", dimvalues = c(seq(0, 100), Inf), isAge = TRUE))
     nameComponent <- "births"
     expect_identical(ageDimBirthsCompatibleWithPopn(name = name,
                                                     DimScale = DimScale,
@@ -3928,11 +3844,11 @@ test_that("ageDimBirthsCompatibleWithPopn works", {
                                                     nameComponent = nameComponent),
                      "\"age\" dimensions have incompatible dimscales")
     name <- "age"
-    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5))
+    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     namesPopn <- c("time", "age")
     dimtypesPopn <- c("time", "age")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 10), Inf)))
+                          new("Intervals", dimvalues = c(seq(0, 100, 10), Inf), isAge = TRUE))
     nameComponent <- "births"
     expect_identical(ageDimBirthsCompatibleWithPopn(name = name,
                                                     DimScale = DimScale,
@@ -3958,7 +3874,7 @@ test_that("default version of agePopnForwardUpperTri works", {
                                  dim = c(2, 6, 2),
                                  dimnames = list(reg = c("a", "b"),
                                                  age = c(5, 10, 15, 20, 25, 30),
-                                                 time = c("2001-2005", "2006-2010"))))
+                                                 time = c("2000-2005", "2005-2010"))))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3985,7 +3901,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- checkAndTidyComponent(x, name = "immigration")
     set.seed(1)
@@ -3995,7 +3911,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(as.numeric(1:8),
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"),
+                                      time = c("2000-2005", "2005-2010"),
                                       triangle = c("TL", "TU"))))
     ans.obtained <- checkAndTidyComponent(x, name = "component")
     ans.expected <- toInteger(x)
@@ -4003,7 +3919,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(c(1:7, 8.1),
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"),
+                                      time = c("2000-2005", "2005-2010"),
                                       triangle = c("TL", "TU"))))
     expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' invalid : non-integer values")
@@ -4025,26 +3941,26 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c(0, 5),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     expect_error(checkAndTidyComponent(x, name = "component"),
                  "dimension of 'component' with dimtype \"age\" has dimscale \"Points\"")
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("<0", "0-4"),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' invalid : first interval of dimension with dimtype \"age\" is open")
     x <- Counts(array(1:4,
                       dim = c(2, 2),
-                      dimnames = list(cohort = c("2001-2005", "2006-20120"),
-                                      time = c("2001-2005", "2006-2010"))))
+                      dimnames = list(cohort = c("2000-2005", "2005-2010"),
+                                      time = c("2000-2005", "2005-2010"))))
     expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' has dimension with dimtype \"cohort\"")
     ## origin-destination
     x <- Counts(array(1:16,
                       dim = c(2, 2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"),
+                                      time = c("2000-2005", "2005-2010"),
                                       reg_orig = 1:2,
                                       reg_dest = 1:2)))
     set.seed(1)
@@ -4060,7 +3976,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:16,
                       dim = c(2, 2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"),
+                                      time = c("2000-2005", "2005-2010"),
                                       reg_parent = 1:2,
                                       reg_child = 1:2)))
     set.seed(1)
@@ -4076,28 +3992,28 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2011"))))
+                                      time = c("2000-2005", "2005-2010"))))
     expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' does not have regular age-time plan :")
     ## positive length
     x <- Counts(array(0,
                       dim = c(0, 2),
                       dimnames = list(age = character(),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' has length 0")
     ## negatives
     x <- Counts(array(c(1:3, -1L),
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' has negative values")
     ## allow triangles
     x <- Counts(array(as.numeric(1:8),
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"),
+                                      time = c("2000-2005", "2005-2010"),
                                       triangle = c("TL", "TU"))))
     expect_error(checkAndTidyComponent(x, name = "component", allowTriangles = FALSE),
                  "'component' has Lexis triangles")
@@ -4105,7 +4021,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     x2 <- splitTriangles(x)
     ans.obtained <- checkAndTidyComponent(x2, name = "immigration")
     ans.expected <- x2
@@ -4113,7 +4029,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- checkAndTidyComponent(x, name = "immigration")
     set.seed(1)
@@ -4122,7 +4038,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2001-2005", "2006-2010"))))
+                                      time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- checkAndTidyComponent(x, name = "immigration", triangles = FALSE)
     ans.expected <- x
@@ -4158,20 +4074,20 @@ test_that("derivePopnMoveNoAge works when population is large", {
     births <- array(1:4,
                     dim = c(5, 9),
                     dimnames = list(region = 1:5,
-                                    year = paste(seq(2001, 2041, 5),
+                                    year = paste(seq(2000, 2040, 5),
                                                  seq(2005, 2045, 5),
                                                  sep = "-")))
     internal <- array(1:10,
                       dim = c(5, 5, 9),
                       dimnames = list(region_orig = 1:5,
                                       region_dest = 1:5,
-                                      year = paste(seq(2001, 2041, 5),
+                                      year = paste(seq(2000, 2040, 5),
                                                    seq(2005, 2045, 5),
                                                    sep = "-")))
     deaths <- array(1:4,
                     dim = c(5, 9),
                     dimnames = list(region = 1:5,
-                                    year = paste(seq(2001, 2041, 5),
+                                    year = paste(seq(2000, 2040, 5),
                                                  seq(2005, 2045, 5),
                                                  sep = "-")))
     births <- Counts(births)
@@ -4199,26 +4115,26 @@ test_that("derivePopnMoveNoAge works when population is small", {
     births <- array(1:4,
                     dim = c(5, 9),
                     dimnames = list(region = 1:5,
-                                    year = paste(seq(2001, 2041, 5),
+                                    year = paste(seq(2000, 2040, 5),
                                                  seq(2005, 2045, 5),
                                                  sep = "-")))
     internal <- array(1:10,
                       dim = c(5, 5, 9),
                       dimnames = list(region_orig = 1:5,
                                       region_dest = 1:5,
-                                      year = paste(seq(2001, 2041, 5),
+                                      year = paste(seq(2000, 2040, 5),
                                                    seq(2005, 2045, 5),
                                                    sep = "-")))
     deaths <- array(1:4,
                     dim = c(5, 9),
                     dimnames = list(region = 1:5,
-                                    year = paste(seq(2001, 2041, 5),
+                                    year = paste(seq(2000, 2040, 5),
                                                  seq(2005, 2045, 5),
                                                  sep = "-")))
     net.mig <- array(c(3, -2, 1, -4),
                     dim = c(5, 9),
                     dimnames = list(region = 1:5,
-                                    year = paste(seq(2001, 2041, 5),
+                                    year = paste(seq(2000, 2040, 5),
                                                  seq(2005, 2045, 5),
                                                  sep = "-")))
     births <- Counts(births)
@@ -4298,11 +4214,11 @@ test_that("dimCompCompatibleWithPopn works", {
     ## births - age dimension
     name <- "age"
     dimtype <- "age"
-    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5))
+    DimScale <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     namesPopn <- c("time", "age", "sex")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Categories", dimvalues = c("f", "m")))
     nameComponent <- "births"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4320,7 +4236,7 @@ test_that("dimCompCompatibleWithPopn works", {
     namesPopn <- c("time", "age", "sex")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Categories", dimvalues = c("f", "m")))
     nameComponent <- "births"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4338,7 +4254,7 @@ test_that("dimCompCompatibleWithPopn works", {
     namesPopn <- c("time", "age", "eth")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Categories", dimvalues = c("a", "b")))
     nameComponent <- "births"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4356,7 +4272,7 @@ test_that("dimCompCompatibleWithPopn works", {
     namesPopn <- c("time", "age", "eth")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Categories", dimvalues = c("a", "b")))
     nameComponent <- "internal"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4370,11 +4286,11 @@ test_that("dimCompCompatibleWithPopn works", {
     ## exits - time
     name <- "year"
     dimtype <- "time"
-    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5))
+    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5), isAge = TRUE)
     namesPopn <- c("year", "age", "eth")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Categories", dimvalues = c("a", "b")))
     nameComponent <- "deaths"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4392,7 +4308,7 @@ test_that("dimCompCompatibleWithPopn works", {
     namesPopn <- c("year", "age", "eth")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Categories", dimvalues = c("a", "b")))
     nameComponent <- "deaths"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4410,7 +4326,7 @@ test_that("dimCompCompatibleWithPopn works", {
     namesPopn <- c("year", "age", "sim")
     dimtypesPopn <- c("time", "age", "iteration")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf)),
+                          new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE),
                           new("Iterations", dimvalues = 1:2))
     nameComponent <- "deaths"
     expect_true(dimCompCompatibleWithPopn(name = name,
@@ -4509,7 +4425,7 @@ test_that("exposureNoTriangles works", {
                                  dimnames = list(reg = c("a", "b"),
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30+"),
-                                     time = c("2001-2005", "2006-2010"))))
+                                     time = c("2000-2005", "2005-2010"))))
     expect_identical(ans.obtained, ans.expected)
     ## time is seceond dimension; equal time steps
     population <- Counts(array(1:42,
@@ -4523,7 +4439,7 @@ test_that("exposureNoTriangles works", {
     ans.expected <- Counts(array(ans.expected,
                                  dim = c(2, 2, 7),
                                  dimnames = list(reg = c("a", "b"),
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30+"))))
     expect_identical(ans.obtained, ans.expected)
@@ -4576,7 +4492,7 @@ test_that("exposureWithTriangles works", {
                                  dimnames = list(reg = c("a", "b"),
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30+"),
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     expect_identical(ans.obtained, ans.expected)
     expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
@@ -4594,7 +4510,7 @@ test_that("exposureWithTriangles works", {
     ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
                                  dim = c(2, 2, 7, 2),
                                  dimnames = list(reg = c("a", "b"),
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30-34"),
                                      triangle = c("TL", "TU"))))
@@ -4609,7 +4525,7 @@ test_that("getDimScaleTimePopn works", {
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
                                   triangle = c("TL", "TU"),
-                                  time = c("2001-2005", "2006-2010"))))
+                                  time = c("2000-2005", "2005-2010"))))
     ans.obtained <- getDimScaleTimePopn(component, name = "component")
     ans.expected <- new("Points", dimvalues = c(2000, 2005, 2010))
     expect_identical(ans.obtained, ans.expected)
@@ -4634,14 +4550,14 @@ test_that("iMinAge works", {
                            dim = c(2, 2, 2, 2),
                            dimnames = list(reg = c("a", "b"),
                                age = c("20-24", "25-29"),
-                               time = c("2001-2005", "2006-2010"),
+                               time = c("2000-2005", "2005-2010"),
                                triangle = c("TL", "TU"))))
     template <- Counts(array(0L,
                              dim = c(2, 7, 2, 2),
                              dimnames = list(reg = c("a", "b"),
                                  age = c("0-4", "5-9", "10-14", "15-19",
                                      "20-24", "25-29", "30+"),
-                                 time = c("2001-2005", "2006-2010"),
+                                 time = c("2000-2005", "2005-2010"),
                                  triangle = c("TL", "TU"))))
     ans.obtained <- iMinAge(current = births, target = template)
     ans.expected <- 5L
@@ -4652,7 +4568,7 @@ test_that("iMinAge works", {
     wrong <- Counts(array(1L,
                           dim = c(2, 2),
                           dimnames = list(reg = c("a", "b"),
-                              time = c("2001-2005", "2006-2010"))))
+                              time = c("2000-2005", "2005-2010"))))
     expect_error(iMinAge(current = wrong, target = template),
                  "'current' does not have dimension with dimtype \"age\"")
     expect_error(iMinAge(current = births, target = wrong),
@@ -4661,7 +4577,7 @@ test_that("iMinAge works", {
                            dim = c(2, 4, 2, 2),
                            dimnames = list(reg = c("a", "b"),
                                age = c("0-4", "5-9", "10-14", "15-19"),
-                               time = c("2001-2005", "2006-2010"),
+                               time = c("2000-2005", "2005-2010"),
                                triangle = c("TL", "TU"))))
     expect_error(iMinAge(current = births, target = wrong),
                  "minimum age of 'current' not found in ages of 'target'")
@@ -4674,7 +4590,7 @@ test_that("incrementLowerTriHelper works", {
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
                                   triangle = c("TL", "TU"),
-                                  time = c("2001-2005", "2006-2010"))))
+                                  time = c("2000-2005", "2005-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
                                   name = "immigration")
@@ -4693,7 +4609,7 @@ test_that("incrementOpenHelper works", {
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
                                   triangle = c("TL", "TU"),
-                                  time = c("2001-2005", "2006-2010"))))
+                                  time = c("2000-2005", "2005-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
                                   name = "immigration")
@@ -4712,7 +4628,7 @@ test_that("incrementSquareHelper works", {
                               dim = c(3, 2, 2),
                               dimnames = list(region = c("a", "b", "c"),
                                               sex = c("F", "M"),
-                                              time = c("2001-2005", "2006-2010"))))
+                                              time = c("2000-2005", "2005-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
                                   name = "immigration")
@@ -4732,7 +4648,7 @@ test_that("incrementUpperTriHelper works", {
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
                                   triangle = c("TL", "TU"),
-                                  time = c("2001-2005", "2006-2010"))))
+                                  time = c("2000-2005", "2005-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
                                   name = "immigration")
@@ -4740,7 +4656,7 @@ test_that("incrementUpperTriHelper works", {
     ans.expected <- Counts(array(c(4:5, 10:11),
                               dim = c(2, 2),
                               dimnames = list(age = c("5", "10"),
-                                  time = c("2001-2005", "2006-2010"))))
+                                  time = c("2000-2005", "2005-2010"))))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -4751,7 +4667,7 @@ test_that("makeDimtypeIndex works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region_orig = c("a", "b"),
                           region_dest = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeDimtypeIndex(x, "age")
     ans.expected <- slice.index(x@.Data, 1)
     expect_identical(ans.obtained, ans.expected)
@@ -4763,7 +4679,7 @@ test_that("makeMappingBirths works", {
                            dim = c(2, 5, 2),
                            dimnames = list(sex = c("m", "f"),
                                            reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeMappingBirths(births)
     ans.expected <- 1:10
     expect_identical(ans.obtained, ans.expected)
@@ -4773,7 +4689,7 @@ test_that("makeMappingBirths works", {
                                            triangle = c("TL", "TU"),
                                            sex = c("m", "f"),
                                            reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeMappingBirths(births)
     ans.expected <- rep(1:10, each = 4)
     expect_identical(ans.obtained, ans.expected)
@@ -4782,7 +4698,7 @@ test_that("makeMappingBirths works", {
                            dimnames = list(sex = c("m", "f"),
                                            reg_child = 1:5,
                                            reg_parent = 1:5,
-                                           time = c("2001-2005", "2006-2010"),
+                                           time = c("2000-2005", "2005-2010"),
                                            age = c("5-9", "10-14"),
                                            triangle = c("TL", "TU"))))
     ans.obtained <- makeMappingBirths(births)
@@ -4790,7 +4706,7 @@ test_that("makeMappingBirths works", {
     expect_identical(ans.obtained, ans.expected)
     births <- Counts(array(1L,
                            dim = c(2, 2, 5, 5, 2, 2),
-                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                           dimnames = list(time = c("2000-2005", "2005-2010"),
                                            sex = c("m", "f"),
                                            reg_parent = 1:5,
                                            reg_child = 1:5,
@@ -4810,7 +4726,7 @@ test_that("makeMappingBirths works", {
     expect_identical(ans.obtained, ans.expected)
     births <- Counts(array(1L,
                            dim = c(2, 2, 2),
-                           dimnames = list(time = c("2001-2005", "2006-2010"),
+                           dimnames = list(time = c("2000-2005", "2005-2010"),
                                            age = c("5-9", "10-14"),
                                            triangle = c("TL", "TU"))))
     ans.obtained <- makeMappingBirths(births)
@@ -4826,26 +4742,26 @@ test_that("makeMetadataExtendOrigDestParentChild works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region_orig = c("a", "b"),
                           region_dest = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeMetadataExtendOrigDestParentChild(x = x, y = y)
     ans.expected <- x@metadata
     expect_identical(ans.obtained, ans.expected)
     ## orig-dest only; need to permute, and extend
     x <- Values(array(0,
                       dim = c(2, 3, 3),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           region_orig = c("a", "b", "c"),
                           region_dest = c("a", "b", "c"))))
     y <- Counts(array(0,
                       dim = c(3, 2, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           region = c("a", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeMetadataExtendOrigDestParentChild(x = x, y = y)
     ans.expected <- new("MetaData",
                         nms = c("age", "region_orig", "region_dest", "time"),
@@ -4855,7 +4771,7 @@ test_that("makeMetadataExtendOrigDestParentChild works", {
     ## orig-dest and parent-child; need to subset and permute
     x <- Values(array(0,
                       dim = c(2, 3, 3, 2, 3, 3),
-                      dimnames = list(time = c("2001-2005", "2006-2010"),
+                      dimnames = list(time = c("2000-2005", "2005-2010"),
                           eth_child = 3:1,
                           eth_parent = 3:1,
                           age = c("0-9", "10+"),
@@ -4866,7 +4782,7 @@ test_that("makeMetadataExtendOrigDestParentChild works", {
                       dimnames = list(age = c("0-4", "5-9", "10+"),
                           eth = 2:1,
                           region = c("c", "b"),
-                          time = c("2001-2005", "2006-2010"))))
+                          time = c("2000-2005", "2005-2010"))))
     ans.obtained <- makeMetadataExtendOrigDestParentChild(x = x, y = y)
     ans.expected <- new("MetaData",
                         nms = c("age", "eth_parent", "eth_child", "region_orig", "region_dest", "time"),
@@ -4889,8 +4805,8 @@ test_that("makeMetadataForExposure works", {
                         nms = c("reg", "age", "time"),
                         dimtypes = c("state", "age", "time"),
                         DimScales = list(new("Categories", dimvalues = as.character(1:4)),
-                            new("Intervals", dimvalues = as.numeric(0:5)),
-                            new("Intervals", dimvalues = as.numeric(1:6))))
+                            new("Intervals", dimvalues = as.numeric(0:5), isAge = TRUE),
+                            new("Intervals", dimvalues = as.numeric(1:6), isAge = FALSE)))
     expect_identical(ans.obtained, ans.expected)
     population <- Counts(array(1:120,
                                dim = 4:6,
@@ -4904,8 +4820,8 @@ test_that("makeMetadataForExposure works", {
                         nms = c("reg", "age", "time", "triangle"),
                         dimtypes = c("state", "age", "time", "triangle"),
                         DimScales = list(new("Categories", dimvalues = as.character(1:4)),
-                            new("Intervals", dimvalues = as.numeric(0:5)),
-                            new("Intervals", dimvalues = as.numeric(1:6)),
+                            new("Intervals", dimvalues = as.numeric(0:5), isAge = TRUE),
+                            new("Intervals", dimvalues = as.numeric(1:6), isAge = FALSE),
                             new("Triangles", dimvalues = c("TL", "TU"))))
     expect_identical(ans.obtained, ans.expected)
     population <- Counts(array(1:20,
@@ -4919,7 +4835,7 @@ test_that("makeMetadataForExposure works", {
                         nms = c("reg", "age"),
                         dimtypes = c("state", "age"),
                         DimScales = list(new("Categories", dimvalues = as.character(1:4)),
-                            new("Intervals", dimvalues = as.numeric(0:4))))
+                            new("Intervals", dimvalues = as.numeric(0:4), isAge = TRUE)))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -5040,10 +4956,10 @@ test_that("popnEndNoAge works", {
                             labels = seq(2000, 2100, 10),
                             name = "time")
     births <- CountsOne(values = 15,
-                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        labels = paste(seq(2000, 2090, 10), seq(2010, 2100, 10), sep = "-"),
                         name = "time")
     deaths <- CountsOne(values = 5,
-                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        labels = paste(seq(2000, 2090, 10), seq(2010, 2100, 10), sep = "-"),
                         name = "time")
     x <- Movements(population = population,
                    births = births,
@@ -5066,14 +4982,14 @@ test_that("popnEndWithAge works", {
                            dimnames = list(age = "5-9",
                                            sex = c("m", "f"),
                                            reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"))))
+                                           time = c("2000-2005", "2005-2010"))))
     internal <- Counts(array(rpois(n = 300, lambda = 10),
                              dim = c(3, 2, 5, 5, 2),
                              dimnames = list(age = c("0-4", "5-9", "10+"),
                                              sex = c("m", "f"),
                                              reg_orig = 1:5,
                                              reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"))))
+                                             time = c("2000-2005", "2005-2010"))))
     x <- Movements(population = population,
                    births = births,
                    internal = internal)
@@ -5105,7 +5021,7 @@ test_that("removeDimtypesMetadata works", {
     metadata <- new("MetaData",
                     nms = c("age", "reg_dest", "reg_orig"),
                     dimtypes = c("age", "destination", "origin"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Categories", dimvalues = c("a", "b"))))
     ans.obtained <- removeDimtypesFromMetadata(metadata, dimtypes = "age")
@@ -5123,7 +5039,7 @@ test_that("removeDimtypesMetadata works", {
     metadata <- new("MetaData",
                     nms = c("age", "sex", "reg"),
                     dimtypes = c("age", "sex", "state"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE),
                                      new("Sexes", dimvalues = c("Female", "Male")),
                                      new("Categories", dimvalues = c("a", "b"))))
     ans.obtained <- removeDimtypesFromMetadata(metadata, dimtypes = c("age", "sex"))
@@ -5139,7 +5055,7 @@ test_that("removePairFromMetadata works", {
     metadata <- new("MetaData",
                     nms = c("age", "reg_dest", "reg_orig", "eth_orig", "eth_dest"),
                     dimtypes = c("age", "destination", "origin", "origin", "destination"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Categories", dimvalues = c("f", "g")),
@@ -5148,14 +5064,14 @@ test_that("removePairFromMetadata works", {
     ans.expected <- new("MetaData",
                         nms = c("age", "reg", "eth"),
                         dimtypes = c("age", "state", "state"),
-                        DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Categories", dimvalues = c("f", "g"))))
     expect_identical(ans.obtained, ans.expected)
     metadata <- new("MetaData",
                     nms = c("age", "reg_parent", "reg_child", "eth_orig", "eth_dest"),
                     dimtypes = c("age", "parent", "child", "origin", "destination"),
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Categories", dimvalues = c("a", "b")),
                                      new("Categories", dimvalues = c("f", "g")),
@@ -5164,7 +5080,7 @@ test_that("removePairFromMetadata works", {
     ans.expected <- new("MetaData",
                         nms = c("age", "reg", "eth_orig", "eth_dest"),
                         dimtypes = c("age", "state", "origin", "destination"),
-                        DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf)),
+                        DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE),
                                          new("Categories", dimvalues = c("a", "b")),
                                          new("Categories", dimvalues = c("f", "g")),
                                          new("Categories", dimvalues = c("f", "g"))))
@@ -5172,7 +5088,7 @@ test_that("removePairFromMetadata works", {
     metadata <- new("MetaData",
                     nms = "age", 
                     dimtypes = "age", 
-                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf))))
+                    DimScales = list(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE)))
     ans.obtained <- removePairFromMetadata(metadata)
     ans.expected <- metadata
     expect_identical(ans.obtained, ans.expected)
@@ -5195,7 +5111,7 @@ test_that("splitTriangles works", {
     object <- Counts(array(c(11:13, NA),
                            dim = c(2, 2),
                            dimnames = list(age = c("0-4", "5+"),
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- splitTriangles(object)
     set.seed(1)
@@ -5204,14 +5120,14 @@ test_that("splitTriangles works", {
     ans.expected <- Counts(array(c(lower, upper),
                                  dim = c(2, 2, 2),
                                  dimnames = list(age = c("0-4", "5+"),
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     expect_identical(ans.obtained, ans.expected)
     ## some negative
     object <- Counts(array(c(5:6, -3L, -5L),
                            dim = c(2, 2),
                            dimnames = list(age = c("0-4", "5+"),
-                               time = c("2001-2005", "2006-2010"))))
+                               time = c("2000-2005", "2005-2010"))))
     set.seed(1)
     ans.obtained <- splitTriangles(object)
     set.seed(1)
@@ -5221,7 +5137,7 @@ test_that("splitTriangles works", {
     ans.expected <- Counts(array(c(lower, upper),
                                  dim = c(2, 2, 2),
                                  dimnames = list(age = c("0-4", "5+"),
-                                     time = c("2001-2005", "2006-2010"),
+                                     time = c("2000-2005", "2005-2010"),
                                      triangle = c("TL", "TU"))))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -5230,7 +5146,7 @@ test_that("timeDimCompCompatibleWithPopn works", {
     timeDimCompCompatibleWithPopn <- dembase:::timeDimCompCompatibleWithPopn
     name <- "time"
     dimtype <- "time"
-    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5))
+    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5), isAge = TRUE)
     namesPopn <- c("time", "reg")
     dimtypesPopn <- c("time", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
@@ -5245,7 +5161,7 @@ test_that("timeDimCompCompatibleWithPopn works", {
     ## 'population' has dimension
     name <- "time"
     dimtype <- "time"
-    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5))
+    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5), isAge = TRUE)
     namesPopn <- c("wrong", "reg")
     dimtypesPopn <- c("time", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
@@ -5261,7 +5177,7 @@ test_that("timeDimCompCompatibleWithPopn works", {
     ## identical dimtypes
     name <- "time"
     dimtype <- "time"
-    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5))
+    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5), isAge = TRUE)
     namesPopn <- c("time", "reg")
     dimtypesPopn <- c("state", "reg")
     DimScalesPopn <- list(new("Categories", dimvalues = c("a", "b")),
@@ -5277,7 +5193,7 @@ test_that("timeDimCompCompatibleWithPopn works", {
     ## dimvalues aligned
     name <- "time"
     dimtype <- "time"
-    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5))
+    DimScale <- new("Intervals", dimvalues = seq(2000, 2020, 5), isAge = TRUE)
     namesPopn <- c("time", "reg")
     dimtypesPopn <- c("time", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2025, 5)),
@@ -7002,18 +6918,18 @@ test_that("convertToCountsObj works", {
 
 test_that("iOverlapBetweenIntervals works", {
     iOverlapBetweenIntervals <- dembase:::iOverlapBetweenIntervals
-    x <- new("Intervals", dimvalues = c(seq(0, 100, 5), Inf))
-    y <- new("Intervals", dimvalues = seq(15, 50, 5))
+    x <- new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE)
+    y <- new("Intervals", dimvalues = seq(15, 50, 5), isAge = TRUE)
     expect_identical(iOverlapBetweenIntervals(x = x, y = y),
                      4:10)
     expect_identical(iOverlapBetweenIntervals(x = x, y = x),
                      seq_len(length(x)))
-    x <- new("Intervals", dimvalues = c(seq(0, 100, 5), Inf))
-    y <- new("Intervals", dimvalues = 15:50)    
+    x <- new("Intervals", dimvalues = c(seq(0, 100, 5), Inf), isAge = TRUE)
+    y <- new("Intervals", dimvalues = 15:50, isAge = TRUE)    
     expect_identical(iOverlapBetweenIntervals(x = x, y = y),
                      4:10) 
-    x <- new("Intervals", dimvalues = seq(0, 50, 5))
-    y <- new("Intervals", dimvalues = 15:55)
+    x <- new("Intervals", dimvalues = seq(0, 50, 5), isAge = TRUE)
+    y <- new("Intervals", dimvalues = 15:55, isAge = TRUE)
     expect_identical(iOverlapBetweenIntervals(x = x, y = y),
                      integer())  
 })
@@ -7507,7 +7423,7 @@ test_that("makePopulationObj works", {
                       dimscales = c(age = "Intervals"))
     x <- Values(array(0.5, 
                       dim = c(3, 2, 5),
-                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2001:2005)),
+                      dimnames = list(age = 0:2, sex = c("f", "m"), year = 2000:2004)),
                 dimscales = c(age = "Intervals", year = "Intervals"))
     param <- list(externalIn = x, externalOut = x)
     ans.obtained <- makePopulationObj(initial = initial, param = param)

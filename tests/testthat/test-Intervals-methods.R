@@ -4,14 +4,14 @@ context("Intervals-methods")
 
 
 test_that("coercion from Intervals to Sexes works", {
-    expect_error(as(new("Intervals", dimvalues = c(0, 1, 2)), "Sexes"),
+    expect_error(as(new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE), "Sexes"),
                  "labels not valid for dimscale")
     expect_identical(as(new("Intervals"), "Sexes"),
                      new("Sexes"))
 })
 
 test_that("coercion from Intervals to Triangles works", {
-  expect_that(as(new("Intervals", dimvalues = c(0, 1, 2)), "Triangles"),
+  expect_that(as(new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE), "Triangles"),
               throws_error("labels not valid for dimscale"))
   expect_that(as(new("Intervals"), "Triangles"),
               is_identical_to(new("Triangles")))
@@ -19,9 +19,9 @@ test_that("coercion from Intervals to Triangles works", {
 
 
 test_that("coercion from Intervals to Points works", {
-  expect_that(as(new("Intervals", dimvalues = c(0, 1, 2)), "Points"),
+  expect_that(as(new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE), "Points"),
               is_identical_to(new("Points", dimvalues = c(0, 1))))
-  expect_that(as(new("Intervals", dimvalues = c(0, 1, Inf)), "Points"),
+  expect_that(as(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE), "Points"),
               throws_error("labels not valid for dimscale"))
   expect_that(as(new("Intervals", dimvalues = c(-Inf, 0, 1)), "Points"),
               throws_error("labels not valid for dimscale"))
@@ -35,7 +35,7 @@ test_that("coercion from Intervals to Points works", {
 
 
 test_that("coercion from Intervals to Quantiles works", {
-  expect_that(as(new("Intervals", dimvalues = c(0, 1, 2)), "Quantiles"),
+  expect_that(as(new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE), "Quantiles"),
               throws_error("labels not valid for dimscale"))
   expect_that(as(new("Intervals"), "Quantiles"),
               is_identical_to(new("Quantiles")))
@@ -45,7 +45,7 @@ test_that("coercion from Intervals to Quantiles works", {
 test_that("coercion from Intervals to Iterations works", {
   expect_that(as(new("Intervals", dimvalues = c(1, 2)), "Iterations"),
               is_identical_to(new("Iterations", dimvalues = 1L)))
-  expect_that(as(new("Intervals", dimvalues = c(0, 1, Inf)), "Iterations"),
+  expect_that(as(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE), "Iterations"),
               throws_error("labels not valid for dimscale"))
   expect_that(as(new("Intervals"), "Iterations"),
               is_identical_to(new("Iterations")))
@@ -55,7 +55,7 @@ test_that("Extract works", {
     expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[1:2],
                      new("Intervals", dimvalues = c(0, 5, 10), isAge = TRUE))
     expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[2:3],
-                     new("Intervals", dimvalues = c(5, 10, Inf)))
+                     new("Intervals", dimvalues = c(5, 10, Inf), isAge = TRUE))
     expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[c(1L, 3L, 0L)],
                      new("Categories", dimvalues = c("0-4", "10+")))
     expect_identical(new("Intervals", dimvalues = c(0, 5, 10, Inf), isAge = TRUE)[c(0L, -2L)],
@@ -121,7 +121,7 @@ test_that("Compare works", {
 test_that("canMakeDimScalePairCompatible works", {
     canMakeDimScalePairCompatible <- dembase:::canMakeDimScalePairCompatible
     e1 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e2 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     expect_true(canMakeDimScalePairCompatible(e1 = e1, e2 = e2, isCounts1 = TRUE, isCounts2 = TRUE))
     expect_error(canMakeDimScalePairCompatible(e1 = e1, e2 = e2, isCounts1 = FALSE, isCounts2 = TRUE),
                  "intervals do not align")
@@ -165,37 +165,37 @@ test_that("canMakeDimScalePairCompatible works", {
 test_that("canMakeDimScalesCompatible works when 'collapse' is TRUE", {
     canMakeDimScalesCompatible <- dembase:::canMakeDimScalesCompatible
     e1 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e2 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     expect_true(canMakeDimScalesCompatible(e1, e2, collapse = TRUE))
     e1 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e2 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     expect_true(canMakeDimScalesCompatible(e1, e2,
                                            subset = TRUE,
                                            collapse = TRUE))
     e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e2 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = TRUE),
                  "one dimension starts at -Inf and other starts at 0")
     e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e2 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = TRUE),
                  "one dimension starts at -Inf and other starts at 0")
     e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e2 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     expect_true(canMakeDimScalesCompatible(e1, e2, subset = TRUE, collapse = TRUE))
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 2, 5))
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = TRUE),
                  "one dimension has break \\[2\\] that other does not")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 2, 5))
     expect_error(canMakeDimScalesCompatible(e1, e2, subset = TRUE, collapse = TRUE),
                  "one dimension has break \\[2\\] that other does not")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = TRUE),
                  "one dimension ends at 5 and other ends at Inf")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = TRUE, subset = TRUE),
                  "one dimension ends at 5 and other ends at Inf")
@@ -217,10 +217,10 @@ test_that("canMakeDimScalesCompatible works when 'collapse' is TRUE", {
 
 test_that("canMakeDimScalesCompatible works when 'collapse' is FALSE", {
     canMakeDimScalesCompatible <- dembase:::canMakeDimScalesCompatible
-    e1 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_true(canMakeDimScalesCompatible(e1, e2, collapse = FALSE))
-    e1 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_true(canMakeDimScalesCompatible(e1, e2, subset = TRUE, collapse = FALSE))
     e1 <- new("Intervals", dimvalues = c(-Inf, 0, 1, 5, Inf))
@@ -237,19 +237,19 @@ test_that("canMakeDimScalesCompatible works when 'collapse' is FALSE", {
     e1 <- new("Intervals", dimvalues = c(-Inf, 0, 5, Inf))
     e2 <- new("Intervals", dimvalues = c(-5, 0, 5, 10, Inf))
     expect_true(canMakeDimScalesCompatible(e1, e2, subset = TRUE, collapse = FALSE))
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 2, 5))
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = FALSE),
                  "one dimension has break \\[1\\] that other does not")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 5))
     expect_error(canMakeDimScalesCompatible(e1, e2, subset = TRUE, collapse = FALSE),
                  "one dimension has break \\[1\\] that other does not")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = FALSE),
                  "one dimension ends at 5 and other ends at Inf")
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
     expect_error(canMakeDimScalesCompatible(e1, e2, collapse = FALSE, subset = TRUE),
                  "one dimension ends at 5 and other ends at Inf")
@@ -290,7 +290,7 @@ test_that("collapseDimScale works", {
     y <- new("Intervals", dimvalues = c(0, 5, 15))
     expect_identical(collapseDimScale(x, index = c(0L, 1L, 1L, 2L, 2L, 0L)), y)
     x <- new("Intervals", dimvalues = c(0, 1, 5, 10, 15, Inf))
-    y <- new("Intervals", dimvalues = c(5, 10))
+    y <- new("Intervals", dimvalues = c(5, 10), isAge = TRUE)
     expect_identical(collapseDimScale(x, index = c(0L, 0L, 1L, 0L, 0L)), y)
     x <- new("Intervals")
     expect_identical(collapseDimScale(x, index = integer()), x)
@@ -339,7 +339,7 @@ test_that("e1IsFirstDimScale works", {
 test_that("extendDimScale works", {
     extendDimScale <- dembase:::extendDimScale
     x <- new("Intervals", dimvalues = c(0, 1, 5, 10))
-    y <- new("Intervals", dimvalues = c(0, 1, 5))
+    y <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     expect_identical(extendDimScale(x, index = c(1L, 2L)), y)
     x <- new("Intervals", dimvalues = c(-5, 0, 1, 5, Inf))
     y <- new("Intervals", dimvalues = c(0, 1, 5, Inf))
@@ -356,96 +356,149 @@ test_that("extendDimScale works", {
 
 test_that("incrementDimScale method for Intervals works", {
     incrementDimScale <- dembase:::incrementDimScale
-    x <- new("Intervals", dimvalues = 2001:2010)
+    x <- new("Intervals", dimvalues = 2001:2010, isAge = FALSE)
     ans.obtained <- incrementDimScale(x, n = 10)
-    ans.expected <- new("Intervals", dimvalues = 2010:2020)
+    ans.expected <- new("Intervals", dimvalues = 2010:2020, isAge = FALSE)
     expect_identical(ans.obtained, ans.expected)
-    x <- new("Intervals", dimvalues = 2001:2010)
+    x <- new("Intervals", dimvalues = 2001:2010, isAge = FALSE)
     ans.obtained <- incrementDimScale(x, n = -5)
-    ans.expected <- new("Intervals", dimvalues = 1996:2001)
+    ans.expected <- new("Intervals", dimvalues = 1996:2001, isAge = FALSE)
     expect_identical(ans.obtained, ans.expected)
-    x <- new("Intervals", dimvalues = c(0, 5))
+    x <- new("Intervals", dimvalues = c(0, 5), isAge = TRUE)
     ans.obtained <- incrementDimScale(x, n = 1)
-    ans.expected <- new("Intervals", dimvalues = c(5, 10))
+    ans.expected <- new("Intervals", dimvalues = c(5, 10), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
-    x <- new("Intervals", dimvalues = c(-Inf, 0, 5))
+    x <- new("Intervals", dimvalues = c(-Inf, 0, 5), isAge = TRUE)
     ans.obtained <- incrementDimScale(x, n = 2)
-    ans.expected <- new("Intervals", dimvalues = c(5, 10, 15))
+    ans.expected <- new("Intervals", dimvalues = c(5, 10, 15), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
-    x <- new("Intervals", dimvalues = c(0, 5, Inf))
+    x <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     ans.obtained <- incrementDimScale(x, n = -2)
-    ans.expected <- new("Intervals", dimvalues = c(-10, -5, 0))
+    ans.expected <- new("Intervals", dimvalues = c(-10, -5, 0), isAge = TRUE)
     expect_identical(ans.obtained, ans.expected)
-    x <- new("Intervals", dimvalues = numeric())
+    x <- new("Intervals", dimvalues = numeric(), isAge = FALSE)
     expect_error(incrementDimScale(x, n = 5),
                  "\"along\" dimension has length 0")
-    x <- new("Intervals", dimvalues = c(-Inf, 0, Inf))
+    x <- new("Intervals", dimvalues = c(-Inf, 0, Inf), isAge = TRUE)
     expect_error(incrementDimScale(x, n = 5),
                  "\"along\" dimension has no finite intervals")
-    x <- new("Intervals", dimvalues = c(-5, 0, Inf))
+    x <- new("Intervals", dimvalues = c(-5, 0, Inf), isAge = TRUE)
     expect_error(incrementDimScale(x, n = 5),
                  "last interval of \"along\" dimension is open")
-    x <- new("Intervals", dimvalues = c(-Inf, -5, 0))
+    x <- new("Intervals", dimvalues = c(-Inf, -5, 0), isAge = TRUE)
     expect_error(incrementDimScale(x, n = -5),
                  "first interval of \"along\" dimension is open")
-    x <- new("Intervals", dimvalues = c(0, 5, 11))
+    x <- new("Intervals", dimvalues = c(0, 5, 11), isAge = TRUE)
     expect_error(incrementDimScale(x, n = 5),
                  "intervals on \"along\" dimension have varying lengths")
 })
 
 test_that("inferDimvalues method for Intervals works", {
-  inferDimvalues <- dembase:::inferDimvalues
-  expect_identical(inferDimvalues(new("Intervals"), labels = c("1", "2")),
-              c(1, 2, 3))
-  expect_identical(inferDimvalues(new("Intervals"), labels = character()),
-              numeric())
-  expect_identical(inferDimvalues(new("Intervals"), labels = c(1, "a")),
-                   NULL)
-  expect_identical(inferDimvalues(new("Intervals"),
-                             labels = c("-5--2", "-1", "0", "1-4", "5+")),
-              c(-5, -1, 0, 1, 5, Inf))
-  expect_identical(inferDimvalues(new("Intervals"), labels = c("<0", "0-4")),
-              c(-Inf, 0, 5))
-  expect_identical(inferDimvalues(new("Intervals"), labels = c("<0", "0", "1", "2+")),
-              c(-Inf, 0, 1, 2, Inf))
-  expect_identical(inferDimvalues(new("Intervals"), labels = c("0-4", "5-9")),
-              c(0, 5, 10))
-  expect_identical(inferDimvalues(new("Intervals"), labels = c("0-4", "5-9", "10+")),
-              c(0, 5, 10, Inf))
-  expect_identical(inferDimvalues(new("Intervals"), labels = c("0-5", "5-9", "10+")),
-              NULL)
-  expect_identical(inferDimvalues(new("Intervals"),
-                                  labels = c("2001-2005", "2006-2010")),
-              c(2000, 2005, 2010))
-  expect_identical(inferDimvalues(new("Intervals"), labels = NULL),
-              numeric())
-  expect_identical(inferDimvalues(new("Intervals"), labels = "<0"),
-                   c(-Inf, 0))
-  expect_identical(inferDimvalues(new("Intervals"), labels = "2001+"),
-                   c(2000, Inf))
-  expect_identical(inferDimvalues(new("Intervals"), labels = "2000.5+"),
-                   c(2000.5, Inf))
-  expect_identical(inferDimvalues(new("Intervals"),
-                                  labels = c("1990-2000.5", "2000.5+")),
-                   c(1990, 2000.5, Inf))
-  expect_identical(inferDimvalues(new("Intervals"),
-                                  labels = as.character(2001:2004)),
-                   c(2000, 2001, 2002, 2003, 2004))
-  expect_identical(inferDimvalues(new("Intervals"),
-                                  labels = c("less than 0", "0 - 29 years", "30 years and over")),
-                   c(-Inf, 0, 30, Inf))
-  expect_identical(inferDimvalues(new("Intervals"),
-                                  labels = c("Jan-2000", "Feb-2000", "Mar-2000")),
-                   c(2000, 2000+31/366, 2000+60/366, 2000+91/366))
+    inferDimvalues <- dembase:::inferDimvalues
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("1", "2")),
+                     c(1, 2, 3))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = character()),
+                     numeric())
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c(1, "a")),
+                     NULL)
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("-5--2", "-1", "0", "1-4", "5+")),
+                     c(-5, -1, 0, 1, 5, Inf))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("<0", "0-4")),
+                     c(-Inf, 0, 5))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("<0", "0", "1", "2+")),
+                     c(-Inf, 0, 1, 2, Inf))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("0-4", "5-9")),
+                     c(0, 5, 10))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("0-4", "5-9", "10+")),
+                     c(0, 5, 10, Inf))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("0-5", "5-9", "10+")),
+                     NULL)
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = FALSE,
+                                        labelStart = TRUE),
+                                    labels = c("2000-2005", "2005-2010")),
+                     c(2000, 2005, 2010))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = NULL),
+                     numeric())
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = "<0"),
+                     c(-Inf, 0))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = FALSE,
+                                        labelStart = TRUE),
+                                    labels = "2000+"),
+                     c(2000, Inf))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = FALSE,
+                                        labelStart = TRUE),
+                                    labels = "2000.5+"),
+                     c(2000.5, Inf))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = FALSE,
+                                        labelStart = TRUE),
+                                    labels = c("1990-2000.5", "2000.5+")),
+                     c(1990, 2000.5, Inf))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = FALSE,
+                                        labelStart = FALSE),
+                                    labels = as.character(2001:2004)),
+                     c(2000, 2001, 2002, 2003, 2004))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = as.character(2001:2004)),
+                     c(2001, 2002, 2003, 2004, 2005))
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = TRUE,
+                                        labelStart = TRUE),
+                                    labels = c("less than 0", "0 - 29 years", "30 years and over")),
+                     NULL)
+    expect_identical(inferDimvalues(new("Intervals",
+                                        isAge = FALSE,
+                                        labelStart = TRUE),
+                                    labels = c("Jan-2000", "Feb-2000", "Mar-2000")),
+                     c(2000, 2000+31/366, 2000+60/366, 2000+91/366))
 })
 
 test_that("labels method for Intervals works", {
     labels <- dembase:::labels
-    expect_identical(labels(new("Intervals", dimvalues = c(0, 1, 2))),
+    expect_identical(labels(new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)),
                      c("0", "1"))
     expect_identical(labels(new("Intervals")),
                      character())
-    expect_identical(labels(new("Intervals", dimvalues = c(0, 1, Inf))),
+    expect_identical(labels(new("Intervals", dimvalues = c(0, 1, Inf), isAge = TRUE)),
                      c("0", "1+"))
     expect_identical(labels(new("Intervals", dimvalues = c(0, 1, 5, Inf))),
                      c("0", "1-4", "5+"))
@@ -456,7 +509,7 @@ test_that("labels method for Intervals works", {
 })
 
 test_that("length method for Intervals works", {
-  expect_that(length(new("Intervals", dimvalues = c(0, 1, 2))),
+  expect_that(length(new("Intervals", dimvalues = c(0, 1, 2), isAge = TRUE)),
               is_identical_to(2L))
   expect_that(length(new("Intervals")),
               is_identical_to(0L))
@@ -469,7 +522,7 @@ test_that("makeIndices works when 'collapse' is TRUE", {
     expect_identical(makeIndices(e1, e2, collapse = TRUE),
                      c(1L, 2L, 2L, 3L))
     e1 <- new("Intervals", dimvalues = c(-Inf, -5, 0, 1, 2, 5, Inf))
-    e2 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e2 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     expect_identical(makeIndices(e1, e2, collapse = TRUE),
                      c(0L, 0L, 1L, 2L, 2L, 0L))
     e1 <- new("Intervals", dimvalues = c(0, 1, 2, 5, Inf))
@@ -510,7 +563,7 @@ test_that("makePairIndices method for Intervals works", {
                      list(1:3, c(1L, 2L, 2L, 3L)))
     expect_identical(makePairIndices(e1, e2, isCounts1 = FALSE, isCounts2 = FALSE),
                      list(c(1L, 2L, 2L, 3L), 1:4))
-    e1 <- new("Intervals", dimvalues = c(0, 1, 5))
+    e1 <- new("Intervals", dimvalues = c(0, 1, 5), isAge = TRUE)
     e2 <- new("Intervals", dimvalues = c(0, 1, 2, 5, Inf))
     expect_identical(makePairIndices(e1, e2, isCounts1 = FALSE, isCounts2 = TRUE),
                      list(c(1:2, 2L), c(1L, 2L, 3L, 0L)))
@@ -542,7 +595,7 @@ test_that("makePairIndices method for Intervals works", {
                      list(integer(), integer()))
     expect_identical(makePairIndices(e1, e2, isCounts1 = FALSE, isCounts2 = FALSE),
                      list(integer(), integer()))
-    e1 <- new("Intervals", dimvalues = c(0, 5, Inf))
+    e1 <- new("Intervals", dimvalues = c(0, 5, Inf), isAge = TRUE)
     e2 <- new("Intervals")
     expect_identical(makePairIndices(e1, e2, isCounts1 = TRUE, isCounts2 = TRUE),
                      list(rep(0L, 2L), integer()))

@@ -1892,7 +1892,9 @@ makeIntervalLabelsForDateDimvalues <- function(dimvalues) {
         return(NULL)
     if (any(is.infinite(dimvalues)))
         return(NULL)
-    time.units <- timeUnitsFromDimScales(dimvalues, unit = "quarter")
+    time.units <- timeUnitsFromDimScales(dimvalues,
+                                         unit = "quarter",
+                                         successive = TRUE)
     if (!is.null(time.units)) {
         time.units <- time.units[-n]
         time.units <- as.Date(time.units, format = "%Y-%m-%d")
@@ -1903,14 +1905,18 @@ makeIntervalLabelsForDateDimvalues <- function(dimvalues) {
         ans <- sprintf("%s-Q%i", year, quarter)
         return(ans)
     }
-    time.units <- timeUnitsFromDimScales(dimvalues, unit = "month")
+    time.units <- timeUnitsFromDimScales(dimvalues,
+                                         unit = "month",
+                                         successive = TRUE)
     if (!is.null(time.units)) {
         time.units <- time.units[-n]
         time.units <- as.Date(time.units, format = "%Y-%m-%d")
         ans <- format(time.units, format = "%Y-%m")
         return(ans)
     }
-    time.units <- timeUnitsFromDimScales(dimvalues, unit = "day")
+    time.units <- timeUnitsFromDimScales(dimvalues,
+                                         unit = "day",
+                                         successive = TRUE)
     if (!is.null(time.units)) {
         time.units <- time.units[-n]
         ans <- format(time.units, format = "%Y-%m-%d")
@@ -2050,70 +2056,11 @@ makeLabelsForIntervals <- function(dimvalues, labelStart, isAge) {
         character()
 }
 
-## HAS_TESTS
-monthAndYearToDimvalues <- function(month, year) {
-    n <- length(month)
-    stopifnot(n > 0L)
-    stopifnot(length(year) == n)
-    stopifnot(all(month %in% base::month.abb))
-    stopifnot(is.integer(year))
-    stopifnot(all(diff(year) %in% 0:1))
-    ## assume months are in correct order
-    last.month <- month[n]
-    last.year <- year[n]
-    i.last.month <- match(last.month, base::month.abb)
-    last.month.is.dec <- identical(i.last.month, 12L)
-    if (last.month.is.dec) {
-        extra.month <- "Jan"
-        extra.year <- last.year + 1L
-    }
-    else {
-        extra.month <- base::month.abb[i.last.month + 1L]
-        extra.year <- last.year
-    }
-    year <- c(year, extra.year)
-    month <- c(month, extra.month)
-    month <- match(month, base::month.abb)
-    date.start.month <- sprintf("%d-%d-1", year, month)
-    date.start.month <- as.Date(date.start.month,
-                                format = "%Y-%m-%d")
-    date.end.month <- date.start.month - 1L
-    frac.year <- dateToFracYear(date.end.month)
-    year + frac.year - (frac.year == 1)
-}
 
 ## HAS_TESTS
-monthLabelsToDimvalues <- function(x) {
-    m <- regexpr("\\d{4}", x)
-    if (any(m == -1L))
-        return(NULL)
-    obs.years <- regmatches(x, m)
-    obs.years <- as.integer(obs.years)
-    if (any(diff(obs.years) < 0L))
-        return(NULL)
-    min.obs.year <- min(obs.years)
-    max.obs.year <- max(obs.years)
-    max.obs.year.plus.1 <- max.obs.year + 1L
-    poss.years <- seq(from = min.obs.year, to = max.obs.year.plus.1)
-    poss.years <- rep(poss.years, each = 12L)
-    n.year <- max.obs.year.plus.1 - min.obs.year + 1L
-    poss.months <- rep(base::month.abb, times = n.year)
-    poss.labels <- paste(poss.months, poss.years, sep = "-")
-    i <- match(x, poss.labels, nomatch = 0L)
-    i.first <- i[1L]
-    s <- seq(from = i.first, along.with = x)
-    is.valid.months <- isTRUE(all.equal(i, s))
-    if (!is.valid.months)
-        return(NULL)
-    month <- poss.months[i]
-    year <- poss.years[i]
-    monthAndYearToDimvalues(month = month,
-                            year = year)
-}
-
-
-## HAS_TESTS
-timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter")) {
+timeUnitsFromDimScales <- function(dimvalues,
+                                   unit = c("day", "month", "quarter"),
+                                   successive = TRUE) {
     digits.round <- getDigitsRoundDimvaluesTimeUnit()
     unit <- match.arg(unit)
     if (any(is.infinite(dimvalues)))
@@ -2131,11 +2078,15 @@ timeUnitsFromDimScales <- function(dimvalues, unit = c("day", "month", "quarter"
     i <- match(dimvalues, poss.dimvalues, nomatch = 0L)
     all.dimvalues.valid <- all(i > 0L)
     if (all.dimvalues.valid) {
-        successive <- all(diff(i) == 1L)
-        if (successive)
-            poss.dates[i]
+        if (successive) {
+            is.successive <- all(diff(i) == 1L)
+            if (is.successive)
+                poss.dates[i]
+            else
+                NULL
+        }
         else
-            NULL
+            poss.dates[i]
     }
     else
         NULL
@@ -2389,40 +2340,6 @@ intervalsToPoints <- function(object) {
   else
     dimvalues <- numeric()
   methods::new("Points", dimvalues = dimvalues)
-}
-
-## HAS_TESTS
-pointsToIntervals <- function(object) {
-  dimvalues <- dimvalues(object)
-  n <- length(dimvalues)
-  if (identical(n, 0L))
-    dimvalues <- numeric()
-  else if (identical(n, 1L))
-    dimvalues <- c(0, 2 * dimvalues)
-  else {
-    m <- matrix(0, nrow = n + 1L, ncol = n + 1L)
-    m[(row(m) == col(m)) | (row(m) == col(m) - 1L)] <- 0.5
-    m[n + 1L, c(n - 1L, n, n + 1L)] <- c(1, -2, 1)
-    inv.m <- solve(m)
-    dimvalues <- inv.m %*% c(dimvalues, 0)
-    dimvalues <- as.numeric(dimvalues)
-  }
-  methods::new("Intervals", dimvalues = dimvalues)
-}
-
-## NO_TESTS
-intervalsBetweenPoints <- function(object) {
-    if (!methods::is(object, "Points"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "object", class(object)))
-    dimvalues <- dimvalues(object)
-    n <- length(dimvalues)
-    if (n == 0L)
-        stop(gettextf("'%s' has 0 points", "object"))
-    else if (n == 1L)
-        stop(gettextf("'%s' has 1 point", "object"))
-    else
-        methods::new("Intervals", dimvalues = dimvalues)
 }
 
 
@@ -2905,7 +2822,8 @@ incrementDimvaluesForTimeUnits <- function(dimvalues, forward, n) {
     if (n.dv >= 2L) {
         for (unit in c("quarter", "month", "day")) {
             time.units <- timeUnitsFromDimScales(dimvalues,
-                                                 unit = unit)
+                                                 unit = unit,
+                                                 successive = TRUE)
             if (!is.null(time.units)) {
                 if (forward) {
                     dates <- seq.Date(from = time.units[n.dv],
@@ -3246,8 +3164,11 @@ agePopnForwardUpperTri <- function(population) {
     DS.age <- DimScales[[i.age]]
     dv.time <- dimvalues(DS.time)
     dv.age <- dimvalues(DS.age)
+    message(gettextf("assuming '%s' is %s",
+                     "labelFirst", new("Intervals", isAge = FALSE)@labelFirst))
     DS.time.ans <- methods::new("Intervals",
-                                dimvalues = dv.time)
+                                dimvalues = dv.time,
+                                isAge = FALSE)
     DimScales.ans <- replace(DimScales,
                              list = i.time,
                              values = list(DS.time.ans))
@@ -4179,8 +4100,12 @@ makeMetadataForExposure <- function(population, triangles) {
         i.along <- match("age", dimtypes)
     DimScale.along <- DimScales[[i.along]]
     dimvalues.along <- dimvalues(DimScale.along)
-    DimScale.along <- methods::new("Intervals", dimvalues = dimvalues.along)
-    DimScales <- replace(DimScales, list = i.along, values = list(DimScale.along))
+    DimScale.along <- methods::new("Intervals",
+                                   dimvalues = dimvalues.along,
+                                   isAge = !has.time)
+    DimScales <- replace(DimScales,
+                         list = i.along,
+                         values = list(DimScale.along))
     if (triangles) {
         names <- make.unique(c(names, "triangle"))
         dimtypes <- c(dimtypes, "triangle")
@@ -4188,9 +4113,9 @@ makeMetadataForExposure <- function(population, triangles) {
         DimScales <- append(DimScales, values = DimScale.triangle)
     }
     methods::new("MetaData",
-        nms = names,
-        dimtypes = dimtypes,
-        DimScales = DimScales)
+                 nms = names,
+                 dimtypes = dimtypes,
+                 DimScales = DimScales)
 }
 
 
@@ -4203,7 +4128,9 @@ makeTemplateComponent <- function(population, triangles = TRUE) {
     i.age <- match("age", dimtypes, nomatch = 0L)
     DimScale.time <- DimScales[[i.time]]
     dimvalues.time <- dimvalues(DimScale.time)
-    DimScale.time.new <- methods::new("Intervals", dimvalues = dimvalues.time)
+    DimScale.time.new <- methods::new("Intervals",
+                                      dimvalues = dimvalues.time,
+                                      isAge = FALSE)
     DimScales <- replace(DimScales,
                          list = i.time,
                          values = list(DimScale.time.new))
@@ -5903,7 +5830,9 @@ makeAxStart <- function(mx) {
     }
     dv.age.ans <- if (has.4m1) dv.age[1:3] else dv.age[1:2]
     DimScale.age.ans <- new("Intervals",
-                            dimvalues = dv.age.ans)
+                            dimvalues = dv.age.ans,
+                            isAge = TRUE,
+                            labelStart = TRUE)
     DimScales.ans <- replace(DimScales,
                              list = i.age,
                              values = list(DimScale.age.ans))

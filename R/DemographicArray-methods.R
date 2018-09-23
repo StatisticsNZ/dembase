@@ -821,10 +821,18 @@ setMethod("extrapolate",
                   stop(gettextf("'%s' has class \"%s\"", "growth", class(growth)))
               dimtype.extra <- dimtypes[along]
               dimscale.extra <- dimscales[along]
+              DimScale.along <- DimScales[[along]]
+              if (methods::is(DimScale.along, "Intervals")) {
+                  labelStart <- DimScale.along@labelStart
+                  isAge <- DimScale.along@isAge
+              }
+              else
+                  labelStart <- NULL
               DimScale.extra <- inferDimScale(dimtype = dimtype.extra,
                                               dimscale = dimscale.extra,
                                               labels = labels,
-                                              name = name.along)
+                                              name = name.along,
+                                              labelStart = labelStart)
               DimScale.existing <- DimScales[[along]]
               dv.existing <- dimvalues(DimScale.existing)
               dv.extra <- dimvalues(DimScale.extra)
@@ -847,7 +855,10 @@ setMethod("extrapolate",
                           stop(gettextf("gap or overlap between extrapolated and existing intervals"))
                       dimvalues.tmp <- c(dv.extra, dv.existing[2L])
                   }
-                  DimScale.tmp <- methods::new("Intervals", dimvalues = dimvalues.tmp)
+                  DimScale.tmp <- methods::new("Intervals",
+                                               dimvalues = dimvalues.tmp,
+                                               labelStart = labelStart,
+                                               isAge = isAge)
                   points <- intervalsToPoints(DimScale.tmp)
                   points <- dimvalues(points)
               }
@@ -862,9 +873,14 @@ setMethod("extrapolate",
               .Data.distance <- array(distance,
                                       dim = length(distance),
                                       dimnames = dimnames(metadata.distance))
-              distance <- methods::new("Values", .Data = .Data.distance, metadata = metadata.distance)
+              distance <- methods::new("Values",
+                                       .Data = .Data.distance,
+                                       metadata = metadata.distance)
               i.jumpoff <- if (existing.first) length(DimScale.existing) else 1L
-              jumpoff <- slab(object, dimension = along, elements = i.jumpoff, drop = TRUE)
+              jumpoff <- slab(object,
+                              dimension = along,
+                              elements = i.jumpoff,
+                              drop = TRUE)
               if (!has.single.dim) {
                   metadata.jumpoff <- metadata[-along]
                   .Data.jumpoff <- array(jumpoff@.Data,

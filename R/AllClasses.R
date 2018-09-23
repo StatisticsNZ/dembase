@@ -474,9 +474,9 @@ setClass("Intervals",
              if (is.na(labelStart))
                  return(gettextf("'%s' is missing",
                                  "labelStart"))
-             if (!labelStart && is.infinite(dimvalues[n]))
+             if (!labelStart && (n > 0L) && is.infinite(dimvalues[n]))
                  return(gettextf("last interval is open but '%s' is %s",
-                                 "labelStart", "TRUE"))
+                                 "labelStart", "FALSE"))
              if (!identical(length(isAge), 1L))
                  return(gettextf("'%s' does not have length %d",
                                  "isAge", 1L))

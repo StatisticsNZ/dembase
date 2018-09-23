@@ -874,7 +874,7 @@ test_that("extrapolate throws appropriate errors", {
     x <- Counts(array(1:12,
                   dim = c(3, 4),
                   dimnames = list(age = c("0-4", "5-9", "10+"),
-                  period = c("2001-2005", "2006-2010", "2011-2015", "2016-2020"))))
+                  period = c("2000-2005", "2005-2010", "2010-2015", "2015-2020"))))
     expect_error(extrapolate(x, labels = "2026-2030"),
                  "gap or overlap between extrapolated and existing intervals")
     expect_error(extrapolate(x, labels = "2006-2015"),
@@ -1436,7 +1436,7 @@ test_that("metadata works", {
 test_that("midpoints works", {
     a <- array(1:12,
                dim = c(2, 2, 3),
-               dimnames = list(period = c("2001-2005", "2006-2010"),
+               dimnames = list(period = c("2000-2005", "2005-2010"),
                                sex = c("Male", "Female"),
                                age = c("0-4", "5-9", "10+")))
     b <- array(1:12,
@@ -1472,7 +1472,7 @@ test_that("midpoints works", {
                          dQuote("sex"), dQuote("region")))
     x <- Counts(array(1:12,
                       dim = c(2, 2, 3),
-                      dimnames = list(period = c("2001-2005", "2006-2010"),
+                      dimnames = list(period = c("2000-2005", "2005-2010"),
                                       triangle = c("TL", "TU"),
                                       age = c("0-4", "5-9", "10+"))))
     ans.obtained <- midpoints(x)
