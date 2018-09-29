@@ -3164,8 +3164,10 @@ agePopnForwardUpperTri <- function(population) {
     DS.age <- DimScales[[i.age]]
     dv.time <- dimvalues(DS.time)
     dv.age <- dimvalues(DS.age)
-    message(gettextf("assuming '%s' is %s",
-                     "labelFirst", new("Intervals", isAge = FALSE)@labelFirst))
+    if (any(diff(dv.time) == 1L)) {
+        message(gettextf("assuming '%s' is %s\n",
+                         "labelStart", new("Intervals", isAge = FALSE)@labelStart))
+    }
     DS.time.ans <- methods::new("Intervals",
                                 dimvalues = dv.time,
                                 isAge = FALSE)

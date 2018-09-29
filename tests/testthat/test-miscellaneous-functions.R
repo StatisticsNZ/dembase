@@ -3876,6 +3876,16 @@ test_that("default version of agePopnForwardUpperTri works", {
                                                  age = c(5, 10, 15, 20, 25, 30),
                                                  time = c("2000-2005", "2005-2010"))))
     expect_identical(ans.obtained, ans.expected)
+    ## warning if single year
+    population <- Counts(array(1:42,
+                               dim = c(2, 7, 3),
+                               dimnames = list(reg = c("a", "b"),
+                                               age = c(0:5, "6+"),
+                                               time = 2000:2002)),
+                         dimscales = c(time = "Points"))
+    population <- Population(population)
+    expect_message(agePopnForwardUpperTri(population),
+                   "assuming 'labelStart' is TRUE")    
 })
 
 test_that("checkAdjustAndScale works", {
@@ -3992,7 +4002,7 @@ test_that("checkAndTidyComponent works", {
     x <- Counts(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c("0-4", "5+"),
-                                      time = c("2000-2005", "2005-2010"))))
+                                      time = c("2000-2005", "2005-2011"))))
     expect_error(checkAndTidyComponent(x, name = "immigration"),
                  "'immigration' does not have regular age-time plan :")
     ## positive length

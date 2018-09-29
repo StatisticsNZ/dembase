@@ -2544,6 +2544,7 @@ setGeneric("isPositiveIncrement",
            function(object)
                standardGeneric("isPositiveIncrement"))
 
+
 setGeneric("length")
 
 
@@ -3591,3 +3592,51 @@ setGeneric("transformIsOneToOne",
 setGeneric("translate",
            function(object, concordance, to = NULL, ...)
            standardGeneric("translate"))
+
+
+#' Labelling of single-year time periods
+#'
+#' Get or set the logical flag that controls the
+#' labelling of single-year periods.  When
+#' \code{useYearStart} is \code{TRUE}, the label for a
+#' single-year period is based on the first instant
+#' of the period. When \code{useYearStart} is \code{FALSE},
+#' the label for a single-year period is based on the last
+#' instant in the period.  When a single-year period coincides
+#' with a calendar - that is, when it starts at midnight of
+#' 1 January and finishes just before midnight on 31 December -
+#' the label is the same regardless of the value of \code{useYearStart}.
+#' In all other cases, the 
+#' 
+#'
+#' \tabular{llll}{
+#'   First instant \tab Last instant \tab \code{useYearStart} 
+#'   2000-01-01 00:00:00 \tab 2000-12-31 23:59:59 \tab \code{TRUE} \tab \code{2000} \cr
+#'   2000-01-01 00:00:00 \tab 2000-12-31 23:59:59 \tab \code{FALSE} \tab \code{2000} \cr
+#'   2000-03-31 00:00:00 \tab 2001-03-31 23:59:59 \tab \code{TRUE} \tab \code{2000} \cr
+#'   2000-03-31 00:00:00 \tab 2001-03-31 23:59:59 \tab \code{FALSE} \tab \code{2001} \cr
+#'   2000-06-30 00:00:00 \tab 2001-06-30 23:59:59 \tab \code{TRUE} \tab \code{2000} \cr
+#'   2000-06-30 00:00:00 \tab 2001-06-30 23:59:59 \tab \code{FALSE} \tab \code{2001}
+#' }
+#'
+#' 
+#' 
+#' 
+#' @export
+setGeneric("useYearStart",
+           function(object)
+               standardGeneric("useYearStart"))
+
+#' @rdname useYearStart
+#' @export
+setGeneric("useYearStart<-",
+           function(object, value)
+               standardGeneric("useYearStart<-"))
+
+#' @rdname useYearStart
+#' @export
+setGeneric("setUseYearStart",
+           function(object, value)
+               standardGeneric("setUseYearStart"))
+
+

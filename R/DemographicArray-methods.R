@@ -1096,6 +1096,7 @@ setMethod("intervalScore",
           })
 
 
+
 ## NO_TESTS
 #' @rdname limits
 #' @export
@@ -2084,6 +2085,72 @@ setMethod("unname",
           function(obj, force = FALSE) {
               unname(obj@.Data)
           })
+
+
+## NO_TESTS
+#' @rdname useYearStart
+#' @export
+setMethod("useYearStart",
+          signature(object = "DemographicArray"),
+          function(object) {
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              i.time <- match("time", dimtypes, nomatch = 0L)
+              has.time <- i.time > 0L
+              if (has.time) {
+                  DimScales <- DimScales(object, use.names = FALSE)
+                  DimScale.time <- DimScales[[i.time]]
+                  if (!methods::is(DimScale.time, "Intervals"))
+                      DimScale.time@useYearStart
+                  else
+                      NULL
+              }
+              else
+                  NULL
+          })
+
+
+## NO_TESTSpr
+#' @rdname useYearStart
+#' @export
+setMethod("useYearStart<-",
+          signature(object = "DemographicArray"),
+          function(object, value) {
+              if (!is.logical(value))
+                  stop(gettextf("replacement value has class \"%s\"",
+                                class(value)))
+              if (!identical(length(value), 1L))
+                  stop(gettextf("replacement value does not have length %d",
+                                1L))
+              if (is.na(value))
+                  stop(gettext("replacement value is missing"))
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              i.time <- match("time", dimtypes, nomatch = 0L)
+              has.time <- i.time > 0L
+              if (has.time) {
+                  DimScales <- DimScales(object, use.names = FALSE)
+                  DimScale.time <- DimScales[[i.time]]
+                  if (!methods::is(DimScale.time, "Intervals"))
+                      stop(gettextf("dimension with %d \"%s\" does not have %s \"%s\"",
+                                    "dimtype", "time", "dimscale", "Intervals"))
+                  object@DimScales[[i.time]]@useYearStart <- value
+                  object
+              }
+              else
+                  stop(gettextf("'%s' does not have dimension with %d \"%s\"",
+                                "object", "dimtype", "time"))
+          })
+
+
+#' @rdname useYearStart
+#' @export
+setMethod("setUseYearStart",
+          signature(object = "DemographicArray"),
+          function(object, value) {
+              useYearStart(object) <- value
+              object
+          })
+
+
 
 
 
