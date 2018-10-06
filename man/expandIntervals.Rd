@@ -23,17 +23,14 @@ expandIntervals(object, dimension, breaks = NULL, width = NULL,
 \item{dimension}{Name or index of the dimension where the intervals are
 found.}
 
-\item{breaks}{Numeric vector giving the breaks between intervals after the
-merging has occurred.}
+\item{breaks}{Numeric vector giving the breaks between intervals
+after the splitting has occurred.}
 
-\item{width}{The length of the intervals after the merging has occurred.}
+\item{width}{The length of the intervals after the splitting has occurred.}
 
-\item{old}{The labels of the intervals to be merged.}
+\item{old}{The labels of the intervals to be split. NOT CURRENTLY USED.}
 
-\item{weights}{Object of class \code{\linkS4class{Counts}} or the number
-\code{1}.  Required when \code{object} has class
-\code{\linkS4class{Values}} and prohibited when it has class
-\code{\linkS4class{Counts}}.}
+\item{weights}{Object of class \code{\linkS4class{Counts}}. NOT CURRENTLY USED.}
 
 \item{means}{If \code{FALSE} (the default) the allocation is done randomly;
 if \code{TRUE}, values are set equal to their means.}

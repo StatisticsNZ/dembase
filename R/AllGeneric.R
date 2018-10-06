@@ -2063,9 +2063,16 @@ setGeneric("expandCategories",
 #' NOTE - THIS FUNCTION IS INCOMPLETE, AND WILL BE MODIFIED TO INCLUDE
 #' ADDITIONAL ARGUMENTS.
 #' 
-#' @inheritParams collapseIntervals
+#' @param object Object of class \code{\linkS4class{DemographicArray}}.
+#' @param dimension Name or index of the dimension where the intervals are
+#' found.
+#' @param breaks Numeric vector giving the breaks between intervals
+#' after the splitting has occurred.
+#' @param width The length of the intervals after the splitting has occurred.
+#' @param old The labels of the intervals to be split. NOT CURRENTLY USED.
 #' @param means If \code{FALSE} (the default) the allocation is done randomly;
 #' if \code{TRUE}, values are set equal to their means.
+#' @param weights Object of class \code{\linkS4class{Counts}}. NOT CURRENTLY USED.
 #' @export
 setGeneric("expandIntervals",
            function(object, dimension, breaks = NULL,

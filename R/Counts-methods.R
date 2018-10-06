@@ -1335,10 +1335,10 @@ setMethod("expandIntervals",
               breaks.old <- dimvalues(DimScale)
               finite.breaks <- breaks[is.finite(breaks)]
               finite.breaks.old <- breaks.old[is.finite(breaks.old)]
-              if (any(finite.breaks < min(finite.breaks.old)))
+              if (any(finite.breaks < min(breaks.old)))
                   stop(gettextf("'%s' has elements smaller than smallest existing break",
                                 "breaks"))
-              if (any(finite.breaks > max(finite.breaks.old)))
+              if (any(finite.breaks > max(breaks.old)))
                   stop(gettextf("'%s' has elements larger than largest existing break",
                                 "breaks"))
               if (is.infinite(min(breaks.old)) && is.finite(min(breaks)))
@@ -1394,7 +1394,7 @@ setMethod("expandIntervals",
                            metadata = metadata.new)
           })
 
-## NO_TESTS
+## HAS_TESTS
 #' @rdname expandIntervals
 #' @export
 setMethod("expandIntervals",

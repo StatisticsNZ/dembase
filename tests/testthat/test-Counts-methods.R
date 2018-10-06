@@ -1955,6 +1955,28 @@ test_that("expandIntervals method for Counts works when means is FALSE", {
                                            breaks = 5),
                          object)
     }
+    object <- Counts(array(c(4L, 2L, 3L, 10L, 5L, 4L),
+                           dim = c(3, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"))))
+    for (i in 1:5) {
+        ans.obtained <- expandIntervals(object,
+                                        dimension = "age",
+                                        breaks = c(0, 5, 6, 10, 15))
+        expect_identical(collapseIntervals(ans.obtained,
+                                           dimension = "age",
+                                           breaks = c(5, 10)),
+                         object)
+    }
+    for (i in 1:5) {
+        ans.obtained <- expandIntervals(object,
+                                        dimension = "age",
+                                        width = 1)
+        expect_identical(collapseIntervals(ans.obtained,
+                                           dimension = "age",
+                                           breaks = c(5, 10)),
+                         object)
+    }
 })
 
 test_that("expandIntervals method for Counts works when means is TRUE", {
@@ -1962,26 +1984,42 @@ test_that("expandIntervals method for Counts works when means is TRUE", {
                            dim = c(2, 2),
                            dimnames = list(sex = c("m", "f"),
                                            age = c("0-4", "5+"))))
-    for (i in 1:5) {
-        ans.obtained <- expandIntervals(object,
-                                        dimension = "age",
-                                        breaks = c(0, 1, 5),
-                                        means = TRUE)
-        expect_equal(collapseIntervals(ans.obtained,
+    ans.obtained <- expandIntervals(object,
+                                    dimension = "age",
+                                    breaks = c(0, 1, 5),
+                                    means = TRUE)
+    expect_equal(collapseIntervals(ans.obtained,
+                                   dimension = "age",
+                                   width = 5),
+                 object)
+    ans.obtained <- expandIntervals(object,
+                                    dimension = "age",
+                                    width = 2.5,
+                                    means = TRUE)
+    expect_equal(collapseIntervals(ans.obtained,
+                                   dimension = "age",
+                                   width = 5),
+                 object)
+    object <- Counts(array(c(4L, 2L, 3L, 10L, 5L, 4L),
+                           dim = c(3, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"))))
+    ans.obtained <- expandIntervals(object,
+                                    dimension = "age",
+                                    breaks = c(0, 5, 6, 10, 15),
+                                    means = TRUE)
+    expect_equal(collapseIntervals(ans.obtained,
+                                   dimension = "age",
+                                   breaks = c(5, 10)),
+                 object)
+    ans.obtained <- expandIntervals(object,
+                                    dimension = "age",
+                                    width = 1,
+                                    means = TRUE)
+    expect_identical(collapseIntervals(ans.obtained,
                                        dimension = "age",
-                                       width = 5),
+                                       breaks = c(5, 10)),
                      object)
-    }
-    for (i in 1:5) {
-        ans.obtained <- expandIntervals(object,
-                                        dimension = "age",
-                                        width = 2.5,
-                                        means = TRUE)
-        expect_equal(collapseIntervals(ans.obtained,
-                                       dimension = "age",
-                                       width = 5),
-                     object)
-    }
 })
 
 test_that("exposure works when 'triangles' is FALSE", {

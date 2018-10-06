@@ -6401,7 +6401,19 @@ test_that("uniformWeightsForExpandIntervals works", {
     ans.obtained <- uniformWeightsForExpandIntervals(breaks = breaks,
                                                      dimension = dimension,
                                                      metadata = metadata)
-    ans.expected <- matrix(c(1, 4, 5, 1), nrow = 2, ncol = 4, byrow = TRUE)
+    ans.expected <- matrix(c(1, 4, 5, 5), nrow = 2, ncol = 4, byrow = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    metadata <- new("MetaData",
+                    nms = c("sex", "age"),
+                    dimtypes = c("sex", "age"),
+                    DimScales = list(new("Sexes", dimvalues = c("Female", "Male")),
+                                     new("Intervals", dimvalues = c(-Inf, 5, 10, Inf))))
+    breaks <- c(-Inf, 0, 5, 7.5, 10, Inf)
+    dimension <- 2L
+    ans.obtained <- uniformWeightsForExpandIntervals(breaks = breaks,
+                                                     dimension = dimension,
+                                                     metadata = metadata)
+    ans.expected <- matrix(c(5, 5, 2.5, 2.5, 2.5), nrow = 2, ncol = 5, byrow = TRUE)
     expect_identical(ans.obtained, ans.expected)
     metadata <- new("MetaData",
                     nms = "age",

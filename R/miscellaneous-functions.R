@@ -5656,15 +5656,35 @@ resetDiagInner <- function(object, base, reset) {
                  metadata = metadata)
 }
 
+## HAS_TESTS
 uniformWeightsForExpandIntervals <- function(breaks, dimension, metadata) {
+    if (length(breaks) <= 2L) {
+        ans <- array(1, dim = dim)
+        return(ans)
+    }
     dim <- dim(metadata)
-    DimScales <- DimScales(metadata, use.names = FALSE)
+    DimScales <- DimScales(metadata,
+                           use.names = FALSE)
     DimScale <- DimScales[[dimension]]
     s <- seq_along(dim)
     s.perm <- c(dimension, s[-dimension])
     dim.permuted <- dim[s.perm]
     widths <- diff(breaks)
-    widths[is.infinite(widths)] <- 1
+    if (is.infinite(widths[1L])) {
+        width2 <- widths[2L]
+        if (is.finite(width2))
+            widths[1L] <- width2
+        else
+            widths[1L] <- 1
+    }
+    n <- length(widths)
+    if (is.infinite(widths[n])) {
+        widthn1 <- widths[n - 1L]
+        if (is.finite(widthn1))
+            widths[n] <- widthn1
+        else
+            widths[n] <- 1
+    }
     dim.permuted[1L] <- length(widths)
     ans <- array(widths, dim = dim.permuted)
     perm <- match(s, s.perm)
