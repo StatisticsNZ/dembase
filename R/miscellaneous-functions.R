@@ -580,6 +580,68 @@ datesToTriangles <- function(date, dob, step = "years", monthStart = "January",
     factor(ans, levels = c("TL", "TU"))
 }
 
+
+#' Use observed values to fill in missing values in vector
+#'
+#' Fill in missing values in a vector by carrying forward
+#' observed values.
+#'
+#' If one or more values at the start of the vector
+#' are missing, and if \code{firstBackward} is \code{TRUE},
+#' then the missing values at the start are filled in
+#' by carrying the first value backwards.
+#'
+#' \code{fillForward} is based on Stack Overflow post
+#' https://stackoverflow.com/questions/1782704
+#' which in turn cites function \code{na.locf}
+#' in package \code{zoo}.
+#'
+#' @param x A vector.
+#' @param firstBackward Logical. Whether to fill upwards
+#' if values at start of \code{x} are missing.
+#'
+#' @return A filled-in version of \code{x}.
+#'
+#' @examples
+#' x <- c("A", NA, NA, "B", NA)
+#' fillForward(x)
+#'
+#' ## first values missing
+#' x <- c(NA, NA, 1, NA, NA, 2, NA)
+#' fillForward(x) # firstBackward TRUE by default
+#' fillForward(x, firstBackward = FALSE)
+#' @export
+fillForward <- function(x, firstBackward = TRUE) {
+    if (!is.vector(x))
+        stop(gettextf("'%s' is not a vector",
+                      "x"))
+    if (!is.logical(firstBackward))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "firstBackward", class(firstBackward)))
+    if (!identical(length(firstBackward), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "firstBackward", 1L))
+    if (is.na(firstBackward))
+        stop(gettextf("'%s' is missing",
+                      "firstBackward"))
+    obs <- !is.na(x)
+    if (!any(obs))
+        stop(gettextf("'%s' has no non-missing values",
+                      "x"))
+    x.obs <- x[obs]
+    i.obs <- cumsum(obs)
+    if (firstBackward)
+        x.obs.extra <- c(x.obs[1L], x.obs)
+    else
+        x.obs.extra <- c(x[1L], x.obs)
+    i.obs.extra <- i.obs + 1L
+    x.obs.extra[i.obs.extra]
+}
+
+
+
+
+
 ## HAS_TESTS
 iIntervalSinceBirthYears <- function(date, dob, stepNum, monthStartNum, yearStart) {
     dates <- c(date, dob)

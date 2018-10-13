@@ -420,6 +420,41 @@ test_that("datesToTriangles works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("fillForward works", {
+    x <- c(1L, NA, 2L, NA, NA, 3L)
+    ans.obtained <- fillForward(x)
+    ans.expected <- c(1L, 1L, 2L, 2L, 2L, 3L)
+    expect_identical(ans.obtained, ans.expected)
+    x <- list("A", 3.1, NA)
+    ans.obtained <- fillForward(x)
+    ans.expected <- list("A", 3.1, 3.1)
+    expect_identical(ans.obtained, ans.expected)
+    x <- c(NA, "A")
+    ans.obtained <- fillForward(x)
+    ans.expected <- c("A", "A")
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- fillForward(x, firstBackward = FALSE)
+    ans.expected <- c(NA, "A")
+    expect_identical(ans.obtained, ans.expected)
+    x <- 1:3
+    ans.obtained <- fillForward(x)
+    ans.expected <- 1:3
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("fillForward throws appropriate errors", {
+    expect_error(fillForward(y ~ x),
+                 "'x' is not a vector")
+    expect_error(fillForward(1, firstBackward = "FALSE"),
+                 "'firstBackward' has class \"character\"")
+    expect_error(fillForward(1, firstBackward = c(TRUE, FALSE)),
+                 "'firstBackward' does not have length 1")
+    expect_error(fillForward(1, firstBackward = NA),
+                 "'firstBackward' is missing")
+    expect_error(fillForward(NA),
+                 "'x' has no non-missing values")
+})
+
 test_that("iIntervalSinceBirthYears works", {
     iIntervalSinceBirthYears <- dembase:::iIntervalSinceBirthYears
     date <- as.Date(c("2001-10-03", "2006-10-01", "2000-12-13", "2005-01-01"))
