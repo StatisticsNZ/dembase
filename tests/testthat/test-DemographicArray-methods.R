@@ -1473,13 +1473,13 @@ test_that("midpoints works", {
     x <- Counts(array(1:12,
                       dim = c(2, 2, 3),
                       dimnames = list(period = c("2001-2005", "2006-2010"),
-                                      triangle = c("TL", "TU"),
+                                      triangle = c("Lower", "Upper"),
                                       age = c("0-4", "5-9", "10+"))))
     ans.obtained <- midpoints(x)
     ans.expected <- Counts(array(1:12,
                                  dim = c(2, 2, 3),
                                  dimnames = list(period = c("2002.5", "2007.5"),
-                                                 triangle = c("TL", "TU"),
+                                                 triangle = c("Lower", "Upper"),
                                                  age = c("2.5", "7.5", "12.5"))),
                            dimtypes = c(triangle = "state"),
                            dimscales = c(triangle = "Categories"))

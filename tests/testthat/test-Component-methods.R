@@ -7,7 +7,7 @@ context("Component-methods")
 test_that("aperm works with Net", {
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -22,7 +22,7 @@ test_that("aperm works with Net", {
 test_that("aperm works with Pool", {
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -42,7 +42,7 @@ test_that("default method of incrementLowerTri works", {
     incrementLowerTri <- dembase:::incrementLowerTri
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- new("EntriesMovements",
@@ -69,12 +69,12 @@ test_that("BirthsMovements method of incrementLowerTri works", {
     Population <- dembase:::Population
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("10-14", "15-19", "20-24"),
                                               time = c("2001-2005", "2006-2010"))))
     template <- Counts(array(1:20,
                              dim = c(2, 5, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
                                              time = c("2001-2005", "2006-2010"))))
     component <- BirthsMovements(component,
@@ -97,7 +97,7 @@ test_that("Pool method of incrementLowerTri works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -106,7 +106,7 @@ test_that("Pool method of incrementLowerTri works", {
     component <- collapseOrigDest(component, base = "reg", to = "pool")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg = c("a", "b"))))
@@ -120,7 +120,7 @@ test_that("Pool method of incrementLowerTri works", {
     population <- Population(population)
     ans.obtained <- incrementLowerTri(component = component,
                                       population = population)
-    net <- slab(net, dimension = "triangle", elements = "TL")
+    net <- slab(net, dimension = "triangle", elements = "Lower")
     net@metadata@DimScales[[2]] <- new("Points", dimvalues = c(2005, 2010))
     dimnames(net@.Data)[[2]] <- c("2005", "2010")
     ans.expected <- aperm(net, perm = names(population))
@@ -133,7 +133,7 @@ test_that("Orig-Dest method of incrementLowerTri works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -141,7 +141,7 @@ test_that("Orig-Dest method of incrementLowerTri works", {
     net <- collapseOrigDest(component, to = "net")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg = c("a", "b"))))
@@ -155,7 +155,7 @@ test_that("Orig-Dest method of incrementLowerTri works", {
     population <- Population(population)
     ans.obtained <- incrementLowerTri(component = component,
                                       population = population)
-    net <- slab(net, dimension = "triangle", elements = "TL")
+    net <- slab(net, dimension = "triangle", elements = "Lower")
     net@metadata@DimScales[[2]] <- new("Points", dimvalues = c(2005, 2010))
     dimnames(net@.Data)[[2]] <- c("2005", "2010")
     ans.expected <- aperm(net, perm = names(population))
@@ -168,7 +168,7 @@ test_that("ExitsMovements method of incrementLowerTri works", {
     ExitsMovements <- dembase:::ExitsMovements
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- ExitsMovements(component,
@@ -197,7 +197,7 @@ test_that("default method of incrementInteger works", {
     incrementInteger <- dembase:::incrementInteger
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(entries = component,
@@ -217,14 +217,14 @@ test_that("BirthsMovements method of incrementInteger works", {
                                               eth_parent = c("a", "b"),
                                               eth_child = c("a", "b"),
                                               age = c("10-14", "15-19", "20-24"),
-                                              triangle = c("TL", "TU"))))
+                                              triangle = c("Lower", "Upper"))))
     template <- Counts(array(1:6,
                              dim = c(2, 2, 2, 6, 2),
                              dimnames = list(sex = c("m", "f"),
                                              time = c("2001-2005", "2006-2010"),
                                              eth = c("a", "b"),
                                              age = c("0-4", "5-9", "10-14", "15-19", "20-24", "25+"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     component <- BirthsMovements(component,
                                  template = template)
     ans.obtained <- incrementInteger(component)
@@ -239,7 +239,7 @@ test_that("Orig-Dest method of incrementInteger works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
@@ -247,7 +247,7 @@ test_that("Orig-Dest method of incrementInteger works", {
     net <- collapseOrigDest(component, to = "net")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = c("2001-2005", "2006-2010"),
                                              reg = c("a", "b"))))
@@ -263,7 +263,7 @@ test_that("Pool method of incrementInteger works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
@@ -272,7 +272,7 @@ test_that("Pool method of incrementInteger works", {
     component <- collapseOrigDest(component, to = "pool")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = c("2001-2005", "2006-2010"),
                                              reg = c("a", "b"))))
@@ -292,7 +292,7 @@ test_that("default method of incrementOpen works", {
     incrementOpen <- dembase:::incrementOpen
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- new("EntriesMovements",
@@ -320,12 +320,12 @@ test_that("BirthsMovements method of incrementOpen works", {
     Population <- dembase:::Population
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("10-14", "15-19", "20-24"),
                                               time = c("2001-2005", "2006-2010"))))
     template <- Counts(array(1:20,
                              dim = c(2, 5, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
                                              time = c("2001-2005", "2006-2010"))))
     component <- BirthsMovements(component,
@@ -348,7 +348,7 @@ test_that("Pool method of incrementOpen works", {
     Population <- dembase:::Population
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
@@ -357,7 +357,7 @@ test_that("Pool method of incrementOpen works", {
     component <- collapseOrigDest(component, base = "reg", to = "pool")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = c("2001-2005", "2006-2010"),
                                              reg = c("a", "b"))))
@@ -371,7 +371,7 @@ test_that("Pool method of incrementOpen works", {
     population <- Population(population)
     ans.obtained <- incrementOpen(component = component,
                                   population = population)
-    net <- slab(net, dimension = "triangle", elements = "TU")
+    net <- slab(net, dimension = "triangle", elements = "Upper")
     net@metadata@DimScales[[2]] <- new("Points", dimvalues = c(2005, 2010))
     dimnames(net@.Data)[[2]] <- c("2005", "2010")
     net[1:2,,] <- 0L
@@ -385,7 +385,7 @@ test_that("Orig-Dest method of incrementOpen works", {
     Population <- dembase:::Population
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -393,7 +393,7 @@ test_that("Orig-Dest method of incrementOpen works", {
     net <- collapseOrigDest(component, to = "net")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg = c("a", "b"))))
@@ -407,7 +407,7 @@ test_that("Orig-Dest method of incrementOpen works", {
     population <- Population(population)
     ans.obtained <- incrementOpen(component = component,
                                       population = population)
-    net <- slab(net, dimension = "triangle", elements = "TL")
+    net <- slab(net, dimension = "triangle", elements = "Lower")
     net@metadata@DimScales[[2]] <- new("Points", dimvalues = c(2005, 2010))
     dimnames(net@.Data)[[2]] <- c("2005", "2010")
     net[1:2,,] <- 0L
@@ -421,7 +421,7 @@ test_that("ExitsMovements method of incrementOpen works", {
     Population <- dembase:::Population
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- ExitsMovements(component,
@@ -592,7 +592,7 @@ test_that("default method of incrementUpperTri works", {
     Population <- dembase:::Population
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- new("EntriesMovements",
@@ -620,12 +620,12 @@ test_that("BirthsMovements method of incrementUpperTri works", {
     ## no parent
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("10-14", "15-19", "20-24"),
                                               time = c("2001-2005", "2006-2010"))))
     template <- Counts(array(1:20,
                              dim = c(2, 5, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
                                               time = c("2001-2005", "2006-2010"))))
     component <- BirthsMovements(component,
@@ -644,14 +644,14 @@ test_that("BirthsMovements method of incrementUpperTri works", {
     ## has parent
     component <- Counts(array(1:16,
                               dim = c(2, 2, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("10-14", "15-19"),
                                   time = c("2001-2005", "2006-2010"),
                                   eth_parent = c("a", "b"),
                                   eth_child = c("a", "b"))))
     template <- Counts(array(1:40,
                              dim = c(2, 5, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
                                               time = c("2001-2005", "2006-2010"),
                                               eth = c("a", "b"))))
@@ -678,7 +678,7 @@ test_that("Pool method of incrementUpperTri works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -687,7 +687,7 @@ test_that("Pool method of incrementUpperTri works", {
     component <- collapseOrigDest(component, base = "reg", to = "pool")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg = c("a", "b"))))
@@ -701,7 +701,7 @@ test_that("Pool method of incrementUpperTri works", {
     population <- Population(population)
     ans.obtained <- incrementUpperTri(component = component,
                                       population = population)
-    net <- slab(net, dimension = "triangle", elements = "TU")
+    net <- slab(net, dimension = "triangle", elements = "Upper")
     net <- net[1:2,,]
     net@metadata@DimScales[[1]] <- new("Points", dimvalues = c(5, 10))
     dimnames(net@.Data)[[1]] <- c("5", "10")
@@ -715,7 +715,7 @@ test_that("Orig-Dest method of incrementUpperTri works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg_orig = c("a", "b"),
@@ -723,7 +723,7 @@ test_that("Orig-Dest method of incrementUpperTri works", {
     net <- collapseOrigDest(component, to = "net")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"),
                                   reg = c("a", "b"))))
@@ -737,7 +737,7 @@ test_that("Orig-Dest method of incrementUpperTri works", {
     population <- Population(population)
     ans.obtained <- incrementUpperTri(component = component,
                                       population = population)
-    net <- slab(net, dimension = "triangle", elements = "TU")
+    net <- slab(net, dimension = "triangle", elements = "Upper")
     net <- net[1:2,,]
     net@metadata@DimScales[[1]] <- new("Points", dimvalues = c(5, 10))
     dimnames(net@.Data)[[1]] <- c("5", "10")
@@ -751,7 +751,7 @@ test_that("ExitsMovements method of incrementUpperTri works", {
     ExitsMovements <- dembase:::ExitsMovements
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- ExitsMovements(component,
@@ -780,7 +780,7 @@ test_that("MovementsComponent method of isCompatibleWithPopn works", {
     isCompatibleWithPopn <- dembase:::isCompatibleWithPopn
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(entries = component,
@@ -826,12 +826,12 @@ test_that("isCompatibleWithPopn works with BirthsMovements", {
     ## both have age
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("10-14", "15-19", "20-24"),
                                               time = c("2001-2005", "2006-2010"))))
     template <- Counts(array(1:20,
                              dim = c(2, 5, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10-14", "15-19", "20-24"),
                                              time = c("2001-2005", "2006-2010"))))
     component <- BirthsMovements(component,
@@ -841,7 +841,7 @@ test_that("isCompatibleWithPopn works with BirthsMovements", {
                              dimnames = list(time = c("2001-2005", "2006-2010"),
                                              age = c("0-4", "5-9", "10-14",
                                                      "15-19", "20-24", "25+"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     metadata <- template@metadata
     ans.obtained <- isCompatibleWithPopn(component = component,
                                          metadata = metadata,
@@ -853,7 +853,7 @@ test_that("isCompatibleWithPopn works with BirthsMovements", {
                                    dimnames = list(time = c("2001-2005", "2006-2010", "2011-2015"),
                                                    age = c("0-4", "5-9", "10-14",
                                                            "15-19", "20-24", "25+"),
-                                                   triangle = c("TL", "TU"))))
+                                                   triangle = c("Lower", "Upper"))))
     metadata.wrong <- template.wrong@metadata
     ans.obtained <- isCompatibleWithPopn(component = component,
                                          metadata = metadata.wrong,
@@ -1004,7 +1004,7 @@ test_that("Orig-Dest method of isCompatibleWithPopn works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
@@ -1012,7 +1012,7 @@ test_that("Orig-Dest method of isCompatibleWithPopn works", {
     net <- collapseOrigDest(component, to = "net")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = c("2001-2005", "2006-2010"),
                                              reg = c("a", "b"))))
@@ -1035,7 +1035,7 @@ test_that("Pool method of isCompatibleWithPopn works", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
@@ -1044,7 +1044,7 @@ test_that("Pool method of isCompatibleWithPopn works", {
     component <- collapseOrigDest(component, to = "pool")
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = c("2001-2005", "2006-2010"),
                                              reg = c("a", "b"))))
@@ -1112,7 +1112,7 @@ test_that("midpoints works with Component", {
     EntriesMovements <- dembase:::EntriesMovements
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(entries = component,
@@ -1133,7 +1133,7 @@ test_that("slab works with MovementsComponent", {
     EntriesMovements <- dembase:::EntriesMovements
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(entries = component,
@@ -1144,7 +1144,7 @@ test_that("slab works with MovementsComponent", {
                          drop = FALSE)
     ans.expected <- Counts(array(7:12,
                               dim = c(2, 3, 1),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                   age = c("0-4", "5-9", "10+"),
                                   time = "2006-2010")))
     ans.expected <- EntriesMovements(ans.expected,
@@ -1157,12 +1157,12 @@ test_that("slab works with BirthsMovements", {
     BirthsMovements <- dembase:::BirthsMovements
     component <- Counts(array(1:4,
                               dim = c(2, 1, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = "5-9", 
                                               time = c("2001-2005", "2006-2010"))))
     template <- Counts(array(1:12,
                              dim = c(2, 3, 2),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = c("2001-2005", "2006-2010"))))
     component <- BirthsMovements(births = component,
@@ -1173,12 +1173,12 @@ test_that("slab works with BirthsMovements", {
                          drop = FALSE)
     ans.expected <- Counts(array(3:4,
                                  dim = c(2, 1, 1),
-                                 dimnames = list(triangle = c("TL", "TU"),
+                                 dimnames = list(triangle = c("Lower", "Upper"),
                                                  age = "5-9",
                                                  time = "2006-2010")))
     template <- Counts(array(7:12,
                              dim = c(2, 3, 1),
-                             dimnames = list(triangle = c("TL", "TU"),
+                             dimnames = list(triangle = c("Lower", "Upper"),
                                              age = c("0-4", "5-9", "10+"),
                                              time = "2006-2010")))
     ans.expected <- BirthsMovements(ans.expected,
@@ -1190,14 +1190,14 @@ test_that("slab works with InternalMovementsPool", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
                                               reg_dest = c("a", "b"))))
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg = c("a", "b"))))
@@ -1234,14 +1234,14 @@ test_that("slab works with InternalMovementsNet", {
     InternalMovements <- dembase:::InternalMovements
     component <- Counts(array(1:96,
                               dim = c(2, 3, 2, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg_orig = c("a", "b"),
                                               reg_dest = c("a", "b"))))
     template <- Counts(array(0L,
                              dim = c(2, 3, 2, 2),
-                              dimnames = list(triangle = c("TL", "TU"),
+                              dimnames = list(triangle = c("Lower", "Upper"),
                                               age = c("0-4", "5-9", "10+"),
                                               time = c("2001-2005", "2006-2010"),
                                               reg = c("a", "b"))))

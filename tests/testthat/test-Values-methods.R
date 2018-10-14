@@ -2160,7 +2160,7 @@ test_that("tfr works", {
                       dim = c(3, 2, 2, 3, 3),
                       dimnames = list(age = c("15-19", "20-24", "25-29"),
                           sex = c("f", "m"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005", "2006-2010", "2011-2015"),
                           region = c("a", "b", "c"))))
     ans.obtained <- tfr(x)

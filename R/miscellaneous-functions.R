@@ -576,8 +576,8 @@ datesToTriangles <- function(date, dob, step = "years", monthStart = "January",
         stop(gettextf("invalid value for '%s' : \"%s\"",
                       "stepUnits", step.units))
     i.age.interval <- age %/% step.num + 1L
-    ans <- ifelse(i.time.interval > i.age.interval, "TU", "TL")
-    factor(ans, levels = c("TL", "TU"))
+    ans <- ifelse(i.time.interval > i.age.interval, "Upper", "Lower")
+    factor(ans, levels = c("Lower", "Upper"))
 }
 
 
@@ -4279,13 +4279,13 @@ makeMetadataForExposure <- function(population, triangles) {
     if (triangles) {
         names <- make.unique(c(names, "triangle"))
         dimtypes <- c(dimtypes, "triangle")
-        DimScale.triangle <- methods::new("Triangles", dimvalues = c("TL", "TU"))
+        DimScale.triangle <- methods::new("Triangles", dimvalues = c("Lower", "Upper"))
         DimScales <- append(DimScales, values = DimScale.triangle)
     }
     methods::new("MetaData",
-        nms = names,
-        dimtypes = dimtypes,
-        DimScales = DimScales)
+                 nms = names,
+                 dimtypes = dimtypes,
+                 DimScales = DimScales)
 }
 
 
@@ -4518,7 +4518,7 @@ splitTriangles <- function(object) {
     DimScales <- DimScales(object, use.names = FALSE)
     names <- make.unique(c(names, "triangle"))
     dimtypes <- c(dimtypes, "triangle")
-    DimScale.triangle <- methods::new("Triangles", dimvalues = c("TL", "TU"))
+    DimScale.triangle <- methods::new("Triangles", dimvalues = c("Lower", "Upper"))
     DimScales <- append(DimScales, DimScale.triangle)
     metadata <- methods::new("MetaData",
                     nms = names,

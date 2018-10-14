@@ -729,7 +729,7 @@ test_that("class Sexes works", {
 
 test_that("class Triangles works", {
   expect_true(validObject(new("Triangles", dimvalues = c("Lower", "Upper"))))
-  expect_true(validObject(new("Triangles", dimvalues = c("TL", "TU"))))
+  expect_true(validObject(new("Triangles", dimvalues = c("Lower", "Upper"))))
   expect_true(validObject(new("Triangles", dimvalues = "Upper")))
   expect_error(new("Triangles", dimvalues = c(NA, "Upper")), "missing values")
   expect_error(new("Triangles", dimvalues = c("TU", "Lower")), "invalid values")
@@ -1282,7 +1282,7 @@ test_that("validity tests for Population inherited from NoTriangle work", {
     x <- Counts(array(1:18,
                       dim = c(3, 2, 3),
                       dimnames = list(age = c(0,1,"2+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c(0, 1, 2))),
                 dimscales = c(time = "Intervals"))
     expect_error(new("Population", x))
@@ -1346,7 +1346,7 @@ test_that("can create valid object of class BirthsMovementsNoParentChild", {
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("20-24", "25-29"),
                           time = c("2001-2005", "2006-2010"),
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("BirthsMovementsNoParentChild",
              .Data = x@.Data,
              metadata = x@metadata,
@@ -1373,7 +1373,7 @@ test_that("validity tests for BirthsMovementsNoParentChild inherited from NoPare
                           eth_parent = c("A", "B"),
                           eth_child = c("A", "B"),
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     expect_error(new("BirthsMovementsNoParentChild",
                      .Data = x@.Data,
                      metadata = x@metadata,
@@ -1388,7 +1388,7 @@ test_that("validity tests for BirthsMovementsNoParentChild inherited from iMinAg
                           age = "20-24",
                           eth = c("A", "B"),
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("BirthsMovementsNoParentChild",
              .Data = x@.Data,
              metadata = x@metadata,
@@ -1440,7 +1440,7 @@ test_that("can create valid object of class BirthsMovementsHasParentChild", {
                           eth_parent = c("A", "B"),
                           eth_child = c("A", "B"),
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("BirthsMovementsHasParentChild", .Data = x@.Data, metadata = x@metadata,
              iMinAge = 5L)
     expect_true(validObject(x))
@@ -1452,7 +1452,7 @@ test_that("validity tests for BirthsMovementsHasParentChild inherited from HasPa
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("20-24", "25-29"),
                           time = c("2001-2005", "2006-2010"),
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     expect_error(new("BirthsMovementsHasParentChild",
                      .Data = x@.Data,
                      metadata = x@metadata,
@@ -1466,7 +1466,7 @@ test_that("validity tests for BirthsMovementsHasParentChild inherited from HasPa
                           eth_parent = c("A", "B"),
                           eth_child = c("A", "B"),
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     expect_error(new("BirthsMovementsHasParentChild", .Data = x@.Data, metadata = x@metadata,
                      iMinAge = 5L),
                  "dimensions \"reg_parent\" and \"reg_child\" use different categories")
@@ -1557,7 +1557,7 @@ test_that("can create valid object of class InternalMovementsNet", {
                       dimnames = list(reg = c("a", "b"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsNet", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L)
     expect_true(validObject(x))
@@ -1567,7 +1567,7 @@ test_that("can create valid object of class InternalMovementsNet", {
                       dimnames = list(eth = c("a", "b", "c"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- aperm(x, perm = c(2, 1, 3, 4))
     x <- new("InternalMovementsNet", .Data = x@.Data, metadata = x@metadata,
              iBetween = 2L)
@@ -1580,7 +1580,7 @@ test_that("can create valid object of class InternalMovementsNet", {
                           eth_orig = c("a", "b", "c"),
                           eth_dest = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005"))))
     x <- collapseOrigDest(x, base = c("reg", "eth"))
     x <- new("InternalMovementsNet", .Data = x@.Data, metadata = x@metadata,
@@ -1595,7 +1595,7 @@ test_that("validity tests for InternalMovementsNet inherited from iBetween work"
                       dimnames = list(reg = c("a", "b"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsNet", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L)
     ## 'iBetween' has positive length
@@ -1619,7 +1619,7 @@ test_that("validity tests for InternalMovementsNet inherited from iBetween work"
                       dimnames = list(reg = "a",
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     expect_error(new("InternalMovementsNet",
                      .Data = x.wrong@.Data, metadata = x.wrong@metadata,
                      iBetween = 1L),
@@ -1637,7 +1637,7 @@ test_that("validity tests for InternalMovementsNet inherited from NetSumsToZero 
                       dimnames = list(reg = c("a", "b"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsNet", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L)
     ## sums across "between" dimensions equal 0
@@ -1654,7 +1654,7 @@ test_that("can create valid object of class InternalMovementsPool", {
                           direction = c("Out", "In"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsPool", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L, iDirection = 2L)
     expect_true(validObject(x))
@@ -1665,7 +1665,7 @@ test_that("can create valid object of class InternalMovementsPool", {
                           direction = c("Out", "In"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- aperm(x, perm = c(3, 4, 2, 5, 1))
     x <- new("InternalMovementsPool", .Data = x@.Data, metadata = x@metadata,
              iBetween = 5L, iDirection = 3L)
@@ -1678,7 +1678,7 @@ test_that("can create valid object of class InternalMovementsPool", {
                           direction = c("Out", "In"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsPool", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L, iDirection = 2L)
     expect_true(validObject(x))
@@ -1690,7 +1690,7 @@ test_that("can create valid object of class InternalMovementsPool", {
                           eth_orig = c("a", "b", "c"),
                           eth_dest = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005"))))
     x <- collapseOrigDest(x, base = c("reg", "eth"), to = "pool")
     x <- new("InternalMovementsPool", .Data = x@.Data, metadata = x@metadata,
@@ -1704,7 +1704,7 @@ test_that("can create valid object of class InternalMovementsPool", {
                           eth_orig = c("a", "b", "c"),
                           eth_dest = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005"))))
     x <- collapseOrigDest(x, base = c("reg", "eth"), to = "pool")
     x <- new("InternalMovementsPool",
@@ -1723,7 +1723,7 @@ test_that("validity tests for InternalMovementsPool inherited from IDirection wo
                           direction = c("Out", "In"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsPool", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L, iDirection = 2L)
       ## 'iDirection' has length 1
@@ -1771,7 +1771,7 @@ test_that("validity tests for InternalMovementsPool inherited from InsEqualOuts 
                           direction = c("Out", "In"),
                           age = "20-24",
                           time = "2001-2005",
-                          triangle = c("TL", "TU"))))
+                          triangle = c("Lower", "Upper"))))
     x <- new("InternalMovementsPool", .Data = x@.Data, metadata = x@metadata,
              iBetween = 1L, iDirection = 2L)
     ## ins equal outs
@@ -1789,7 +1789,7 @@ test_that("can create valid object of class InternalMovementsOrigDest", {
                           eth_orig = c("a", "b", "c"),
                           eth_dest = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005"))))
     x <- new("InternalMovementsOrigDest", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
@@ -1802,7 +1802,7 @@ test_that("validity tests for InternalMovementsOrigDest inherited from HasOrigDe
                       dimnames = list(reg = c("a", "b", "c"),
                           eth = c("a", "b", "c"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005"))))
     expect_error(new("InternalMovementsOrigDest",
                      .Data = x@.Data,
@@ -1815,7 +1815,7 @@ test_that("validity tests for InternalMovementsOrigDest inherited from HasOrigDe
                           eth_orig = c("a", "b", "c"),
                           eth_dest = c("a", "b", "wrong"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005"))))
     expect_error(new("InternalMovementsOrigDest",
                      .Data = x@.Data,
@@ -1842,7 +1842,7 @@ test_that("can create valid object of class EntriesMovements", {
     x <- Counts(array(rpois(n = 24, lambda = 10),
                       dim = c(3, 2, 2, 2),
                       dimnames = list(reg = c("a", "b", "c"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           age = c("0-4", "5+"),
                           time = c("2001-2005", "2006-2010"))))
     x <- new("EntriesMovements", .Data = x@.Data, metadata = x@metadata)
@@ -1876,7 +1876,7 @@ test_that("can create valid object of class ExitsMovements", {
     x <- Counts(array(rpois(n = 24, lambda = 10),
                       dim = c(3, 2, 2, 2),
                       dimnames = list(reg = c("a", "b", "c"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           age = c("0-4", "5+"),
                           time = c("2001-2005", "2006-2010"))))
     x <- new("ExitsMovements", .Data = x@.Data, metadata = x@metadata)
@@ -1910,7 +1910,7 @@ test_that("can create valid object of class NetMovements", {
     x <- Counts(array(as.integer(rnorm(n = 24, mean = 0, sd = 5)),
                       dim = c(3, 2, 2, 2),
                       dimnames = list(reg = c("a", "b", "c"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           age = c("0-4", "5+"),
                           time = c("2001-2005", "2006-2010"))))
     x <- new("NetMovements", .Data = x@.Data, metadata = x@metadata)
@@ -1947,7 +1947,7 @@ test_that("can create valid object of class Exposure", {
                       dimnames = list(reg = c("a", "b", "c"),
                           sex = c("f", "m"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005", "2006-2010"))))
     x <- new("Exposure", .Data = x@.Data, metadata = x@metadata)
     expect_true(validObject(x))
@@ -1960,7 +1960,7 @@ test_that("validity tests for Exposure inherited from IsDouble work", {
                       dimnames = list(reg = c("a", "b", "c"),
                           sex = c("f", "m"),
                           age = c("0-4", "5+"),
-                          triangle = c("TL", "TU"),
+                          triangle = c("Lower", "Upper"),
                           time = c("2001-2005", "2006-2010"))))
     expect_error(new("Exposure", .Data = x@.Data, metadata = x@metadata),
                  "does not have type \"double\"")
@@ -1997,7 +1997,7 @@ test_that("can create valid object of class Movements", {
     births <- Counts(array(1L,
                            dim = c(1, 2, 2),
                            dimnames = list(age = "5-9",
-                               triangle = c("TL", "TU"),
+                               triangle = c("Lower", "Upper"),
                                time = c("2001-2005", "2006-2010"))))
     births <- new("BirthsMovementsNoParentChild",
                   .Data = births@.Data,
@@ -2007,7 +2007,7 @@ test_that("can create valid object of class Movements", {
                            dim = c(3, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -2033,7 +2033,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                            dimnames = list(age = "5-9",
                                            reg = c("a", "b"),
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     births <- new("BirthsMovementsNoParentChild",
                   .Data = births@.Data,
                   metadata = births@metadata,
@@ -2044,7 +2044,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                                              reg_orig = c("a", "b"),
                                              reg_dest = c("a", "b"),
                                              time = c("2001-2005", "2006-2010"),
-                                             triangle = c("TL", "TU"))))
+                                             triangle = c("Lower", "Upper"))))
     internal <- new("InternalMovementsOrigDest",
                     .Data = internal@.Data,
                     metadata = internal@metadata)
@@ -2053,7 +2053,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
                            dimnames = list(age = c("0-4", "5-9", "10+"),
                                            reg = c("a", "b"),
                                            time = c("2001-2005", "2006-2010"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     deaths <- new("ExitsMovements",
                   .Data = deaths@.Data,
                   metadata = deaths@metadata)
@@ -2115,7 +2115,7 @@ test_that("validity tests for Movements inherited from DemographicAccount work",
     wrong.deaths <- Counts(array(c(0L, 1L, 2L),
                                  dim = c(3, 2, 2, 3),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
-                                                 triangle = c("TL", "TU"),
+                                                 triangle = c("Lower", "Upper"),
                                                  time = c("2001-2005", "2006-2010"),
                                                  reg = c("a", "b", "c"))))
     wrong.deaths <- new("ExitsMovements",

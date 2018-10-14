@@ -178,7 +178,7 @@ Movements <- function(population, births = NULL, internal = NULL,
 #'                        dim = c(5, 2, 1),
 #'                        dimnames = list(age = c("20-20.25", "20.25-20.5",
 #'                                            "20.5-20.75", "20.75-21", "21+"),
-#'                                        triangle = c("TL", "TU"),
+#'                                        triangle = c("Lower", "Upper"),
 #'                                        time = "2000-2000.25")))
 #' account <- derivePopulation(initial = initial,
 #'                             exits = list(deaths = deaths))

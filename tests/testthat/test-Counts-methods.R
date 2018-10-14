@@ -2098,7 +2098,7 @@ test_that("exposure works when 'triangles' is TRUE", {
                                  dimnames = list(time = c("2001-2005", "2006-2010"),
                                      sex = c("f", "m"),
                                      age = c("0-4", "5-9", "10-14", "15+"),
-                                     triangle = c("TL", "TU"))))
+                                     triangle = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2224,7 +2224,7 @@ test_that("exposureBirths works - no origin, parent dimensions", {
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2005", "2006-2010"),
                                            age = c("5-9", "10-14"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- exposureBirths(population, triangles = TRUE, births = births)
     ans.expected <- exposure(population, triangles = TRUE)
     ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")
@@ -2253,7 +2253,7 @@ test_that("exposureBirths works - no origin, parent dimensions", {
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2005", "2006-2010"),
                                            age = c("5-9", "10-14"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- exposureBirths(population, births = births)
     ans.expected <- exposure(population, triangles = FALSE)
     ans.expected <- subarray(ans.expected, age > 5 & age < 15 & sex == "f")

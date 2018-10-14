@@ -75,34 +75,34 @@ test_that("accession works with Movements - with age, account contains births", 
                                dimscale = "Points")
     acc.internal <- slab(as(x@components[[2]], "Counts"),
                          dimension = "triangle",
-                         elements = "TU")
+                         elements = "Upper")
     acc.internal <- collapseOrigDest(acc.internal)
     acc.internal <- slab(acc.internal,
                          dimension = "age",
                          elements = 1:2)
     acc.immigration <- slab(as(x@components[[3]], "Counts"),
                             dimension = "triangle",
-                            elements = "TU")
+                            elements = "Upper")
     acc.immigration <- slab(acc.immigration,
                             dimension = "age",
                             elements = 1:2)
     acc.deaths <- slab(as(x@components[[4]], "Counts"),
                        dimension = "triangle",
-                       elements = "TU")
+                       elements = "Upper")
     acc.deaths <- slab(acc.deaths,
                        dimension = "age",
                        elements = 1:2)
     acc.deaths <- -1L * acc.deaths
     acc.emigration <- slab(as(x@components[[5]], "Counts"),
                            dimension = "triangle",
-                           elements = "TU")
+                           elements = "Upper")
     acc.emigration <- slab(acc.emigration,
                            dimension = "age",
                            elements = 1:2)
     acc.emigration <- -1L * acc.emigration
     acc.reclassification <- slab(as(x@components[[6]], "Counts"),
                                  dimension = "triangle",
-                                 elements = "TU")
+                                 elements = "Upper")
     acc.reclassification <- slab(acc.reclassification,
                                  dimension = "age",
                                  elements = 1:2)
@@ -175,34 +175,34 @@ test_that("accession works with Movements - with age, account does not contain b
                    net = list(reclassification = reclassification))
     acc.internal <- slab(as(x@components[[1]], "Counts"),
                          dimension = "triangle",
-                         elements = "TU")
+                         elements = "Upper")
     acc.internal <- collapseOrigDest(acc.internal)
     acc.internal <- slab(acc.internal,
                          dimension = "age",
                          elements = 1:2)
     acc.immigration <- slab(as(x@components[[2]], "Counts"),
                             dimension = "triangle",
-                            elements = "TU")
+                            elements = "Upper")
     acc.immigration <- slab(acc.immigration,
                             dimension = "age",
                             elements = 1:2)
     acc.deaths <- slab(as(x@components[[3]], "Counts"),
                        dimension = "triangle",
-                       elements = "TU")
+                       elements = "Upper")
     acc.deaths <- slab(acc.deaths,
                        dimension = "age",
                        elements = 1:2)
     acc.deaths <- -1L * acc.deaths
     acc.emigration <- slab(as(x@components[[4]], "Counts"),
                            dimension = "triangle",
-                           elements = "TU")
+                           elements = "Upper")
     acc.emigration <- slab(acc.emigration,
                            dimension = "age",
                            elements = 1:2)
     acc.emigration <- -1L * acc.emigration
     acc.reclassification <- slab(as(x@components[[5]], "Counts"),
                                  dimension = "triangle",
-                                 elements = "TU")
+                                 elements = "Upper")
     acc.reclassification <- slab(acc.reclassification,
                                  dimension = "age",
                                  elements = 1:2)

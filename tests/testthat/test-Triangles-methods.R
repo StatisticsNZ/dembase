@@ -29,15 +29,15 @@ test_that("coercion from Triangles to Quantiles works", {
 test_that("coercion from Triangles to Iterations works", {
   expect_that(as(new("Triangles"), "Iterations"),
               is_identical_to(new("Iterations")))
-  expect_that(as(new("Triangles", dimvalues = c("TL", "TU")), "Iterations"),
+  expect_that(as(new("Triangles", dimvalues = c("Lower", "Upper")), "Iterations"),
               throws_error("labels not valid for dimscale"))
 })
 
 
 test_that("labels method for Triangles works", {
     labels <- dembase:::labels
-    expect_identical(labels(new("Triangles", dimvalues = c("TL", "TU"))),
-                     c("TL", "TU"))
+    expect_identical(labels(new("Triangles", dimvalues = c("Lower", "Upper"))),
+                     c("Lower", "Upper"))
     expect_identical(labels(new("Triangles", dimvalues = "Lower")),
                      "Lower")
     expect_identical(labels(new("Triangles")),
@@ -49,8 +49,8 @@ test_that("inferDimvalues method for Triangles works", {
   inferDimvalues <- dembase:::inferDimvalues
   expect_that(inferDimvalues(new("Triangles"), labels = c("Lower", "Upper")),
               is_identical_to(c("Lower", "Upper")))
-  expect_that(inferDimvalues(new("Triangles"), labels = c("TL", "TU")),
-              is_identical_to(c("TL", "TU")))
+  expect_that(inferDimvalues(new("Triangles"), labels = c("Lower", "Upper")),
+              is_identical_to(c("Lower", "Upper")))
   expect_that(inferDimvalues(new("Triangles"), labels = NULL),
               is_identical_to(character()))
   expect_that(inferDimvalues(new("Triangles"), labels = c("Lower", NA)),

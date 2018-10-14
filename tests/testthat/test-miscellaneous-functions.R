@@ -395,28 +395,28 @@ test_that("datesToTriangles works", {
     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
                       "2001-07-01", "2005-01-01", "2005-12-01"))
     ans.obtained <- datesToTriangles(date = date, dob = dob)
-    ans.expected <- factor(c("TL", "TL", "TU", "TL", "TL", "TU", "TL"),
-                           levels = c("TL", "TU"))
+    ans.expected <- factor(c("Lower", "Lower", "Upper", "Lower", "Lower", "Upper", "Lower"),
+                           levels = c("Lower", "Upper"))
     expect_identical(ans.obtained, ans.expected)
     dob <- as.Date(c("2000-06-30", "2000-08-30", "2001-01-01", "2001-12-31"))
     date <- as.Date(c("2002-06-30", "2003-07-01"))
     ans.obtained <- datesToTriangles(date = date, dob = dob)
-    ans.expected <- factor(c("TL", "TU", "TL", "TU"),
-                           levels = c("TL", "TU"))
+    ans.expected <- factor(c("Lower", "Upper", "Lower", "Upper"),
+                           levels = c("Lower", "Upper"))
     expect_identical(ans.obtained, ans.expected)
     dob <- as.Date(c(NA, "2000-08-30", "2001-01-01", "2001-12-31"))
     date <- as.Date(c("2002-06-30", "2003-07-01"))
     ans.obtained <- datesToTriangles(date = date, dob = dob)
-    ans.expected <- factor(c(NA, "TU", "TL", "TU"),
-                           levels = c("TL", "TU"))
+    ans.expected <- factor(c(NA, "Upper", "Lower", "Upper"),
+                           levels = c("Lower", "Upper"))
     expect_identical(ans.obtained, ans.expected)
     ## 5-year intervals
     dob <- as.Date("2000-06-30")
     date <- as.Date(c("2000-06-30", "2000-07-01", "2001-06-29", "2001-06-30",
                       "2001-07-01", "2005-01-01", "2005-12-01"))
     ans.obtained <- datesToTriangles(date = date, dob = dob, step = "5 years")
-    ans.expected <- factor(c("TL", "TL", "TL", "TL", "TL", "TU", "TL"),
-                           levels = c("TL", "TU"))
+    ans.expected <- factor(c("Lower", "Lower", "Lower", "Lower", "Lower", "Upper", "Lower"),
+                           levels = c("Lower", "Upper"))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -2291,12 +2291,12 @@ test_that("R and C versions of getIShared give same answer", {
 ##                        dim = c(3, 1, 2),
 ##                        dimnames = list(age = c(0, 1, "2+"),
 ##                            time = 1,
-##                            triangle = c("TL", "TU"))))
+##                            triangle = c("Lower", "Upper"))))
 ## exposure <- Counts(array(1:12,
 ##                          dim = c(3, 1, 2),
 ##                          dimnames = list(age = c(0, 1, "2+"),
 ##                              time = 1,
-##                              triangle = c("TL", "TU"))))
+##                              triangle = c("Lower", "Upper"))))
 
                  
 ## population <- Counts(array(1:6,
@@ -4375,7 +4375,7 @@ test_that("checkAndTidyComponent works", {
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
                                       time = c("2001-2005", "2006-2010"),
-                                      triangle = c("TL", "TU"))))
+                                      triangle = c("Lower", "Upper"))))
     ans.obtained <- checkAndTidyComponent(x, name = "component")
     ans.expected <- toInteger(x)
     expect_identical(ans.obtained, ans.expected)
@@ -4383,7 +4383,7 @@ test_that("checkAndTidyComponent works", {
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
                                       time = c("2001-2005", "2006-2010"),
-                                      triangle = c("TL", "TU"))))
+                                      triangle = c("Lower", "Upper"))))
     expect_error(checkAndTidyComponent(x, name = "component"),
                  "'component' invalid : non-integer values")
     ## time, age, cohort dimensions
@@ -4477,7 +4477,7 @@ test_that("checkAndTidyComponent works", {
                       dim = c(2, 2, 2),
                       dimnames = list(age = c("0-4", "5+"),
                                       time = c("2001-2005", "2006-2010"),
-                                      triangle = c("TL", "TU"))))
+                                      triangle = c("Lower", "Upper"))))
     expect_error(checkAndTidyComponent(x, name = "component", allowTriangles = FALSE),
                  "'component' has Lexis triangles")
     ## triangle
@@ -4767,7 +4767,7 @@ test_that("dimCompCompatibleWithPopn works", {
     ## exits - time
     name <- "lexis"
     dimtype <- "triangle"
-    DimScale <- new("Triangles", dimvalues = c("TL", "TU"))
+    DimScale <- new("Triangles", dimvalues = c("Lower", "Upper"))
     namesPopn <- c("year", "age", "eth")
     dimtypesPopn <- c("time", "age", "state")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
@@ -4843,7 +4843,7 @@ test_that("dimCompEqualToPopn works", {
     namesPopn <- c("time", "sex")
     dimtypesPopn <- c("time", "triangle")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Triangles", dimvalues = c("TL", "TU")))
+                          new("Triangles", dimvalues = c("Lower", "Upper")))
     nameComponent <- "arrivals"
     expect_identical(dimCompEqualToPopn(name = name,
                                         dimtype = dimtype,
@@ -4956,7 +4956,7 @@ test_that("exposureWithTriangles works", {
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30+"),
                                      time = c("2001-2005", "2006-2010"),
-                                     triangle = c("TL", "TU"))))
+                                     triangle = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
     expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
                      exposureNoTriangles(population))
@@ -4976,7 +4976,7 @@ test_that("exposureWithTriangles works", {
                                      time = c("2001-2005", "2006-2010"),
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30-34"),
-                                     triangle = c("TL", "TU"))))
+                                     triangle = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
     expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
                      exposureNoTriangles(population))
@@ -4987,7 +4987,7 @@ test_that("getDimScaleTimePopn works", {
     component <- Counts(array(1:12,
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   time = c("2001-2005", "2006-2010"))))
     ans.obtained <- getDimScaleTimePopn(component, name = "component")
     ans.expected <- new("Points", dimvalues = c(2000, 2005, 2010))
@@ -5014,14 +5014,14 @@ test_that("iMinAge works", {
                            dimnames = list(reg = c("a", "b"),
                                age = c("20-24", "25-29"),
                                time = c("2001-2005", "2006-2010"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     template <- Counts(array(0L,
                              dim = c(2, 7, 2, 2),
                              dimnames = list(reg = c("a", "b"),
                                  age = c("0-4", "5-9", "10-14", "15-19",
                                      "20-24", "25-29", "30+"),
                                  time = c("2001-2005", "2006-2010"),
-                                 triangle = c("TL", "TU"))))
+                                 triangle = c("Lower", "Upper"))))
     ans.obtained <- iMinAge(current = births, target = template)
     ans.expected <- 5L
     expect_identical(ans.obtained, ans.expected)
@@ -5041,7 +5041,7 @@ test_that("iMinAge works", {
                            dimnames = list(reg = c("a", "b"),
                                age = c("0-4", "5-9", "10-14", "15-19"),
                                time = c("2001-2005", "2006-2010"),
-                               triangle = c("TL", "TU"))))
+                               triangle = c("Lower", "Upper"))))
     expect_error(iMinAge(current = births, target = wrong),
                  "minimum age of 'current' not found in ages of 'target'")
 })
@@ -5052,7 +5052,7 @@ test_that("incrementLowerTriHelper works", {
     component <- Counts(array(1:12,
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
@@ -5071,7 +5071,7 @@ test_that("incrementOpenHelper works", {
     component <- Counts(array(1:12,
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
@@ -5110,7 +5110,7 @@ test_that("incrementUpperTriHelper works", {
     component <- Counts(array(1:12,
                               dim = c(3, 2, 2),
                               dimnames = list(age = c("0-4", "5-9", "10+"),
-                                  triangle = c("TL", "TU"),
+                                  triangle = c("Lower", "Upper"),
                                   time = c("2001-2005", "2006-2010"))))
     component <- EntriesMovements(component,
                                   template = component,
@@ -5149,7 +5149,7 @@ test_that("makeMappingBirths works", {
     births <- Counts(array(1L,
                            dim = c(2, 2, 2, 5, 2),
                            dimnames = list(age = c("5-9", "10-14"),
-                                           triangle = c("TL", "TU"),
+                                           triangle = c("Lower", "Upper"),
                                            sex = c("m", "f"),
                                            reg = 1:5,
                                            time = c("2001-2005", "2006-2010"))))
@@ -5163,7 +5163,7 @@ test_that("makeMappingBirths works", {
                                            reg_parent = 1:5,
                                            time = c("2001-2005", "2006-2010"),
                                            age = c("5-9", "10-14"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- makeMappingBirths(births)
     ans.expected <- rep(rep(rep(1:10, times = 5), times = 2), times = 2)
     expect_identical(ans.obtained, ans.expected)
@@ -5174,7 +5174,7 @@ test_that("makeMappingBirths works", {
                                            reg_parent = 1:5,
                                            reg_child = 1:5,
                                            age = c("5-9", "10-14"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- makeMappingBirths(births)
     ans.expected <- rep(rep(c(rep(rep(1:2, each = 2), times = 5),
                           rep(rep(3:4, each = 2), times = 5),
@@ -5191,7 +5191,7 @@ test_that("makeMappingBirths works", {
                            dim = c(2, 2, 2),
                            dimnames = list(time = c("2001-2005", "2006-2010"),
                                            age = c("5-9", "10-14"),
-                                           triangle = c("TL", "TU"))))
+                                           triangle = c("Lower", "Upper"))))
     ans.obtained <- makeMappingBirths(births)
     ans.expected <- rep(1L, 4L)
     expect_identical(ans.obtained, ans.expected)
@@ -5285,7 +5285,7 @@ test_that("makeMetadataForExposure works", {
                         DimScales = list(new("Categories", dimvalues = as.character(1:4)),
                             new("Intervals", dimvalues = as.numeric(0:5)),
                             new("Intervals", dimvalues = as.numeric(1:6)),
-                            new("Triangles", dimvalues = c("TL", "TU"))))
+                            new("Triangles", dimvalues = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
     population <- Counts(array(1:20,
                                dim = 4:5,
@@ -5317,7 +5317,7 @@ test_that("makeTemplateComponent works", {
                                  dimnames = list(reg = 1:4,
                                      age = 0:4,
                                      time = 1:5,
-                                     triangle = c("TL", "TU"))),
+                                     triangle = c("Lower", "Upper"))),
                            dimscales = c(time = "Intervals"))
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- makeTemplateComponent(population, triangles = FALSE)
@@ -5384,7 +5384,7 @@ test_that("pairDimCompCompatibleWithPopn works", {
     namesPopn <- c("time", "reg")
     dimtypesPopn <- c("time", "triangle")
     DimScalesPopn <- list(new("Points", dimvalues = seq(2000, 2020, 5)),
-                          new("Triangles", dimvalues = c("TL", "TU")))
+                          new("Triangles", dimvalues = c("Lower", "Upper")))
     nameComponent <- "internal"
     expect_identical(pairDimCompCompatibleWithPopn(name = name,
                                                    dimtype = dimtype,
@@ -5584,7 +5584,7 @@ test_that("splitTriangles works", {
                                  dim = c(2, 2, 2),
                                  dimnames = list(age = c("0-4", "5+"),
                                      time = c("2001-2005", "2006-2010"),
-                                     triangle = c("TL", "TU"))))
+                                     triangle = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
     ## some negative
     object <- Counts(array(c(5:6, -3L, -5L),
@@ -5601,7 +5601,7 @@ test_that("splitTriangles works", {
                                  dim = c(2, 2, 2),
                                  dimnames = list(age = c("0-4", "5+"),
                                      time = c("2001-2005", "2006-2010"),
-                                     triangle = c("TL", "TU"))))
+                                     triangle = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
 })
 

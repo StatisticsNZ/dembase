@@ -1091,7 +1091,6 @@ setMethod("dplot",
                    probs = c(0.025, 0.25, 0.5, 0.75, 0.975),
                    horizontal = FALSE,
                    overlay = NULL, ...) {
-              browser()
               ## extract info about call
               original.call <- match.call(call = sys.call(sys.parent()))
               group.vars <- all.vars(original.call$groups)
