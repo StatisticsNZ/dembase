@@ -20,6 +20,7 @@ Authors@R: c(
 Description: General-purpose tools for demographic analysis, broadly defined.
     Includes facilities for data manipulation, multistate models, projections, and
     plotting. Uses S4 classes and methods.
+Encoding: UTF-8
 License: MIT + file LICENSE
 LazyLoad: yes
 LazyData: yes
