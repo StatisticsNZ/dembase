@@ -1378,12 +1378,12 @@ setMethod("expandIntervals",
                                                           metadata = metadata)
               if (means)
                   .Data.new <- redistributeInnerMeans(counts = object@.Data,
-                                                      weights = weights,
+                                                      weights = as.double(weights),
                                                       transform = transform,
                                                       useC = TRUE)
               else
                   .Data.new <- redistributeInnerDistn(counts = object@.Data,
-                                                      weights = weights,
+                                                      weights = as.double(weights),
                                                       transform = transform,
                                                       useC = TRUE)
               .Data.new <- array(.Data.new,

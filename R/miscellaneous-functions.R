@@ -343,6 +343,17 @@ cleanAgeGroup <- function(age) {
     age <- sub("and over|plus", "+", age)
     age <- sub("to|-+|_+", "-", age)
     age <- gsub(" ", "", age)
+    age <- gsub("lessthanone", "0", age)
+    age <- gsub("one", "1", age)
+    age <- gsub("two", "2", age)
+    age <- gsub("three", "3", age)
+    age <- gsub("four", "4", age)
+    age <- gsub("five", "5", age)
+    age <- gsub("six", "6", age)
+    age <- gsub("seven", "7", age)
+    age <- gsub("eight", "8", age)
+    age <- gsub("nine", "9", age)
+    age <- gsub("ten", "10", age)
     age
 }
 
