@@ -10,11 +10,13 @@
 expandIntervals(object, dimension, breaks = NULL, width = NULL,
   old = NULL, weights, means = FALSE)
 
-\S4method{expandIntervals}{Counts,ANY,numeric,missing,missing,missing}(object,
+
+  \S4method{expandIntervals}{Counts,ANY,numeric,missing,missing,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights,
   means = FALSE)
 
-\S4method{expandIntervals}{Counts,ANY,missing,numeric,missing,missing}(object,
+
+  \S4method{expandIntervals}{Counts,ANY,missing,numeric,missing,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 }
 \arguments{

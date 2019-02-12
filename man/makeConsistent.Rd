@@ -8,7 +8,8 @@
 \usage{
 makeConsistent(object, adjust = TRUE, scale = 0.1)
 
-\S4method{makeConsistent}{Movements}(object, adjust = TRUE, scale = 0.1)
+\S4method{makeConsistent}{Movements}(object, adjust = TRUE,
+  scale = 0.1)
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicAccount}}.}

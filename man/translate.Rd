@@ -24,7 +24,8 @@ translate(object, concordance, to = NULL, ...)
 
 \S4method{translate}{ANY,OneToOne,missing}(object, concordance)
 
-\S4method{translate}{ANY,data.frame,ANY}(object, concordance, to = NULL, ...)
+\S4method{translate}{ANY,data.frame,ANY}(object, concordance, to = NULL,
+  ...)
 
 \S4method{translate}{ANY,matrix,ANY}(object, concordance, to = NULL, ...)
 }

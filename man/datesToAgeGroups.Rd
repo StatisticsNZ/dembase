@@ -2,7 +2,6 @@
 % Please edit documentation in R/miscellaneous-functions.R
 \name{datesToAgeGroups}
 \alias{datesToAgeGroups}
-\alias{datesToAgeGroups}
 \alias{datesToCohorts}
 \alias{datesToPeriods}
 \alias{datesToTriangles}

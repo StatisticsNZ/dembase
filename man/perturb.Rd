@@ -8,8 +8,8 @@
 \usage{
 perturb(object, n = 1L, order = 2L, phi = 1, subtotals = NULL)
 
-\S4method{perturb}{DemographicArray}(object, n = 1L, order = 2L, phi = 1,
-  subtotals = NULL)
+\S4method{perturb}{DemographicArray}(object, n = 1L, order = 2L,
+  phi = 1, subtotals = NULL)
 }
 \arguments{
 \item{object}{Object of class \code{\linkS4class{DemographicArray}}.}

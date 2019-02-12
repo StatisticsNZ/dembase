@@ -3,7 +3,6 @@
 \docType{class}
 \name{DemographicArray-class}
 \alias{DemographicArray-class}
-\alias{DemographicArray-class}
 \alias{Counts-class}
 \alias{Values-class}
 \alias{DemographicArrayOrNumeric-class}

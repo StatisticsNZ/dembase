@@ -4,8 +4,8 @@
 \alias{Movements}
 \title{Create a demographic account based on movements.}
 \usage{
-Movements(population, births = NULL, internal = NULL, entries = list(),
-  exits = list(), net = list())
+Movements(population, births = NULL, internal = NULL,
+  entries = list(), exits = list(), net = list())
 }
 \arguments{
 \item{population}{A \code{\linkS4class{Counts}} object.}

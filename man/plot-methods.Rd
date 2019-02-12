@@ -11,8 +11,8 @@
 \S4method{plot}{Counts}(x, main = NULL, cex.main = 1.2,
   col.main = "black", font.main = 2, las = 1, ...)
 
-\S4method{plot}{Values}(x, threshold = 20, main = NULL, cex.main = 1.2,
-  col.main = "black", font.main = 2, las = 1, ...)
+\S4method{plot}{Values}(x, threshold = 20, main = NULL,
+  cex.main = 1.2, col.main = "black", font.main = 2, las = 1, ...)
 }
 \arguments{
 \item{x}{Object of class \code{\linkS4class{DemographicArray}}.}

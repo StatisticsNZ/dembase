@@ -1648,10 +1648,6 @@ test_that("rotateAgeTime works with age-time to age-cohort - no triangles", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-
-
-
-
 test_that("slab works with numeric dimension and elements", {
     x <- Counts(array(rpois(n = 6, lambda = 5),
                       dim = c(3, 2),
@@ -1707,7 +1703,7 @@ test_that("slab works with 0-length elements", {
                      x[, integer()])
 })
 
-test_that("drop argument for slab works correctly", {
+test_that("logical drop argument for slab works correctly", {
     x <- Counts(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(age = 0:2, sex = c("f", "m"))))
@@ -1746,6 +1742,47 @@ test_that("drop argument for slab works correctly", {
                                  dimnames = list(age = 0)))
     expect_identical(ans.obtained, ans.expected)
 })
+
+test_that("'dimension' drop argument for slab works correctly", {
+    x <- Counts(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(age = 0:2, sex = c("f", "m"))))
+    ans.obtained <- slab(x, dimension = "age", elements = 1, drop = "dimension")
+    ans.expected <- Counts(array(c(1L, 4L),
+                                 dim = 2,
+                                 dimnames = list(sex = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- slab(x, dimension = "age",
+                         elements = 1:2,
+                         drop = "dimension")
+    ans.expected <- Counts(array(c(1:2, 4:5),
+                                 dim = c(2, 2),
+                                 dimnames = list(age = 0:1, sex = c("f", "m"))))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(0,
+                      dim = c(0, 2),
+                      dimnames = list(age = character(), sex = c("f", "m"))))
+    ans.obtained <- slab(x, dimension = "sex", elements = "f", drop = "dimension")
+    ans.expected <- Counts(array(0,
+                                 dim = 0,
+                                 dimnames = list(age = character())))
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:5,
+                      dim = 5,
+                      dimnames = list(age = 0:4)))
+    ans.obtained <- slab(x, dimension = "age", elements = 1, drop = "dim")
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:6,
+                      dim = c(3, 1, 2),
+                      dimnames = list(age = 0:2, region = "a", sex = c("f", "m"))))
+    ans.obtained <- slab(x, dimension = "sex", elements = 1, drop = "dimension")
+    ans.expected <- Counts(array(1:3,
+                                 dim = c(3, 1),
+                                 dimnames = list(age = 0:2, region = "a")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("replacement method for slab works with valid inputs", {
     ## character dimension; single numeric element
@@ -2025,6 +2062,138 @@ test_that("toInteger works", {
                  "non-integer values")
     expect_identical(toInteger(x, force = TRUE), y)
 })
+
+test_that("valueInInterval works when value is a demographic array", {
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             sex = c("F", "M"),
+                                             region = 2:1)))
+    ans.obtained <- valueInInterval(value = value,
+                                    interval = interval)
+    ans.expected <- array(c(TRUE, FALSE, TRUE, FALSE),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = value,
+                                    interval = aperm(interval, 3:1))
+    ans.expected <- array(c(TRUE, FALSE, TRUE, FALSE),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M")))
+    expect_identical(ans.obtained, ans.expected)
+    value <- Values(array(1:2,
+                          dim = 2,
+                          dimnames = list(sex = c("F", "M"))))
+    interval <- Counts(array(1:2,
+                             dim = c(2, 2),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             sex = c("F", "M"))))
+    ans.obtained <- valueInInterval(value = value,
+                                    interval = interval)
+    ans.expected <- array(c(TRUE, TRUE),
+                          dim = 2,
+                          dimnames = list(sex = c("F", "M")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = value,
+                                    interval = interval,
+                                    lower.inclusive = FALSE)
+    ans.expected <- array(c(FALSE, TRUE),
+                          dim = 2,
+                          dimnames = list(sex = c("F", "M")))
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = value,
+                                    interval = interval,
+                                    lower.inclusive = FALSE,
+                                    upper.inclusive = FALSE)
+    ans.expected <- array(c(FALSE, FALSE),
+                          dim = 2,
+                          dimnames = list(sex = c("F", "M")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("valueInInterval throws appropriate errors when value is a demographic array", {
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(quantile = c("5%", "90%"),
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             sex = c("F", "M"),
+                                             region = 1:2)))
+    expect_error(valueInInterval(value = value,
+                                 interval = interval),
+                 "'value' has dimension with dimtype \"quantile\"")
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(time = c(2000, 2005),
+                                             sex = c("F", "M"),
+                                             region = 1:2)))
+    expect_error(valueInInterval(value = value,
+                                 interval = interval),
+                 "'interval' does not have dimension with dimtype \"quantile\"")
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(3, 2, 2),
+                             dimnames = list(quantile = c("0.025", "0.5", "0.975"),
+                                             sex = c("F", "M"),
+                                             region = 1:2)))
+    expect_error(valueInInterval(value = value,
+                                 interval = interval),
+                 "dimension of 'interval' with dimtype \"quantile\" does not have length 2")
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(quantile = c("0.025", "0.975"),
+                                             sex = c("F", "M"),
+                                             wrong = 1:2)))
+    expect_error(valueInInterval(value = value,
+                                 interval = interval),
+                 "'value' and 'interval' have incompatible dimensions : \"region\", \"sex\" vs \"quantile\", \"sex\", \"wrong\"")
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(3, 2),
+                          dimnames = list(region = 1:3,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(quantile = c("0.025", "0.975"),
+                                             sex = c("F", "M"),
+                                             region = 1:2)))
+    expect_error(valueInInterval(value = value,
+                                 interval = interval),
+                 "\"region\" dimensions of 'value' and 'interval' have different lengths")
+    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(quantile = c("0.025", "0.975"),
+                                            sex = c("Female", "Male"),
+                                             region = 1:2)))
+    expect_error(valueInInterval(value = value,
+                                 interval = interval),
+                 "dimscales for \"sex\" dimension of 'value' and 'interval' incompatible")
+})
+
+
+
 
 test_that("unname works", {
     x <- Counts(array(1:4,

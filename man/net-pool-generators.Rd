@@ -5,8 +5,6 @@
 \alias{net-pool-generators}
 \alias{Net}
 \alias{Pool}
-\alias{Net}
-\alias{Pool}
 \alias{Net,Counts-method}
 \alias{Pool,Counts-method}
 \title{Create object of class "Net" and "Pool".}

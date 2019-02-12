@@ -1,4 +1,33 @@
 
+## GENERAL-PURPOSE CHECKING FUNCTIONS ##############################################
+
+checkLogicalFlag <- function(value, name) {
+    if (!is.logical(value))
+        stop(gettextf("'%s' has class \"%s\"",
+                      name, class(value)))
+    if (!identical(length(value), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    if (is.na(value))
+        stop(gettextf("'%s' is missing",
+                      name))
+    NULL             
+}
+
+checkPositiveVector <- function(value, name) {
+    if (!is.numeric(value))
+        stop(gettextf("'%s' has class \"%s\"",
+                      name, class(value)))
+    if (any(is.na(value)))
+        stop(gettextf("'%s' has missing values",
+                      name))
+    if (!all(value > 0))
+        stop(gettextf("'%s' has non-positive values",
+                      name))
+    NULL             
+}
+
+
 ## FUNCTIONS TO OBTAIN CONSTANTS ###################################################
 
 getDefaultSexRatio <- function() 105
@@ -1056,6 +1085,29 @@ checkAndTidyDimColExtCat <- function(dimension, names, DimScales) {
         }
         ans
     }
+}
+
+## HAS_TESTS
+checkAndTidyDrop <- function(drop) {
+    if (identical(drop, TRUE))
+        ans <- TRUE
+    else if (identical(drop, FALSE))
+        ans <- FALSE
+    else {
+        if (!identical(length(drop), 1L))
+            stop(gettextf("'%s' does not have length %d",
+                          "drop", 1L))
+        if (is.na(drop))
+            stop(gettextf("'%s' is missing",
+                          "drop"))
+        is.dimension <- pmatch(drop, "dimension", nomatch = 0L) > 0L
+        if (is.dimension)
+            ans <- "dimension"
+        else
+            stop(gettextf("invalid value for '%s'",
+                          "drop"))
+    }
+    ans
 }
 
 ## HAS_TESTS

@@ -83,7 +83,8 @@ isPositiveIncrement(object)
 
 makeCompatible(x, y, subset = FALSE, check = TRUE)
 
-makeTransform(x, y, subset = FALSE, concordances = list(), check = TRUE)
+makeTransform(x, y, subset = FALSE, concordances = list(),
+  check = TRUE)
 
 stepLengths(object)
 
@@ -97,8 +98,8 @@ stepLengths(object)
 
 \S4method{isPositiveIncrement}{NetMovements}(object)
 
-\S4method{canMakeCompatible}{Counts,DemographicArray}(x, y, subset = FALSE,
-  concordances = list(), allowCopyIterDim = TRUE)
+\S4method{canMakeCompatible}{Counts,DemographicArray}(x, y,
+  subset = FALSE, concordances = list(), allowCopyIterDim = TRUE)
 
 \S4method{collapse}{Counts,CollapseTransform}(object, transform)
 
@@ -108,7 +109,8 @@ stepLengths(object)
 \S4method{makeTransform}{Counts,DemographicArray}(x, y, subset = FALSE,
   concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{Counts,numeric}(x, y, subset = FALSE, check = TRUE)
+\S4method{makeTransform}{Counts,numeric}(x, y, subset = FALSE,
+  check = TRUE)
 
 \S4method{DimScales}{DemographicAccount}(object, use.names = TRUE)
 
@@ -134,8 +136,8 @@ stepLengths(object)
 
 \S4method{stepLengths}{Quantiles}(object)
 
-\S4method{canMakeCompatible}{Values,DemographicArray}(x, y, subset = FALSE,
-  concordances)
+\S4method{canMakeCompatible}{Values,DemographicArray}(x, y,
+  subset = FALSE, concordances)
 
 \S4method{collapse}{Values,CollapseTransform}(object, transform)
 
@@ -145,7 +147,8 @@ stepLengths(object)
 \S4method{makeTransform}{Values,DemographicArray}(x, y, subset = FALSE,
   concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{Values,numeric}(x, y, subset = FALSE, check = TRUE)
+\S4method{makeTransform}{Values,numeric}(x, y, subset = FALSE,
+  check = TRUE)
 
 \S4method{collapse}{array,CollapseTransform}(object, transform)
 

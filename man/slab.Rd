@@ -4,7 +4,6 @@
 \docType{methods}
 \name{slab}
 \alias{slab}
-\alias{slab}
 \alias{slab<-}
 \alias{slab,Component-method}
 \alias{slab,Births-method}
@@ -28,7 +27,8 @@ slab(object, dimension, elements, drop = TRUE) <- value
 \S4method{slab}{InternalMovementsNet}(object, dimension, elements,
   drop = TRUE)
 
-\S4method{slab}{DemographicArray}(object, dimension, elements, drop = TRUE)
+\S4method{slab}{DemographicArray}(object, dimension, elements,
+  drop = TRUE)
 
 \S4method{slab}{DemographicArray}(object, dimension, elements,
   drop = TRUE) <- value
@@ -40,7 +40,7 @@ slab(object, dimension, elements, drop = TRUE) <- value
 
 \item{elements}{Labels or indices of elements with in \code{dimension}.}
 
-\item{drop}{Whether dimensions of length 1 should be dropped from the
+\item{drop}{\code{TRUE}, \code{FALSE}, or the word \code{"dimension"} (possibly abbreviated). Defaults to \code{TRUE}.
 result.}
 
 \item{value}{An numeric vector, or an object that can be coerced to a
@@ -57,6 +57,17 @@ of an object is not fixed in advance (which makes \code{[} inconvenient).
 In interactive use, \code{\link{subarray}} may be a better choice, as
 it is clearer and more flexible.
 
+When \code{drop} is set to \code{TRUE} or \code{FALSE}, it works exactly
+like the \code{drop} argument in standard R extract functions
+(eg \code{\link{Extract}}. If \code{drop} is \code{TRUE}, then
+all length-one dimensions in the return value are removed; if
+\code{drop} is \code{FALSE}, then all length-one dimensions are preserved.
+\code{slab}, however, has a third option, the word \code{"dimension"}.
+In this case the only dimension eligible for dropping if it is
+length one is the dimension specified by the \code{dimension}
+argument. See below for an example. Note that the word \code{"dimension"}
+can be abbreviated.
+
 The replacement method ignores any attributes attached to \code{code} such
 as dimensions or dimnames.  In particular, if \code{value} is a
 \code{\linkS4class{DemographicArray}} object, any metadata is ignored.
@@ -64,6 +75,7 @@ as dimensions or dimnames.  In particular, if \code{value} is a
 \examples{
 library(demdata)
 x <- Values(VADeaths2)
+x
 slab(x, dimension = "age", elements = 1:3)
 slab(x, dimension = 1, elements = 1:3)
 slab(x, dimension = "age", elements = c("50-54", "70-74"))
@@ -74,6 +86,17 @@ slab(x, dimension = "sex", elements = "Male") <- 999
 x
 slab(x, dimension = "age", elements = "50-54") <- 1:4
 x
+
+x1 <- slab(x, dimension = "age", elements = 1, drop = FALSE)
+x1
+## drop length-one "sex" and "age" dimensions:
+slab(x1, dimension = "sex", elements = "Male", drop = TRUE)
+## don't drop any length-one dimensions:
+slab(x1, dimension = "sex", elements = "Male", drop = FALSE)
+## only drop the length-one "sex" dimension:
+slab(x1, dimension = "sex", elements = "Male", drop = "dimension")
+## abbreviate "dimension"
+slab(x1, dimension = "sex", elements = "Male", drop = "dim")
 }
 \seealso{
 \code{\link{subarray}}, \code{\link{[}}

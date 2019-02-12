@@ -1245,6 +1245,22 @@ test_that("checkAndTidyDimColExtCat works", {
                  "dimension \"age\" has dimscale \"Intervals\"")
 })
 
+test_that("checkAndTidyDrop works", {
+    checkAndTidyDrop <- dembase:::checkAndTidyDrop
+    expect_true(checkAndTidyDrop(TRUE))
+    expect_false(checkAndTidyDrop(FALSE))
+    expect_identical(checkAndTidyDrop("dimension"),
+                     "dimension")
+    expect_identical(checkAndTidyDrop("dimens"),
+                     "dimension")
+    expect_error(checkAndTidyDrop(c(TRUE, FALSE)),
+                 "'drop' does not have length 1")
+    expect_error(checkAndTidyDrop(NA),
+                 "'drop' is missing")
+    expect_error(checkAndTidyDrop("wrong"),
+                 "invalid value for 'drop'")
+})
+
 test_that("checkAndTidyOldNew works", {
     checkAndTidyOldNew <- dembase:::checkAndTidyOldNew
     expect_identical(checkAndTidyOldNew("a",

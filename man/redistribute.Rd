@@ -14,7 +14,8 @@ redistribute(counts, weights, means = FALSE, n = NULL)
 \S4method{redistribute}{Counts,DemographicArray}(counts, weights,
   means = FALSE, n = NULL)
 
-\S4method{redistribute}{Values,DemographicArray}(counts, weights, n = NULL)
+\S4method{redistribute}{Values,DemographicArray}(counts, weights,
+  n = NULL)
 
 \S4method{redistribute}{numeric,DemographicArray}(counts, weights,
   means = FALSE, n = NULL)

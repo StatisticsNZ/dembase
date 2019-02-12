@@ -10,8 +10,8 @@
 \usage{
 \S4method{as.matrix}{Concordance}(x, ...)
 
-\S4method{as.data.frame}{Concordance}(x, row.names = NULL, optional = FALSE,
-  stringsAsFactors = default.stringsAsFactors(), ...)
+\S4method{as.data.frame}{Concordance}(x, row.names = NULL,
+  optional = FALSE, stringsAsFactors = default.stringsAsFactors(), ...)
 
 \S4method{as.list}{ManyToOne}(x, ...)
 }

@@ -16,15 +16,19 @@ resetDiag(object, base = NULL, reset = NULL)
 
 \S4method{resetDiag}{Counts,ANY,ANY}(object, base = NULL, reset = NULL)
 
-\S4method{resetDiag}{Counts,ANY,missing}(object, base = NULL, reset = NULL)
+\S4method{resetDiag}{Counts,ANY,missing}(object, base = NULL,
+  reset = NULL)
 
-\S4method{resetDiag}{Counts,ANY,`NULL`}(object, base = NULL, reset = NULL)
+\S4method{resetDiag}{Counts,ANY,`NULL`}(object, base = NULL,
+  reset = NULL)
 
 \S4method{resetDiag}{Values,ANY,ANY}(object, base = NULL, reset = NULL)
 
-\S4method{resetDiag}{Values,ANY,`NULL`}(object, base = NULL, reset = NULL)
+\S4method{resetDiag}{Values,ANY,`NULL`}(object, base = NULL,
+  reset = NULL)
 
-\S4method{resetDiag}{Values,ANY,missing}(object, base = NULL, reset = NULL)
+\S4method{resetDiag}{Values,ANY,missing}(object, base = NULL,
+  reset = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicArray}}.}

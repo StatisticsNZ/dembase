@@ -21,13 +21,15 @@ collapseCategories(object, dimension = NULL, old, new, concordance,
 \S4method{collapseCategories}{Counts,ANY,missing,missing,OneToOne}(object,
   dimension = NULL, concordance, weights = NULL)
 
-\S4method{collapseCategories}{Counts,ANY,missing,missing,ManyToOne}(object,
+
+  \S4method{collapseCategories}{Counts,ANY,missing,missing,ManyToOne}(object,
   dimension = NULL, concordance, weights = NULL)
 
-\S4method{collapseCategories}{Values,ANY,ANY,ANY,missing}(object, dimension,
-  old, new, weights)
+\S4method{collapseCategories}{Values,ANY,ANY,ANY,missing}(object,
+  dimension, old, new, weights)
 
-\S4method{collapseCategories}{Values,ANY,missing,missing,ManyToOne}(object,
+
+  \S4method{collapseCategories}{Values,ANY,missing,missing,ManyToOne}(object,
   dimension, concordance, weights)
 
 \S4method{collapseCategories}{Values,ANY,missing,missing,OneToOne}(object,

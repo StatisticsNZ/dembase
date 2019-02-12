@@ -8,13 +8,13 @@
 \alias{collapseOrigDest,Values,ANY,ANY,ANY-method}
 \title{Convert data on movements into a less detailed format.}
 \usage{
-collapseOrigDest(object, base = NULL, to = c("net", "pool", "in", "out"),
-  weights, omitted = ifelse(methods::is(object, "Counts"), 0L, NA_integer_),
-  ...)
+collapseOrigDest(object, base = NULL, to = c("net", "pool", "in",
+  "out"), weights, omitted = ifelse(methods::is(object, "Counts"), 0L,
+  NA_integer_), ...)
 
 \S4method{collapseOrigDest}{Counts,ANY,ANY,missing}(object, base = NULL,
-  to = c("net", "pool", "in", "out"), omitted = ifelse(methods::is(object,
-  "Counts"), 0L, NA_integer_))
+  to = c("net", "pool", "in", "out"),
+  omitted = ifelse(methods::is(object, "Counts"), 0L, NA_integer_))
 
 \S4method{collapseOrigDest}{Values,ANY,ANY,ANY}(object, base = NULL,
   to = c("net", "pool", "in", "out"), weights,

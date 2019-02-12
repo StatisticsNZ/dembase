@@ -9,12 +9,12 @@
 \title{Convert a DemographicArray Object to a Data Frame}
 \usage{
 \S4method{as.data.frame}{Counts}(x, row.names = NULL, optional = FALSE,
-  stringsAsFactors = TRUE, responseName = "count", direction = c("wide",
-  "long"), midpoints = FALSE, ...)
+  stringsAsFactors = TRUE, responseName = "count",
+  direction = c("wide", "long"), midpoints = FALSE, ...)
 
 \S4method{as.data.frame}{Values}(x, row.names = NULL, optional = FALSE,
-  stringsAsFactors = TRUE, responseName = "value", direction = c("wide",
-  "long"), midpoints = FALSE, ...)
+  stringsAsFactors = TRUE, responseName = "value",
+  direction = c("wide", "long"), midpoints = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class \code{\linkS4class{DemographicArray}}.}

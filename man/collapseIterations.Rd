@@ -8,7 +8,8 @@
 \usage{
 collapseIterations(object, FUN = quantile, ...)
 
-\S4method{collapseIterations}{DemographicArray}(object, FUN = quantile, ...)
+\S4method{collapseIterations}{DemographicArray}(object, FUN = quantile,
+  ...)
 }
 \arguments{
 \item{object}{Object of class \code{\linkS4class{DemographicArray}}.}

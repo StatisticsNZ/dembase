@@ -6,8 +6,6 @@
 \alias{counts-values-generator}
 \alias{Counts}
 \alias{Values}
-\alias{Counts}
-\alias{Values}
 \alias{Counts,array-method}
 \alias{Counts,numeric-method}
 \alias{Counts,ANY-method}

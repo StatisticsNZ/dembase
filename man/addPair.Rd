@@ -8,7 +8,8 @@
 \usage{
 addPair(object, base, dimtype = c("destination", "child"))
 
-\S4method{addPair}{Counts}(object, base, dimtype = c("destination", "child"))
+\S4method{addPair}{Counts}(object, base, dimtype = c("destination",
+  "child"))
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicArray}}.}

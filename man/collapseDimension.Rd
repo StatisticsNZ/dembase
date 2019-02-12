@@ -14,20 +14,20 @@
 collapseDimension(object, dimension = NULL, margin = NULL, weights,
   na.rm = FALSE, ...)
 
-\S4method{collapseDimension}{Pool,ANY,ANY,missing}(object, dimension = NULL,
-  margin = NULL, weights)
+\S4method{collapseDimension}{Pool,ANY,ANY,missing}(object,
+  dimension = NULL, margin = NULL, weights)
 
-\S4method{collapseDimension}{Counts,ANY,ANY,missing}(object, dimension = NULL,
-  margin = NULL, weights, na.rm = FALSE)
+\S4method{collapseDimension}{Counts,ANY,ANY,missing}(object,
+  dimension = NULL, margin = NULL, weights, na.rm = FALSE)
 
-\S4method{collapseDimension}{Counts,ANY,ANY,Counts}(object, dimension = NULL,
-  margin = NULL, weights, na.rm = FALSE)
+\S4method{collapseDimension}{Counts,ANY,ANY,Counts}(object,
+  dimension = NULL, margin = NULL, weights, na.rm = FALSE)
 
-\S4method{collapseDimension}{Values,ANY,ANY,ANY}(object, dimension = NULL,
-  margin = NULL, weights, na.rm = FALSE)
+\S4method{collapseDimension}{Values,ANY,ANY,ANY}(object,
+  dimension = NULL, margin = NULL, weights, na.rm = FALSE)
 
-\S4method{collapseDimension}{Values,ANY,ANY,missing}(object, dimension = NULL,
-  margin = NULL, na.rm = FALSE)
+\S4method{collapseDimension}{Values,ANY,ANY,missing}(object,
+  dimension = NULL, margin = NULL, na.rm = FALSE)
 }
 \arguments{
 \item{object}{An object of class' \code{\linkS4class{DemographicArray}}.}

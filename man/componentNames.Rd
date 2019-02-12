@@ -3,7 +3,6 @@
 \docType{methods}
 \name{componentNames}
 \alias{componentNames}
-\alias{componentNames}
 \alias{componentNames<-}
 \alias{setComponentNames}
 \alias{componentNames,DemographicAccount-method}

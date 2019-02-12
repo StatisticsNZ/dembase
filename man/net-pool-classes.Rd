@@ -5,8 +5,6 @@
 \alias{net-pool-classes}
 \alias{Net-class}
 \alias{Pool-class}
-\alias{Net-class}
-\alias{Pool-class}
 \title{Classes to summarise origin-destination flows.}
 \description{
 Classes to describe net flows, or 'in' and 'out' flows, typically to be

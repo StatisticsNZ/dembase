@@ -3253,6 +3253,17 @@ setGeneric("setComponentNames",
 #' In interactive use, \code{\link{subarray}} may be a better choice, as
 #' it is clearer and more flexible.
 #'
+#' When \code{drop} is set to \code{TRUE} or \code{FALSE}, it works exactly
+#' like the \code{drop} argument in standard R extract functions
+#' (eg \code{\link{Extract}}. If \code{drop} is \code{TRUE}, then
+#' all length-one dimensions in the return value are removed; if
+#' \code{drop} is \code{FALSE}, then all length-one dimensions are preserved.
+#' \code{slab}, however, has a third option, the word \code{"dimension"}.
+#' In this case the only dimension eligible for dropping if it is
+#' length one is the dimension specified by the \code{dimension}
+#' argument. See below for an example. Note that the word \code{"dimension"}
+#' can be abbreviated.
+#' 
 #' The replacement method ignores any attributes attached to \code{code} such
 #' as dimensions or dimnames.  In particular, if \code{value} is a
 #' \code{\linkS4class{DemographicArray}} object, any metadata is ignored.
@@ -3260,7 +3271,7 @@ setGeneric("setComponentNames",
 #' @param object Object of class \code{\linkS4class{DemographicArray}}.
 #' @param dimension Name or index of dimension.
 #' @param elements Labels or indices of elements with in \code{dimension}.
-#' @param drop Whether dimensions of length 1 should be dropped from the
+#' @param drop \code{TRUE}, \code{FALSE}, or the word \code{"dimension"} (possibly abbreviated). Defaults to \code{TRUE}.
 #' result.
 #' @param value An numeric vector, or an object that can be coerced to a
 #' numeric vector.
@@ -3268,16 +3279,28 @@ setGeneric("setComponentNames",
 #' @examples
 #' library(demdata)
 #' x <- Values(VADeaths2)
+#' x
 #' slab(x, dimension = "age", elements = 1:3)
 #' slab(x, dimension = 1, elements = 1:3)
 #' slab(x, dimension = "age", elements = c("50-54", "70-74"))
 #' slab(x, dimension = "sex", elements = 1)
 #' slab(x, dimension = "sex", elements = 1, drop = FALSE)
-#'
+#' 
 #' slab(x, dimension = "sex", elements = "Male") <- 999
 #' x
 #' slab(x, dimension = "age", elements = "50-54") <- 1:4
 #' x
+#'
+#' x1 <- slab(x, dimension = "age", elements = 1, drop = FALSE)
+#' x1
+#' ## drop length-one "sex" and "age" dimensions:
+#' slab(x1, dimension = "sex", elements = "Male", drop = TRUE)
+#' ## don't drop any length-one dimensions:
+#' slab(x1, dimension = "sex", elements = "Male", drop = FALSE)
+#' ## only drop the length-one "sex" dimension:
+#' slab(x1, dimension = "sex", elements = "Male", drop = "dimension")
+#' ## abbreviate "dimension"
+#' slab(x1, dimension = "sex", elements = "Male", drop = "dim")
 #' @name slab
 NULL
 
@@ -3597,4 +3620,85 @@ setGeneric("transformIsOneToOne",
 #' @export
 setGeneric("translate",
            function(object, concordance, to = NULL, ...)
-           standardGeneric("translate"))
+               standardGeneric("translate"))
+
+
+
+#' Test whether values lie within intervals
+#'
+#' Test whether the elements of \code{value} lie within the
+#' lower and upper bounds specified by \code{interval}.
+#'
+#' \code{interval} should have the same dimensions
+#' and dimscales as \code{value}, but also have a dimension
+#' with length 2 and \code{\link{dimtype}}
+#' \code{"quantile"}. The quantile dimension specifies
+#' the upper and lower bounds. See below for an example.
+#'
+#' The \code{lower.inclusive} and \code{upper.inclusive}
+#' arguments can be used to specify whether the intervals are
+#' open or closed at the boundaries. The difference between
+#' open and closed boundaries is typically neglible
+#' when \code{value} consists of real numbers, but can
+#' be large when \code{value} consists of integers, especially
+#' if the integers are small.
+#'
+#' \code{valueInInterval} is useful for simulation studies,
+#' where it can be used to calculate the proportion of
+#' credible intervals that contain the target values.
+#'
+#' If \code{value} is a single number, then all dimensions of
+#' \code{interval}, other than the quantile dimension, should
+#' have length 1.
+#'
+#' \code{valueInInterval} is stricter about the compatibility
+#' of its arguments than most functions in \code{dembase}.
+#' Although it reorders dimensions and categories
+#' in \code{value} and \code{interval}, it does not collapse
+#' or expand dimensions, or drop any levels.
+#' 
+#' @param value A \code{\linkS4class{DemographicArray}}, or a single
+#' number.
+#' @param intervals A \code{\linkS4class{DemographicArray}},
+#' with a quantile dimension of length 2.
+#' @param lower.inclusive Logical. Whether the lower bounds
+#' specified in \code{interval} are considered to lie within
+#' the intervals.
+#' @param upper.inclusive Logical. Whether the upper bounds
+#' specified in \code{interval} are considered to lie
+#' within the intervals. Defaults to \code{TRUE}.
+#'
+#' @return An array of logical values with the same dimensions
+#' as \code{value}, or, if \code{value} is a number,
+#' a single logical value.
+#' 
+#' @seealso Function \code{\link{credibleInterval}} is a convenience
+#' function for creating \code{interval} objects of the right form
+#' for \code{valueInInterval}. Function \code{\link{MSE}},
+#' is another function that may be useful in simulation studies.
+#'
+#' @examples
+#' value <- ValuesOne(c(0.3, 0.5),
+#'                    labels = c("Female", "Male"),
+#'                    name = "sex")
+#' interval <- Values(array(c(-0.1, 0.4, 0.2, 0.7),
+#'                          dim = c(2, 2),
+#'                          dimnames = list(sex = c("Female", "Male"),
+#'                                          quantile = c("2.5%", "97.5%"))))
+#' valueInInterval(value = value,
+#'                 interval = interval)
+#'
+#' value <- 5L
+#' interval <- ValuesOne(c(5L, 8L),
+#'                       labels = c("5%", "95%"),
+#'                       name = "quantile")
+#' valueInInterval(value = value,
+#'                 interval = interval)
+#' valueInInterval(value = value,
+#'                 interval = interval,
+#'                 lower.inclusive = FALSE)
+#' @export
+setGeneric("valueInInterval",
+          function(value, interval, lower.inclusive = TRUE,
+                   upper.inclusive = TRUE)
+              standardGeneric("valueInInterval"))

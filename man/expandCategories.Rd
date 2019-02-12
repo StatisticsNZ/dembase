@@ -15,8 +15,8 @@ expandCategories(object, dimension = NULL, old, new, concordance,
 \S4method{expandCategories}{Counts,ANY,missing,missing,ManyToOne}(object,
   dimension, concordance, weights = NULL, means = FALSE, n = NULL)
 
-\S4method{expandCategories}{Values,ANY,ANY,ANY,missing}(object, dimension, old,
-  new, weights)
+\S4method{expandCategories}{Values,ANY,ANY,ANY,missing}(object, dimension,
+  old, new, weights)
 
 \S4method{expandCategories}{Values,ANY,missing,missing,ManyToOne}(object,
   dimension, concordance, weights)

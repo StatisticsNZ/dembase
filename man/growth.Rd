@@ -8,8 +8,8 @@
 \alias{growth,Values-method}
 \title{Calculate average growth rates or increments.}
 \usage{
-growth(object, along = NULL, within = NULL, weights, type = c("linear",
-  "exponential"), method = c("endpoints", "lm"))
+growth(object, along = NULL, within = NULL, weights,
+  type = c("linear", "exponential"), method = c("endpoints", "lm"))
 
 \S4method{growth}{Counts}(object, along = NULL, within = NULL, weights,
   type = c("exponential", "linear"), method = c("endpoints", "lm"))

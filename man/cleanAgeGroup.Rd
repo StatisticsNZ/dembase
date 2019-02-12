@@ -2,7 +2,6 @@
 % Please edit documentation in R/miscellaneous-functions.R
 \name{cleanAgeGroup}
 \alias{cleanAgeGroup}
-\alias{cleanAgeGroup}
 \alias{cleanAgeGroupConc}
 \title{Clean up age group labels}
 \usage{

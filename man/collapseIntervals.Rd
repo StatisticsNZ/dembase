@@ -23,14 +23,16 @@ collapseIntervals(object, dimension, breaks = NULL, width = NULL,
   \S4method{collapseIntervals}{Counts,ANY,numeric,missing,missing,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
-\S4method{collapseIntervals}{Counts,ANY,numeric,`NULL`,`NULL`,missing}(object,
+
+  \S4method{collapseIntervals}{Counts,ANY,numeric,`NULL`,`NULL`,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
 
   \S4method{collapseIntervals}{Counts,ANY,missing,numeric,missing,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
-\S4method{collapseIntervals}{Counts,ANY,`NULL`,numeric,`NULL`,missing}(object,
+
+  \S4method{collapseIntervals}{Counts,ANY,`NULL`,numeric,`NULL`,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
 
@@ -45,11 +47,12 @@ collapseIntervals(object, dimension, breaks = NULL, width = NULL,
   \S4method{collapseIntervals}{Counts,ANY,missing,missing,numeric,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
-\S4method{collapseIntervals}{Counts,ANY,`NULL`,`NULL`,numeric,missing}(object,
+
+  \S4method{collapseIntervals}{Counts,ANY,`NULL`,`NULL`,numeric,missing}(object,
   dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
-\S4method{collapseIntervals}{Counts,ANY,ANY,ANY,ANY,Counts}(object, dimension,
-  breaks = NULL, width = NULL, old = NULL, weights)
+\S4method{collapseIntervals}{Counts,ANY,ANY,ANY,ANY,Counts}(object,
+  dimension, breaks = NULL, width = NULL, old = NULL, weights)
 
 \S4method{collapseIntervals}{Values,ANY,ANY,ANY,ANY,ANY}(object, dimension,
   breaks = NULL, width = NULL, old = NULL, weights)

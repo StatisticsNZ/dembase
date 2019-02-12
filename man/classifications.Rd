@@ -5,7 +5,6 @@
 \alias{classifications}
 \alias{classificationFrom}
 \alias{classificationFrom<-}
-\alias{classifications}
 \alias{classifications<-}
 \alias{classificationTo}
 \alias{classificationTo<-}

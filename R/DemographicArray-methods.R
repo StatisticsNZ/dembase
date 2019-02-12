@@ -1845,26 +1845,47 @@ setMethod("slab",
               s <- seq_len(dim.before[dimension])
               if (!all(elements %in% s))
                   stop(gettextf("'%s' outside valid range", "elements"))
+              drop <- checkAndTidyDrop(drop)
               indices <- lapply(dim.before, seq_len)
               indices[[dimension]] <- match(s, elements, nomatch = 0L)
-              dim.after <- replace(dim.before, list = dimension, values = length(elements))
+              dim.after <- replace(dim.before,
+                                   list = dimension,
+                                   values = length(elements))
               transform <- methods::new("CollapseTransform",
                                         dims = dims,
                                         indices = indices,
                                         dimBefore = dim.before,
                                         dimAfter = dim.after)
               ans <- collapse(object, transform = transform)
-              if (drop) {
-                  if (length(ans) == 1L) {
+              if (identical(drop, TRUE)) {
+                  is.length.1 <- dim.after == 1L
+                  if (all(is.length.1))
                       ans <- ans[[1L]]
-                  }
                   else {
-                      is.length.1 <- dim.after == 1L
                       metadata <- metadata(ans)[!is.length.1]
                       .Data <- array(ans@.Data,
                                      dim = dim(metadata),
                                      dimnames = dimnames(metadata))
-                      ans <- methods::new(class(ans), .Data = .Data, metadata = metadata)
+                      ans <- methods::new(class(ans),
+                                          .Data = .Data,
+                                          metadata = metadata)
+                  }
+              }
+              if (identical(drop, "dimension")) {
+                  dimension.now.has.length.1 <- dim.after[dimension] == 1L
+                  if (dimension.now.has.length.1) {
+                      is.only.dimension <- length(dim.after) == 1L
+                      if (is.only.dimension)
+                          ans <- ans[[1L]]
+                      else {
+                          metadata <- metadata(ans)[-dimension]
+                          .Data <- array(ans@.Data,
+                                         dim = dim(metadata),
+                                         dimnames = dimnames(metadata))
+                          ans <- methods::new(class(ans),
+                                              .Data = .Data,
+                                              metadata = metadata)
+                      }
                   }
               }
               ans
@@ -2058,6 +2079,143 @@ setMethod("toInteger",
                                         dimnames = dimnames(.Data))
               }
               object
+          })
+
+## HAS_TESTS
+#' @rdname valueInInterval
+#' @export
+setMethod("valueInInterval",
+          signature(value = "DemographicArray",
+                    interval = "DemographicArray"),
+          function(value, interval, lower.inclusive = TRUE,
+                   upper.inclusive = TRUE) {
+              dim.val <- dim(value)
+              dim.int <- dim(interval)
+              names.val <- names(value)
+              names.int <- names(interval)
+              dimnames.val <- dimnames(value)
+              dimtypes.val <- dimtypes(value)
+              dimtypes.int <- dimtypes(interval)
+              DimScales.val <- DimScales(value)
+              DimScales.int <- DimScales(interval)
+              i.quantile.val <- match("quantile", dimtypes.val, nomatch = 0L)
+              i.quantile.int <- match("quantile", dimtypes.int, nomatch = 0L)
+              has.quantile.val <- i.quantile.val > 0L
+              has.quantile.int <- i.quantile.int > 0L
+              if (has.quantile.val)
+                  stop(gettextf("'%s' has dimension with %s \"%s\"",
+                                "value", "dimtype", "quantile"))
+              if (!has.quantile.int)
+                  stop(gettextf("'%s' does not have dimension with %s \"%s\"",
+                                "interval", "dimtype", "quantile"))
+              dim.quantile.int <- dim.int[i.quantile.int]
+              if (!identical(dim.quantile.int, 2L))
+                  stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
+                                "interval", "dimtype", "quantile", 2L))
+              if (!setequal(names.val, names.int[-i.quantile.int]))
+                  stop(gettextf("'%s' and '%s' have incompatible dimensions : %s vs %s",
+                                "value",
+                                "interval",
+                                paste(sprintf("\"%s\"", names.val), collapse = ", "),
+                                paste(sprintf("\"%s\"", names.int), collapse = ", ")))
+              for (name in names.val) {
+                  len.dim.val <- dim.val[match(name, names.val)]
+                  len.dim.int <- dim.int[match(name, names.int)]
+                  if (!identical(len.dim.val, len.dim.int)) 
+                      stop(gettextf("\"%s\" dimensions of '%s' and '%s' have different lengths",
+                                    name, "value", "interval"))
+                  DS.val <- DimScales.val[[name]]
+                  DS.int <- DimScales.int[[name]]
+                  dv.val <- dimvalues(DS.val)
+                  dv.int <- dimvalues(DS.int)
+                  if (!setequal(dv.val, dv.int))
+                      stop(gettextf("%s for \"%s\" dimension of '%s' and '%s' incompatible",
+                                    "dimscales", name, "value", "interval"))
+              }
+              checkLogicalFlag(value = lower.inclusive,
+                               name = "lower.inclusive")
+              checkLogicalFlag(value = upper.inclusive,
+                               name = "upper.inclusive")
+              lower <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 1L,
+                            drop = "dimension")
+              upper <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 2L,
+                            drop = "dimension")
+              lower <- makeCompatible(x = lower,
+                                      y = value,
+                                      subset = FALSE)
+              upper <- makeCompatible(x = upper,
+                                      y = value,
+                                      subset = FALSE)
+              if (lower.inclusive)
+                  within.lower <- value@.Data >= lower@.Data
+              else
+                  within.lower <- value@.Data > lower@.Data
+              if (upper.inclusive)
+                  within.upper <- value@.Data <= upper@.Data
+              else
+                  within.upper <- value@.Data < upper@.Data
+              ans <- within.lower & within.upper
+              ans <- array(ans,
+                           dim = dim.val,
+                           dimnames = dimnames.val)
+              ans
+          })
+
+## NO_TESTS
+#' @rdname valueInInterval
+#' @export
+setMethod("valueInInterval",
+          signature(value = "numeric",
+                    interval = "DemographicArray"),
+          function(value, interval, lower.inclusive = TRUE,
+                   upper.inclusive = TRUE) {
+              dim <- dim(interval)
+              n.dim <- length(dim)
+              names <- names(interval)
+              dimtypes <- dimtypes(interval)
+              DimScales <- DimScales(interval)
+              if (!identical(length(value), 1L))
+                  stop(gettextf("'%s' is numeric, but does not have length %d",
+                                "value", 1L))
+              i.quantile <- match("quantile", dimtypes, nomatch = 0L)
+              has.quantile <- i.quantile > 0L
+              if (!has.quantile)
+                  stop(gettextf("'%s' does not have dimension with %s \"%s\"",
+                                "interval", "dimtype", "quantile"))
+              dim.quantile <- dim[i.quantile]
+              if (!identical(dim.quantile, 2L))
+                  stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
+                                "interval", "dimtype", "quantile", 2L))
+              if (n.dim > 1L) {
+                  if (any(dim[-i.quantile] != 2L))
+                      stop(gettextf("'%s' is a single number but '%s' has dimensions (other than the dimension with %s \"%s\") with length not equal to %d",
+                                    "value", "interval", "dimtype", "quantile", 1L))
+              }
+              checkLogicalFlag(value = lower.inclusive,
+                               name = "lower.inclusive")
+              checkLogicalFlag(value = upper.inclusive,
+                               name = "upper.inclusive")
+              lower <- slab(interval,
+                            dimension = i.quantile,
+                            elements = 1L)
+              upper <- slab(interval,
+                            dimension = i.quantile,
+                            elements = 2L)
+              if (lower.inclusive)
+                  within.lower <- value@.Data >= lower@.Data
+              else
+                  within.lower <- value@.Data > lower@.Data
+              if (upper.inclusive)
+                  within.upper <- value@.Data <= upper@.Data
+              else
+                  within.upper <- value@.Data < upper@.Data
+              ans <- within.lower & within.upper
+              ans <- as.logical(ans)
+              ans
           })
 
 ## HAS_TESTS

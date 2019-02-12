@@ -11,8 +11,8 @@
 \usage{
 \S4method{Summary}{DemographicArrayOrNumeric}(x, ..., na.rm = FALSE)
 
-\S4method{mad}{DemographicArray}(x, center = median(x), constant = 1.4826,
-  na.rm = FALSE, low = FALSE, high = FALSE)
+\S4method{mad}{DemographicArray}(x, center = median(x),
+  constant = 1.4826, na.rm = FALSE, low = FALSE, high = FALSE)
 
 \S4method{mean}{DemographicArray}(x, ...)
 

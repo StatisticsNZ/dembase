@@ -9,8 +9,8 @@
 exposureBirths(object, triangles = FALSE, births = NULL,
   dominant = c("Female", "Male"))
 
-\S4method{exposureBirths}{Counts}(object, triangles = FALSE, births = NULL,
-  dominant = c("Female", "Male"))
+\S4method{exposureBirths}{Counts}(object, triangles = FALSE,
+  births = NULL, dominant = c("Female", "Male"))
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{Counts}}.}

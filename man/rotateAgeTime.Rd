@@ -8,7 +8,8 @@
 \usage{
 rotateAgeTime(object, to = NULL, name = NULL)
 
-\S4method{rotateAgeTime}{DemographicArray}(object, to = NULL, name = NULL)
+\S4method{rotateAgeTime}{DemographicArray}(object, to = NULL,
+  name = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicArray}}.}
