@@ -9,7 +9,6 @@ test_that("attachSubtotals works with object of class Counts", {
     metadata <- dembase:::metadata
     makeTransform <- dembase:::makeTransform
     makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
-    Concordance <- classconc::Concordance
     ## whole subarray missing
     x <- Counts(array(1:60,
                       dim = 5:3,
@@ -159,7 +158,6 @@ test_that("attachSubtotals works with object of class numeric", {
     metadata <- dembase:::metadata
     makeTransform <- dembase:::makeTransform
     makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra
-    Concordance <- classconc::Concordance
     ## whole subarray missing
     x <- Counts(array(1:60,
                       dim = 5:3,

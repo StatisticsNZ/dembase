@@ -2192,8 +2192,73 @@ test_that("valueInInterval throws appropriate errors when value is a demographic
                  "dimscales for \"sex\" dimension of 'value' and 'interval' incompatible")
 })
 
+test_that("valueInInterval works when value is a number", {
+    interval <- Counts(array(0:1,
+                             dim = c(2, 1),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             region = 2)))
+    ans.obtained <- valueInInterval(value = 0.5,
+                                    interval = interval)
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = 0L,
+                                    interval = interval)
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = 0L,
+                                    interval = interval,
+                                    lower = FALSE)
+    ans.expected <- FALSE
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = 1L,
+                                    interval = interval,
+                                    lower = FALSE)
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- valueInInterval(value = 1L,
+                                    interval = interval,
+                                    upper = FALSE)
+    ans.expected <- FALSE
+    expect_identical(ans.obtained, ans.expected)
+    interval <- Counts(array(1:2,
+                             dim = 2,
+                             dimnames = list(quantile = c("0.05", "0.95"))))
+    ans.obtained <- valueInInterval(value = 1.5,
+                                    interval = interval)
+    ans.expected <- TRUE
+    expect_identical(ans.obtained, ans.expected)
+})
 
-
+test_that("valueInInterval throws appropriate errors when value is a number", {
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             sex = c("F", "M"))))
+    expect_error(valueInInterval(value = 1:2,
+                                 interval = interval),
+                 "'value' is a number but does not have length 1")
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2),
+                             dimnames = list(region = 1:2,
+                                             sex = c("F", "M"))))
+    expect_error(valueInInterval(value = 1,
+                                 interval = interval),
+                 "'interval' does not have a dimension with dimtype \"quantile\"")
+    interval <- Counts(array(0:1,
+                             dim = c(3, 2),
+                             dimnames = list(quantile = c("0.01", "0.5", "0.99"),
+                                             sex = c("F", "M"))))
+    expect_error(valueInInterval(value = 1,
+                                 interval = interval),
+                 "dimension of 'interval' with dimtype \"quantile\" does not have length 2")
+    interval <- Values(array(c(0.1, -0.1, 0.8, 1.1),
+                          dim = c(2, 2),
+                          dimnames = list(region = 1:2,
+                                          quantile = c(0.1, 0.9))))
+    expect_error(valueInInterval(value = 1,
+                                 interval = interval),
+                 "'value' is a single number but 'interval' has dimensions \\(other than the \"quantile\" dimension\\) with length not equal to 1")
+})
 
 test_that("unname works", {
     x <- Counts(array(1:4,

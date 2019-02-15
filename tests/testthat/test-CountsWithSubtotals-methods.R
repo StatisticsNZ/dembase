@@ -17,7 +17,6 @@ test_that("Extract works as expected", {
 
 test_that("impute works with CountsWithSubtotals", {
     collapse <- dembase:::collapse
-    Concordance <- classconc::Concordance
     x <- Counts(array(1:15,
                       dim = c(5, 3),
                       dimnames = list(age = 0:4, reg = c("a", "b", "c"))),

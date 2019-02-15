@@ -1,5 +1,54 @@
 
-
+#' Simplified version of 'xtabs' for constructing
+#' demographic arrays
+#'
+#' \code{dtabs} is a simplified version of function
+#' \code{\link[stats]{xtabs}} designed specifically for
+#' constructing demographic arrays.
+#'
+#' The \code{data} argument comes first, so that \code{dtabs}
+#' works nicely with pipes.
+#'
+#' The \code{fill} argument makes it easy to control what
+#' value used for combinations of classifying variables
+#' that do not occur in the original dataset \code{data}.
+#' See below for examples.
+#'
+#' The return value is a plain \code{\link{array}}, not an
+#' \code{\link{xtabs}} object.
+#'
+#' Unlike \code{xtabs}, \code{dtabs} has no \code{subset} argument.
+#' Rather than being combined with the tabulation, subsetting
+#' should be separated out into its own operation, via a
+#' function such as \code{\link{subset}} or \code{\link[dplyr]{filter}}.
+#'
+#' @param data A data.frame or matrix.
+#' @param formula A formula: see \code{\link{xtabs}} for details.
+#' @param fill The value to use for combinations of
+#' variables that do not occur in \code{data}.
+#'
+#' @return An array.
+#'
+#' @seealso \code{dtabs} is based on \code{\link{xtabs}}. To turn
+#' a plain array created by \code{dtabs} into a demographic array,
+#' use function \code{\link{Counts}} or \code{\link{Values}}.
+#' 
+#' @examples
+#' d <- data.frame(age = c("young", "old", "young", "old"),
+#'                 sex = c("Female", "Female", "Male", "Male"),
+#'                 count = 1:4)
+#' dtabs(d, count ~ age + sex)
+#' dtabs(d, count ~ age)
+#' dtabs(d, ~ age + sex)
+#' dtabs(d, ~ age)
+#'
+#' d_incomplete <- data.frame(age = c("young", "old", "young"),
+#'                            sex = c("Female", "Female", "Male"),
+#'                            count = 1:3)
+#' ## default value of fill is 0
+#' dtabs(d_incomplete, count ~ age + sex)
+#' dtabs(d_incomplete, count ~ age + sex, fill = NA)
+#' @export
 dtabs <- function(data, formula, fill = 0L) {
     if (missing(data))
         stop(gettextf("'%s' is missing with no default",
@@ -18,10 +67,7 @@ dtabs <- function(data, formula, fill = 0L) {
     if (!identical(length(fill), 1L))
         stop(gettextf("'%s' does not have length %d",
                       "fill", 1L))
-    call <- match.call()
-    call$fill <- NULL
-    call[[1L]] <- quote(stats::model.frame)
-    values <- eval(call)
+    values <- stats::model.frame(formula = formula, data = data)
     has.response <- length(formula) > 2L
     if (has.response) {
         terms <- terms(values)
@@ -46,57 +92,3 @@ dtabs <- function(data, formula, fill = 0L) {
 }
 
 
-## d <- data.frame(y = 1:20, f1 = rep(1:10, times = 2), f2 = rep(c("a", "b"), each = 10))
-## formula <- y ~ f1 + f2
-## ans.obtained <- dtabs(d, formula)
-## ans.expected <- as(xtabs(formula, d), "array")
-## expect_identical(ans.obtained, ans.expected)
-## formula <-  ~ f1 + f2
-## ans.obtained <- dtabs(d, formula)
-## ans.expected <- as(xtabs(formula, d), "array")
-## expect_identical(ans.obtained, ans.expected)
-## formula <-  ~ f1
-## ans.obtained <- dtabs(d, formula)
-## ans.expected <- as(xtabs(formula, d), "array")
-## expect_identical(ans.obtained, ans.expected)
-## formula <- y ~ .
-## ans.obtained <- dtabs(d, formula)
-## ans.expected <- as(xtabs(formula, d), "array")
-## expect_identical(ans.obtained, ans.expected)
-## formula <-  ~ .
-## ans.obtained <- dtabs(d, formula)
-## ans.expected <- as(xtabs(formula, d), "array")
-## expect_identical(ans.obtained, ans.expected)
-## formula <- y ~ f1 + f2
-## d.miss <- d[-20,]
-## ans.obtained <- dtabs(d.miss, formula)
-## ans.expected <- dtabs(d, formula)
-## ans.expected[20] <- 0L
-## expect_identical(ans.obtained, ans.expected)
-## formula <- y ~ f1 + f2
-## d.miss <- d[-20,]
-## ans.obtained <- dtabs(d.miss, formula, fill = NA)
-## ans.expected <- dtabs(d, formula)
-## ans.expected[20] <- NA
-## expect_identical(ans.obtained, ans.expected)
-## formula <- y ~ f1
-## d.miss <- d[-20,]
-## ans.obtained <- dtabs(d.miss, formula, fill = NA)
-## ans.expected <- dtabs(d, formula)
-## ans.expected[10] <- 10L
-## expect_identical(ans.obtained, ans.expected)
-## formula <- y ~ f1
-## d.miss <- d
-## d.miss$f1 <- factor(d.miss$f1)
-## d.miss <- d.miss[-c(10, 20),]
-## ans.obtained <- dtabs(d.miss, formula, fill = 0L)
-## ans.expected <- dtabs(d, formula)
-## ans.expected[10] <- 0L
-## expect_identical(ans.obtained, ans.expected)
-## d.miss <- d
-## d.miss$f1 <- factor(d.miss$f1)
-## d.miss <- d.miss[-c(10, 20),]
-## ans.obtained <- dtabs(d.miss, formula, fill = NA)
-## ans.expected <- dtabs(d, formula)
-## ans.expected[10] <- NA
-## expect_identical(ans.obtained, ans.expected)

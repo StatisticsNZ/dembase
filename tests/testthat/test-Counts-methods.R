@@ -517,7 +517,6 @@ test_that("canMakeCompatible works in simple cases", {
 
 test_that("canMakeCompatible works with concordances", {
     canMakeCompatible <- dembase:::canMakeCompatible
-    Concordance <- classconc::Concordance
     x <- Counts(array(1:9,
                       dim = c(3, 3),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -1042,7 +1041,6 @@ test_that("collapse works", {
 })
 
 test_that("canMakeSharedDimScalesCompatible works", {
-    Concordance <- classconc::Concordance
     canMakeSharedDimScalesCompatible <- dembase:::canMakeSharedDimScalesCompatible
     ## no concordances
     e1 <- Counts(array(0,
@@ -1235,7 +1233,6 @@ test_that("collapseCategories method for Counts works with old, new", {
 })
 
 test_that("collapseCategories method for Counts works with concordances", {
-    Concordance <- classconc::Concordance
     x <- Counts(array(1:6,
                       dim = 3:2,
                       dimnames = list(reg = c("a", "b", "c"),
@@ -1807,7 +1804,6 @@ test_that("dbind2 works", {
 
 
 test_that("expandCategories method for Counts works with concordances when means is FALSE", {
-    Concordance <- classconc::Concordance
     object <- Counts(array(c(4L, 2L, 10L, 5L),
                            dim = c(2, 2),
                            dimnames = list(reg = c("d", "b"),
@@ -1869,7 +1865,6 @@ test_that("expandCategories method for Counts works with concordances when means
 })
 
 test_that("expandCategories method for Counts works with concordances when means is TRUE", {
-    Concordance <- classconc::Concordance
     object <- Counts(array(c(4L, 2L, 10L, 5L),
                            dim = c(2, 2),
                            dimnames = list(reg = c("d", "b"),
@@ -3168,8 +3163,6 @@ test_that("makePairTransformsDbind works", {
 })
 
 test_that("makeTransform method for Counts works when y has class DemographicArray and no concordances", {
-    Concordance <- classconc::Concordance
-    makeTransform <- dembase:::makeTransform
     x <- Counts(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -3225,8 +3218,6 @@ test_that("makeTransform method for Counts works when y has class DemographicArr
 })
 
 test_that("makeTransform method for Counts works when y has class DemographicArray and using concordances", {
-    Concordance <- classconc::Concordance
-    makeTransform <- dembase:::makeTransform
     x <- Counts(array(1:6,
                       dim = c(3, 2),
                       dimnames = list(reg = c("a", "b", "c"),

@@ -2165,7 +2165,7 @@ setMethod("valueInInterval",
               ans
           })
 
-## NO_TESTS
+## HAS_TESTS
 #' @rdname valueInInterval
 #' @export
 setMethod("valueInInterval",
@@ -2179,21 +2179,21 @@ setMethod("valueInInterval",
               dimtypes <- dimtypes(interval)
               DimScales <- DimScales(interval)
               if (!identical(length(value), 1L))
-                  stop(gettextf("'%s' is numeric, but does not have length %d",
+                  stop(gettextf("'%s' is a number but does not have length %d",
                                 "value", 1L))
               i.quantile <- match("quantile", dimtypes, nomatch = 0L)
               has.quantile <- i.quantile > 0L
               if (!has.quantile)
-                  stop(gettextf("'%s' does not have dimension with %s \"%s\"",
+                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
                                 "interval", "dimtype", "quantile"))
               dim.quantile <- dim[i.quantile]
               if (!identical(dim.quantile, 2L))
                   stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
                                 "interval", "dimtype", "quantile", 2L))
               if (n.dim > 1L) {
-                  if (any(dim[-i.quantile] != 2L))
-                      stop(gettextf("'%s' is a single number but '%s' has dimensions (other than the dimension with %s \"%s\") with length not equal to %d",
-                                    "value", "interval", "dimtype", "quantile", 1L))
+                  if (any(dim[-i.quantile] != 1L))
+                      stop(gettextf("'%s' is a single number but '%s' has dimensions (other than the \"%s\" dimension) with length not equal to %d",
+                                    "value", "interval", "quantile", 1L))
               }
               checkLogicalFlag(value = lower.inclusive,
                                name = "lower.inclusive")

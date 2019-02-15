@@ -262,12 +262,13 @@ test_that("cleanAgeGroupConc works", {
     x <- c("0 Year", "1 to 4 Years", "5 to 9 Years", "10 Years And Over")
     y <- c("0", "1-4", "5-9", "10+")
     ans.obtained <- cleanAgeGroupConc(x)
-    ans.expected <- classconc::Concordance(data.frame(old = x, new = y))
+    ans.expected <- Concordance(data.frame(old = x, new = y,
+                                           stringsAsFactors = FALSE))
     expect_identical(ans.obtained, ans.expected)
     x <- c("0 yr", "1--4 yrs", "5--9 yrs", "10plus")
     y <- c("0", "1-4", "5-9", "10+")
     ans.obtained <- cleanAgeGroupConc(x)
-    ans.expected <- classconc::Concordance(data.frame(old = x, new = y))
+    ans.expected <- Concordance(data.frame(old = x, new = y))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -948,7 +949,7 @@ test_that("chain throws appropriate errors", {
 })
 
 test_that("chain2 works with valid inputs", {
-    chain2 <- classconc:::chain2
+    chain2 <- dembase:::chain2
     d1 <- data.frame(c1 = c("a", "b", "c"), c2 = c("x", "y", "z"))
     x1 <- Concordance(d1)
     d2 <- data.frame(c2 = c("x", "z", "y"), c3 = c("h", "i", "j"))
@@ -973,7 +974,7 @@ test_that("chain2 works with valid inputs", {
 })
 
 test_that("chain2 throws appropriate errors", {
-    chain2 <- classconc:::chain2
+    chain2 <- dembase:::chain2
     d1 <- data.frame(c1 = c("a", "b", "c"), c2 = c("x", "y", "z"))
     x1 <- Concordance(d1)
     d2 <- d1[2:1]
@@ -1041,7 +1042,7 @@ test_that("splice throws appropriate errors", {
 })
 
 test_that("splice2 works with valid inputs", {
-    splice2 <- classconc:::splice2
+    splice2 <- dembase:::splice2
     d1 <- data.frame(c1 = c("a", "b", "c"), c2 = c("x", "y", "z"))
     x1 <- Concordance(d1)
     d2 <- data.frame(c1 = c("d", "e"), c2 = c("v", "w"))
@@ -1074,7 +1075,7 @@ test_that("splice2 works with valid inputs", {
 })
 
 test_that("splice2 throws appropriate errors", {
-    splice2 <- classconc:::splice2
+    splice2 <- dembase:::splice2
     d1 <- data.frame(c1 = c("a", "b", "c"), c2 = c("x", "y", "z"))
     x1 <- Concordance(d1)
     d2 <- data.frame(c1 = c("d", "e"), wrong = c("v", "w"))
@@ -1090,7 +1091,7 @@ test_that("splice2 throws appropriate errors", {
 })
 
 test_that("tidyObjectToTranslate works", {
-    tidyObjectToTranslate <- classconc:::tidyObjectToTranslate
+    tidyObjectToTranslate <- dembase:::tidyObjectToTranslate
     x <- 1:3
     expect_identical(tidyObjectToTranslate(x),
                      c("1", "2", "3"))
@@ -5750,75 +5751,69 @@ test_that("trimAgeIntervalsTo1549 works", {
 ## FUNCTIONS FOR PLOTTING ############################################################
 
 test_that("addOverlayToData works", {
-addOverlayToData <- dembase:::addOverlayToData
-
-data <- Counts(array(1:6,
-                     dim = c(3, 2),
-                     dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"))))
-data <- as.data.frame(data, direction = "long", midpoints = "age")
-overlay <- Counts(array(c(1.5, 2.5, 3.5),
-                        dim = 3,
-                        dimnames = list(age = c("0-4", "5-9", "10+"))))
-overlay <- list(values = overlay)
-ans <- addOverlayToData(data, overlay, midpoints = "age")
-
-
-data <- Counts(array(1:6,
-                     dim = c(3, 2),
-                     dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"))))
-data <- as.data.frame(data, direction = "long")
-overlay <- Counts(array(c(1.5, 2.5, 3.5),
-                        dim = 3,
-                        dimnames = list(age = c("0-4", "5-9", "10+"))))
-overlay <- list(values = overlay)
-ans <- addOverlayToData(data, overlay, midpoints = FALSE)
-
-
-data <- Counts(array(1:18,
-                     dim = c(3, 2, 3),
-                     dimnames = list(age = c("0-4", "5-9", "10+"),
-                     sex = c("f", "m"),
-                     quantile = c("2.5%", "50%", "97.5%"))))
-data <- as.data.frame(data, direction = "long", midpoints = "age")
-quantile.data <- data[[3]]
-data <- data[-3]
-attr(data, "quantile") <- quantile.data
-overlay <- Counts(array(c(1.5, 2.5, 3.5),
-                        dim = 3,
-                        dimnames = list(age = c("0-4", "5-9", "10+"))))
-overlay <- list(values = overlay)
-ans <- addOverlayToData(data, overlay, midpoints = "age")
-
-
-
-data <- Counts(array(1:6,
-                     dim = c(3, 2),
-                     dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"))))
-data <- as.data.frame(data, direction = "long", midpoints = "age")
-overlay <- Counts(array(c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5),
-                        dim = c(3, 3),
-                        dimnames = list(age = c("0-4", "5-9", "10+"),
-                        quantile = c("2.5%", "50%", "97.5%"))))
-overlay <- list(values = overlay)
-ans <- addOverlayToData(data, overlay, midpoints = "age")
-
-
-data <- Counts(array(1:18,
-                     dim = c(3, 2, 3),
-                     dimnames = list(age = c("0-4", "5-9", "10+"),
-                     sex = c("f", "m"),
-                     quantile = c("2.5%", "50%", "97.5%"))))
-data <- as.data.frame(data, direction = "long", midpoints = "age")
-quantile.data <- data[[3]]
-data <- data[-3]
-attr(data, "quantile") <- quantile.data
-overlay <- Counts(array(c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 8.5),
-                        dim = c(3, 3),
-                        dimnames = list(age = c("0-4", "5-9", "10+"),
-                        quantile = c("5%", "50%", "95%"))))
-overlay <- list(values = overlay)
-ans <- addOverlayToData(data, overlay, midpoints = "age")
-
+    addOverlayToData <- dembase:::addOverlayToData
+    data <- Counts(array(1:6,
+                         dim = c(3, 2),
+                         dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"))))
+    data <- as.data.frame(data, direction = "long", midpoints = "age")
+    overlay <- Counts(array(c(1.5, 2.5, 3.5),
+                            dim = 3,
+                            dimnames = list(age = c("0-4", "5-9", "10+"))))
+    overlay <- list(values = overlay)
+    ans <- addOverlayToData(data, overlay, midpoints = "age")
+    expect_true(validObject(ans))
+    data <- Counts(array(1:6,
+                         dim = c(3, 2),
+                         dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"))))
+    data <- as.data.frame(data, direction = "long")
+    overlay <- Counts(array(c(1.5, 2.5, 3.5),
+                            dim = 3,
+                            dimnames = list(age = c("0-4", "5-9", "10+"))))
+    overlay <- list(values = overlay)
+    ans <- addOverlayToData(data, overlay, midpoints = FALSE)
+    expect_true(validObject(ans))
+    data <- Counts(array(1:18,
+                         dim = c(3, 2, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         quantile = c("2.5%", "50%", "97.5%"))))
+    data <- as.data.frame(data, direction = "long", midpoints = "age")
+    quantile.data <- data[[3]]
+    data <- data[-3]
+    attr(data, "quantile") <- quantile.data
+    overlay <- Counts(array(c(1.5, 2.5, 3.5),
+                            dim = 3,
+                            dimnames = list(age = c("0-4", "5-9", "10+"))))
+    overlay <- list(values = overlay)
+    ans <- addOverlayToData(data, overlay, midpoints = "age")
+    expect_true(validObject(ans))
+    data <- Counts(array(1:6,
+                         dim = c(3, 2),
+                         dimnames = list(age = c("0-4", "5-9", "10+"), sex = c("f", "m"))))
+    data <- as.data.frame(data, direction = "long", midpoints = "age")
+    overlay <- Counts(array(c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5),
+                            dim = c(3, 3),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            quantile = c("2.5%", "50%", "97.5%"))))
+    overlay <- list(values = overlay)
+    ans <- addOverlayToData(data, overlay, midpoints = "age")
+    expect_true(validObject(ans))
+    data <- Counts(array(1:18,
+                         dim = c(3, 2, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         quantile = c("2.5%", "50%", "97.5%"))))
+    data <- as.data.frame(data, direction = "long", midpoints = "age")
+    quantile.data <- data[[3]]
+    data <- data[-3]
+    attr(data, "quantile") <- quantile.data
+    overlay <- Counts(array(c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 8.5),
+                            dim = c(3, 3),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            quantile = c("5%", "50%", "95%"))))
+    overlay <- list(values = overlay)
+    ans <- addOverlayToData(data, overlay, midpoints = "age")
+    expect_true(validObject(ans))
 })
 
 test_that("panel.quantiles, panel.quantile.polygon, and panel.median work", {
@@ -6810,7 +6805,6 @@ test_that("makeAxStart throws appropriate errors", {
 
 test_that("tidyConcordanceList works", {
     tidyConcordanceList <- dembase:::tidyConcordanceList
-    Concordance <- classconc::Concordance
     x <- Values(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(age = c(0, "1+"),

@@ -3659,7 +3659,7 @@ setGeneric("translate",
 #' 
 #' @param value A \code{\linkS4class{DemographicArray}}, or a single
 #' number.
-#' @param intervals A \code{\linkS4class{DemographicArray}},
+#' @param interval A \code{\linkS4class{DemographicArray}},
 #' with a quantile dimension of length 2.
 #' @param lower.inclusive Logical. Whether the lower bounds
 #' specified in \code{interval} are considered to lie within

@@ -710,7 +710,6 @@ test_that("canMakePairCompatible works when e1 is an array", {
 })
 
 test_that("canMakeSharedDimScalesCompatible works", {
-    Concordance <- classconc::Concordance
     canMakeSharedDimScalesCompatible <- dembase:::canMakeSharedDimScalesCompatible
     ## not using concordances
     e1 <- Values(array(0,
@@ -834,7 +833,6 @@ test_that("collapseCategories method for Values works with old, new", {
 })
 
 test_that("collapseCategories method for Values works with concordance", {
-    Concordance <- classconc::Concordance
     x <- Counts(array(1:6,
                       dim = 3:2,
                       dimnames = list(reg = c("a", "b", "c"),
@@ -1239,7 +1237,6 @@ test_that("expandCategories method for Values works with old, new", {
 })
 
 test_that("expandCategories method for Values works with concordance", {
-    Concordance <- classconc::Concordance
     object <- Values(array(c(4L, 2L, 10L, 5L),
                            dim = c(2, 2),
                            dimnames = list(reg = c("d", "b"),
@@ -2060,7 +2057,6 @@ test_that("makeTransform method for Values works without concordances", {
 
 test_that("makeTransform method for Values works when y has class DemographicArray and using concordances", {
     makeTransform <- dembase:::makeTransform
-    Concordance <- classconc::Concordance
     x <- Values(array(1:4,
                       dim = c(2, 2),
                       dimnames = list(reg = c("A", "B"),

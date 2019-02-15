@@ -71,8 +71,6 @@ test_that("coercion from Categories to Iterations works", {
 
 test_that("canMakeDimScalesCompatible works", {
     canMakeDimScalesCompatible <- dembase:::canMakeDimScalesCompatible
-    Concordance <- classconc::Concordance
-    translate <- classconc::translate
     ## no concordance
     x <- new("Categories", dimvalues = c("a", "b", "c"))
     y <- new("Categories", dimvalues = c("c", "b"))
@@ -161,8 +159,6 @@ test_that("inferDimvalues method for Categories works", {
 
 test_that("makeIndices method for Categories works with concordances", {
     makeIndices <- dembase:::makeIndices
-    Concordance <- classconc::Concordance
-    translate <- classconc::translate
     ## collapse is TRUE
     x <- new("Categories", dimvalues = c("a", "b", "c", "d"))
     y <- new("Categories", dimvalues = c("A", "B"))

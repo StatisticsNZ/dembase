@@ -53,13 +53,6 @@ test_that("classificationTo works", {
     expect_identical(classificationTo(x), "c2")
 })
 
-test_that("getValues works", {
-    getValues <- classconc:::getValues
-    d <- data.frame(c1 = c("a", "b"), c2 = c("x", "x"))
-    x <- Concordance(d)
-    expect_identical(getValues(x), cbind(c("a", "b"), c("x", "x")))
-})
-
 test_that("codes works", {
     d <- data.frame(c1 = c("a", "b"), c2 = c("x", "x"))
     x <- Concordance(d)
