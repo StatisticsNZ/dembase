@@ -1488,6 +1488,49 @@ setGeneric("componentNames<-",
            function(object, value)
                standardGeneric("componentNames<-"))
 
+#' Calculate credible intervals
+#'
+#' Calculate credible intervals from a \code{\link{DemographicArray}}.
+#' The demographic array must have a dimension with \code{\link{dimtype}}
+#' \code{"iteration"}.
+#'
+#' \code{width} must be a percentage value. It can equal 100,
+#' but cannot equal 0.
+#'
+#' The credible intervals are calculated using the quantiles
+#' \code{(q/2, 1 - q/2)} where \code{q = 1 - width/100}.
+#'
+#' When \code{na.rm} is \code{TRUE} (the default), missing values
+#' are removed before the credible interval is calculated.
+#'
+#' @param object A \code{\link{DemographicArray}}. The array
+#' must have a dimension with \code{\link{dimtype}}
+#' \code{"iteration"}.
+#' @param width A percentage value.
+#' @param na.rm \code{TRUE} (the default) or \code{FALSE}.
+#'
+#' @return An object with the same class as \code{object},
+#' in which the \code{"iteration"} dimension is replaced
+#' by a \code{"quantiles"} dimension of length 2.
+#'
+#' @seealso  \code{credibleInterval} calls function
+#' \code{\link{collapseIteration}}.
+#'
+#' @examples
+#' x <- Values(array(runif(20),
+#'                   dim = c(2, 10),
+#'                   dimnames = list(sex = c("F", "M"),
+#'                                   iteration = 1:10)))
+#' credibleInterval(x)
+#' credibleInterval(x, width = 50)
+#' x[1] <- NA
+#' credibleInterval(x)
+#' credibleInterval(x, na.rm = FALSE)
+#' @export
+setGeneric("credibleInterval",
+           function(object, width = 95, na.rm = FALSE)
+               standardGeneric("credibleInterval"))
+
 setGeneric("dbind2",
            function(e1, e2, name1, name2, along, dimtypeAlong)
            standardGeneric("dbind2"))
@@ -2399,6 +2442,93 @@ setGeneric("inferDimvalues",
            function(DimScale, labels, ...)
                standardGeneric("inferDimvalues"))
 
+
+
+#' Test whether intervals contain true values
+#'
+#' Test whether intervals contain values.  These values
+#' are referred to as the truth, because of the way in
+#' which \code{intervalContainsTruth} is typically used,
+#' which is within simulations. In simulations, the
+#' analyst generates the true rates or counts, and hence
+#' knows what they are. \code{intervalContainsTruth} is used
+#' to keep track of the number of intervals that contain
+#' the true values.  This information is then used to calculate
+#' coverage rates, ie frequency with which credible interval
+#' of a given nominal coverage rate actually contains the
+#' true value.
+#'
+#' \code{interval} should have the same dimensions
+#' and dimscales as \code{truth}, but also have a dimension
+#' with length 2 and \code{\link{dimtype}}
+#' \code{"quantile"}. The quantile dimension specifies
+#' the upper and lower bounds. See below for an example.
+#'
+#' The \code{lower.inclusive} and \code{upper.inclusive}
+#' arguments can be used to specify whether the intervals are
+#' open or closed at the boundaries. The difference between
+#' open and closed boundaries is typically unimportant
+#' when \code{value} consists of real numbers, but can
+#' be important when \code{value} consists of integers, especially
+#' when the integers are small.
+#'
+#' \code{truth} can be a single number, in which case all dimensions
+#' of \code{interval}, other than the quantile dimension, should
+#' have length 1.
+#'
+#' \code{valueInInterval} is stricter about the compatibility
+#' of its arguments than most functions in \code{dembase}.
+#' Although it reorders dimensions and categories
+#' in \code{interval} and \code{truth}, it does not collapse
+#' or expand dimensions, or drop any levels.
+#' 
+#' @param interval A \code{\linkS4class{DemographicArray}},
+#' with a quantile dimension of length 2.
+#' @param truth A \code{\linkS4class{DemographicArray}}, or a single
+#' number.
+#' @param lower.inclusive Logical. Whether the lower bounds
+#' specified in \code{interval} are considered to lie within
+#' the intervals.
+#' @param upper.inclusive Logical. Whether the upper bounds
+#' specified in \code{interval} are considered to lie
+#' within the intervals. Defaults to \code{TRUE}.
+#'
+#' @return An array of logical values with the same dimensions
+#' as \code{truth}, or, if \code{truth} is a number,
+#' a single logical value.
+#' 
+#' @seealso Function \code{\link{credibleInterval}} is a convenience
+#' function for creating \code{interval} objects of the right form
+#' for \code{intervalContainsTruth}. Function \code{\link{MSE}},
+#' is another function that may be useful in simulation studies.
+#'
+#' @examples
+#' interval <- Values(array(c(-0.1, 0.4, 0.2, 0.7),
+#'                          dim = c(2, 2),
+#'                          dimnames = list(sex = c("Female", "Male"),
+#'                                          quantile = c("2.5%", "97.5%"))))
+#' truth <- ValuesOne(c(0.3, 0.5),
+#'                    labels = c("Female", "Male"),
+#'                    name = "sex")
+#' intervalContainsTruth(interval = interval,
+#'                       truth = truth)
+#'
+#' interval <- ValuesOne(c(5L, 8L),
+#'                       labels = c("5%", "95%"),
+#'                       name = "quantile")
+#' truth <- 5L
+#' intervalContainsTruth(interval = interval,
+#'                       truth = truth)
+#' intervalContainsTruth(interval = interval,
+#'                       truth = truth,
+#'                       lower.inclusive = FALSE)
+#' @export
+setGeneric("intervalContainsTruth",
+          function(interval, truth, lower.inclusive = TRUE,
+                   upper.inclusive = TRUE)
+              standardGeneric("intervalContainsTruth"))
+
+
 #' Interval score.
 #'
 #' The interval score is a way of measuring the quality of a probabilistic
@@ -2415,63 +2545,56 @@ setGeneric("inferDimvalues",
 #' the width of the prediction interval plus penalties for being outside
 #' the interval.  For the details, see Section 6.2 of the reference below.
 #'
-#' \code{values} holds the forecasts.  It must have a dimension with
-#' \code{\link{dimtype}} \code{"iteration"} or \code{"quantile"}.  If
-#' it has a dimension with dimtype \code{"quantile"} there can be only
+#' \code{interval} holds the prediction intervals from the forecasts.
+#' It must have a dimension with \code{\link{dimtype}} \code{"quantile"}.
+#' There here can be only
 #' two quantiles, and these quantiles must be symmetric (for instance,
 #' 5\% and 95\% are valid, but 5\% and 90\% are not.)
-#'
-#' The \code{alpha} argument is used only if \code{values} has an
-#' \code{"iteration"} dimension.  The prediction intervals
-#' then have the form \code{(alpha/2, 1 - alpha/2)}.
 #'
 #' The return value contains a score for each quantity being predicted.
 #' These scores can be aggregated using \code{sum} or
 #' \code{\link{collapseDimension}} to, for instance, give an overall score,
 #' or a score for each time period.
 #'
-#' @param values An object of class \code{\linkS4class{DemographicArray}}
-#' containing the forecasts.
+#' @param interval An object of class \code{\linkS4class{DemographicArray}}.
 #' @param truth An object of class \code{\linkS4class{DemographicArray}}
 #' containing the held-back data.
-#' @param alpha A number between 0 and 0.5.
-#' @param na.rm Logical. Whether to ignore missing values
-#' when calculating prediction intervals. Only relevant when
-#' \code{values} has an \code{"interval"} dimension.
 #'
 #' @return A \code{\linkS4class{DemographicArray}} object
 #' with the same dimensions as \code{truth}, containing a
 #' score for each value.
 #'
-#' @seealso \code{\link{MSE}} and \code{\link{RMSE}} are standard measures
+#' @seealso \code{\link{MSE}} is a standard measure
 #' of the accuracy of point estimates (as opposed to prediction
 #' intervals.)
 #'
 #' @references Gneiting T and Raftery A. 2007. Strictly proper scoring rules,
-#' prediction, and estimation. \emph{Journal of the Americal
+#' prediction, and estimation. \emph{Journal of the American
 #' Statistical Association}. 102(477): 539-578.
 #' 
 #' @examples
-#' ## Make up some data
-#' values <- Values(array(c(23, 25, 21, 28,
-#'                          18, 16, 22, 23),
-#'                        dim = c(2, 4),
-#'                        dimnames = list(quantile = c("10%", "90%"),
-#'                                        year = 2011:2014)),
-#'                  dimscales = c(year = "Points"))
+#' interval <- Values(array(c(23, 25, 21, 28,
+#'                            18, 16, 22, 23),
+#'                          dim = c(2, 4),
+#'                          dimnames = list(quantile = c("10%", "90%"),
+#'                                          year = 2011:2014)),
+#'                    dimscales = c(year = "Points"))
 #' truth <- ValuesOne(c(22, 23, 24, 25),
 #'                    labels = 2011:2014,
 #'                    name = "year",
 #'                    dimscale = "Points")
-#' score <- intervalScore(values, truth)
+#' interval
+#' truth
+#' score <- intervalScore(interval = interval,
+#'                        truth = truth)
 #' ## high score in 2013, since value outside interval
-#' ## (recalling that high score = low quality)
+#' ## (recalling that a high score implies low quality)
 #' score
 #' ## scores can be summed, eg to give an overall score
 #' sum(score)
 #' @export
 setGeneric("intervalScore",
-           function(values, truth, alpha = NULL, na.rm = FALSE)
+           function(interval, truth)
                standardGeneric("intervalScore"))
 
 setGeneric("InternalMovements",
@@ -3622,83 +3745,3 @@ setGeneric("translate",
            function(object, concordance, to = NULL, ...)
                standardGeneric("translate"))
 
-
-
-#' Test whether values lie within intervals
-#'
-#' Test whether the elements of \code{value} lie within the
-#' lower and upper bounds specified by \code{interval}.
-#'
-#' \code{interval} should have the same dimensions
-#' and dimscales as \code{value}, but also have a dimension
-#' with length 2 and \code{\link{dimtype}}
-#' \code{"quantile"}. The quantile dimension specifies
-#' the upper and lower bounds. See below for an example.
-#'
-#' The \code{lower.inclusive} and \code{upper.inclusive}
-#' arguments can be used to specify whether the intervals are
-#' open or closed at the boundaries. The difference between
-#' open and closed boundaries is typically neglible
-#' when \code{value} consists of real numbers, but can
-#' be large when \code{value} consists of integers, especially
-#' if the integers are small.
-#'
-#' \code{valueInInterval} is useful for simulation studies,
-#' where it can be used to calculate the proportion of
-#' credible intervals that contain the target values.
-#'
-#' If \code{value} is a single number, then all dimensions of
-#' \code{interval}, other than the quantile dimension, should
-#' have length 1.
-#'
-#' \code{valueInInterval} is stricter about the compatibility
-#' of its arguments than most functions in \code{dembase}.
-#' Although it reorders dimensions and categories
-#' in \code{value} and \code{interval}, it does not collapse
-#' or expand dimensions, or drop any levels.
-#' 
-#' @param value A \code{\linkS4class{DemographicArray}}, or a single
-#' number.
-#' @param interval A \code{\linkS4class{DemographicArray}},
-#' with a quantile dimension of length 2.
-#' @param lower.inclusive Logical. Whether the lower bounds
-#' specified in \code{interval} are considered to lie within
-#' the intervals.
-#' @param upper.inclusive Logical. Whether the upper bounds
-#' specified in \code{interval} are considered to lie
-#' within the intervals. Defaults to \code{TRUE}.
-#'
-#' @return An array of logical values with the same dimensions
-#' as \code{value}, or, if \code{value} is a number,
-#' a single logical value.
-#' 
-#' @seealso Function \code{\link{credibleInterval}} is a convenience
-#' function for creating \code{interval} objects of the right form
-#' for \code{valueInInterval}. Function \code{\link{MSE}},
-#' is another function that may be useful in simulation studies.
-#'
-#' @examples
-#' value <- ValuesOne(c(0.3, 0.5),
-#'                    labels = c("Female", "Male"),
-#'                    name = "sex")
-#' interval <- Values(array(c(-0.1, 0.4, 0.2, 0.7),
-#'                          dim = c(2, 2),
-#'                          dimnames = list(sex = c("Female", "Male"),
-#'                                          quantile = c("2.5%", "97.5%"))))
-#' valueInInterval(value = value,
-#'                 interval = interval)
-#'
-#' value <- 5L
-#' interval <- ValuesOne(c(5L, 8L),
-#'                       labels = c("5%", "95%"),
-#'                       name = "quantile")
-#' valueInInterval(value = value,
-#'                 interval = interval)
-#' valueInInterval(value = value,
-#'                 interval = interval,
-#'                 lower.inclusive = FALSE)
-#' @export
-setGeneric("valueInInterval",
-          function(value, interval, lower.inclusive = TRUE,
-                   upper.inclusive = TRUE)
-              standardGeneric("valueInInterval"))

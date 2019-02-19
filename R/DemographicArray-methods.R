@@ -636,6 +636,64 @@ setMethod("collapseIterations",
               methods::new(class(object), .Data = .Data, metadata = metadata)
           })
 
+
+quantileExpand <- function(x) FINISH
+
+
+## NO_TESTS
+#' @rdname credibleInterval
+#' @export
+setMethod("credibleInterval",
+          signature(object = "DemographicArray"),
+          function(object, width = 95, na.rm = FALSE) {
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              has.iter <- "iteration" %in% dimtypes
+              if (!has.iter)
+                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                                "object", "dimtype", "iteration"))
+              width <- checkAndTidyPercentage(width)
+              if (isTRUE(all.equal(width, 0)))
+                  stop(gettextf("'%s' equals %d",
+                                "width", 0L))
+              checkLogicalFlag(value = na.rm,
+                               name = "na.rm")
+              q <- 1 - width / 100
+              prob <- c(q/2, 1 - q/2)
+              collapseIterations(object,
+                                 FUN = quantile,
+                                 prob = prob,
+                                 na.rm = na.rm)
+          })
+
+
+
+## NO_TESTS
+#' @rdname credibleInterval
+#' @export
+setMethod("credibleInterval",
+          signature(object = "DemographicArray"),
+          function(object, width = 95, na.rm = FALSE) {
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              has.iter <- "iteration" %in% dimtypes
+              if (!has.iter)
+                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                                "object", "dimtype", "iteration"))
+              width <- checkAndTidyPercentage(width)
+              if (isTRUE(all.equal(width, 0)))
+                  stop(gettextf("'%s' equals %d",
+                                "width", 0L))
+              checkLogicalFlag(value = na.rm,
+                               name = "na.rm")
+              q <- 1 - width / 100
+              prob <- c(q/2, 1 - q/2)
+              collapseIterations(object,
+                                 FUN = quantile,
+                                 prob = prob,
+                                 na.rm = na.rm)
+          })
+              
+              
+
 ## diff.DemographicArray <- function(x, lag = 1L, difference = 1L, dimension) {
 ##     if ("quantile" %in% dimtypes(x))
 ##         stop(gettext("'%s' has dimtype \"%s\"", "x", "quantile"))
@@ -976,7 +1034,9 @@ setMethod("impute",
               if (is.integer.vals)
                   imputed.values <- as.integer(stats::rpois(n = n.missing, lambda = predicted))
               else
-                  imputed.values <- stats::rnorm(n = n.missing, mean = predicted, sd = sqrt(abs(predicted)))
+                  imputed.values <- stats::rnorm(n = n.missing,
+                                                 mean = predicted,
+                                                 sd = sqrt(abs(predicted)))
               if (!is.null(max)) {
                   max.imputed <- max[i.missing]
                   exceeds.max <- imputed.values > max.imputed
@@ -986,97 +1046,179 @@ setMethod("impute",
               object
           })
 
+
+
+## HAS_TESTS
+#' @rdname intervalContainsTruth
+#' @export
+setMethod("intervalContainsTruth",
+          signature(interval = "DemographicArray",
+                    truth = "DemographicArray"),
+          function(truth, interval, lower.inclusive = TRUE,
+                   upper.inclusive = TRUE) {
+              checkIntervalArray(interval)
+              checkTruthArray(truth)
+              checkIntervalAndTruthCompatible(interval = interval,
+                                              truth = truth)
+              checkLogicalFlag(truth = lower.inclusive,
+                               name = "lower.inclusive")
+              checkLogicalFlag(truth = upper.inclusive,
+                               name = "upper.inclusive")
+              lower <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 1L,
+                            drop = "dimension")
+              upper <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 2L,
+                            drop = "dimension")
+              lower <- makeCompatible(x = lower,
+                                      y = truth,
+                                      subset = FALSE)
+              upper <- makeCompatible(x = upper,
+                                      y = truth,
+                                      subset = FALSE)
+              if (lower.inclusive)
+                  within.lower <- truth@.Data >= lower@.Data
+              else
+                  within.lower <- truth@.Data > lower@.Data
+              if (upper.inclusive)
+                  within.upper <- truth@.Data <= upper@.Data
+              else
+                  within.upper <- truth@.Data < upper@.Data
+              ans <- within.lower & within.upper
+              ans <- array(ans,
+                           dim = dim.val,
+                           dimnames = dimnames.val)
+              ans
+          })
+
+
+## HAS_TESTS
+#' @rdname intervalContainsTruth
+#' @export
+setMethod("intervalContainsTruth",
+          signature(interval = "DemographicArray",
+                    value = "numeric"),
+          function(interval, truth, lower.inclusive = TRUE,
+                   upper.inclusive = TRUE) {
+              dim <- dim(interval)
+              n.dim <- length(dim)
+              names <- names(interval)
+              dimtypes <- dimtypes(interval)
+              DimScales <- DimScales(interval)
+              if (!identical(length(value), 1L))
+                  stop(gettextf("'%s' is a number but does not have length %d",
+                                "value", 1L))
+              i.quantile <- match("quantile", dimtypes, nomatch = 0L)
+              has.quantile <- i.quantile > 0L
+              if (!has.quantile)
+                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
+                                "interval", "dimtype", "quantile"))
+              dim.quantile <- dim[i.quantile]
+              if (!identical(dim.quantile, 2L))
+                  stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
+                                "interval", "dimtype", "quantile", 2L))
+              if (n.dim > 1L) {
+                  if (any(dim[-i.quantile] != 1L))
+                      stop(gettextf("'%s' is a single number but '%s' has dimensions (other than the \"%s\" dimension) with length not equal to %d",
+                                    "value", "interval", "quantile", 1L))
+              }
+              checkLogicalFlag(value = lower.inclusive,
+                               name = "lower.inclusive")
+              checkLogicalFlag(value = upper.inclusive,
+                               name = "upper.inclusive")
+              lower <- slab(interval,
+                            dimension = i.quantile,
+                            elements = 1L)
+              upper <- slab(interval,
+                            dimension = i.quantile,
+                            elements = 2L)
+              if (lower.inclusive)
+                  within.lower <- value@.Data >= lower@.Data
+              else
+                  within.lower <- value@.Data > lower@.Data
+              if (upper.inclusive)
+                  within.upper <- value@.Data <= upper@.Data
+              else
+                  within.upper <- value@.Data < upper@.Data
+              ans <- within.lower & within.upper
+              ans <- as.logical(ans)
+              ans
+          })
+
 #' @rdname intervalScore
 setMethod("intervalScore",
-          signature(values = "DemographicArray",
+          signature(interval = "DemographicArray",
                     truth = "DemographicArray"),
-          function(values, truth, alpha = NULL, na.rm = FALSE) {
-              dimtypes.val <- dimtypes(values, use.names = FALSE)
-              dimtypes.tr <- dimtypes(truth, use.names = FALSE)
-              for (dimtype in c("iteration", "quantile")) {
-                  if (dimtype %in% dimtypes.tr)
-                      stop(gettextf("'%s' has dimension with %s \"%s\"",
-                                    "truth", "dimtype", dimtype))
-              }
-              i.iter <- match("iteration", dimtypes.val, nomatch = 0L)
-              i.quant <- match("quantile", dimtypes.val, nomatch = 0L)
-              has.iter <- i.iter > 0L
-              has.quant <- i.quant > 0L
-              if (!has.iter && !has.quant)
-                  stop(gettextf("'%s' does not have a dimension with %s \"%s\" or \"%s\"",
-                                "values", "dimtype", "iteration", "quantile"))
-              if (has.iter)
-                  one.slice <- slab(values, dimension = i.iter, elements = 1L)
+          function(interval, truth,
+                   lower.inclusive = TRUE,
+                   upper.inclusive = TRUE) {
+              checkIntervalArray(interval)
+              checkTruthArray(truth)
+              checkIntervalAndTruthCompatible(interval = interval,
+                                              truth = truth)
+              checkLogicalFlag(truth = lower.inclusive,
+                               name = "lower.inclusive")
+              checkLogicalFlag(truth = upper.inclusive,
+                               name = "upper.inclusive")
+              alpha <- getAlphaInterval(interval)
+              lower <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 1L,
+                            drop = "dimension")
+              upper <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 2L,
+                            drop = "dimension")
+              lower <- makeCompatible(x = lower,
+                                      y = truth,
+                                      subset = FALSE)
+              upper <- makeCompatible(x = upper,
+                                      y = truth,
+                                      subset = FALSE)
+              if (lower.inclusive)
+                  below.lower <- truth@.Data < lower@.Data
               else
-                  one.slice <- slab(values, dimension = i.quant, elements = 1L)
-              truth <- tryCatch(makeCompatible(x = truth,
-                                               y = one.slice,
-                                               subset = TRUE,
-                                               check = TRUE),
-                                error = function(e) e)
-              if (is(truth, "error"))
-                  stop(gettextf("'%s' and '%s' not compatible : %s",
-                                "truth", "values", truth$message))
-              if (has.iter) {
-                  if (is.null(alpha))
-                      stop(gettextf("'%s' has dimension with %s \"%s\" but '%s' is %s",
-                                    "values", "dimtype", "iteration", "alpha", "NULL"))
-                  if (!is.numeric(alpha))
-                      stop(gettextf("'%s' is non-numeric",
-                                    "alpha"))
-                  if (!identical(length(alpha), 1L))
-                      stop(gettextf("'%s' does not have length %d",
-                                    "alpha", 1L))
-                  if (is.na(alpha))
-                      stop(gettextf("'%s' is missing",
-                                    "alpha"))
-                  if ((alpha <= 0) || (0.5 <= alpha))
-                      stop(gettextf("'%s' must be greater than 0 and less than 0.5",
-                                    "alpha"))
-                  val.has.na <- any(is.na(values))
-                  if (val.has.na) {
-                      if (!is.logical(na.rm))
-                          stop(gettextf("'%s' does not have type \"%s\"",
-                                        "na.rm", "logical"))
-                      if (!identical(length(na.rm), 1L))
-                          stop(gettextf("'%s' does not have length %d",
-                                        "na.rm", 1L))
-                      if (is.na(na.rm))
-                          stop(gettextf("'%s' is missing",
-                                        "na.rm"))
-                      if (!na.rm)
-                          stop(gettextf("'%s' is %s but '%s' contains missing values",
-                                        "na.rm", "FALSE", "values"))
-                  }
-                  values <- collapseIterations(object = values,
-                                               FUN = quantile,
-                                               prob = c(alpha / 2, 1 - alpha / 2),
-                                               na.rm = na.rm)
-                  lower <- slab(values, dimension = i.iter, elements = 1L)
-                  upper <- slab(values, dimension = i.iter, elements = 2L)
-              }
-              else {
-                  if (!is.null(alpha))
-                      warning(gettextf("'%s' has dimension with %s \"%s\" but '%s' is not %s",
-                                       "values", "dimtype", "quantile", "alpha", "NULL"))
-                  dim.val <- dim(values)
-                  if (!identical(dim.val[i.quant], 2L))
-                      stop(gettextf("'%s' does not have %d quantiles",
-                                    "values", 2L))
-                  DimScales.val <- DimScales(values, use.names = FALSE)
-                  DS.quant <- DimScales.val[[i.quant]]
-                  dv.quant <- dimvalues(DS.quant)
-                  alpha <- dv.quant[1L] * 2
-                  if (!isTRUE(all.equal(dv.quant[2L], 1 - alpha / 2)))
-                      stop(gettextf("quantiles for '%s' not symmetric",
-                                    "values"))
-                  lower <- slab(values, dimension = i.quant, elements = 1L)
-                  upper <- slab(values, dimension = i.quant, elements = 2L)
-              }
+                  below.lower <- truth@.Data <= lower@.Data
+              if (upper.inclusive)
+                  above.upper <- truth@.Data > upper@.Data
+              else
+                  above.upper <- truth@.Data >= upper@.Data
               width <- upper - lower
-              penalty.below.lower <- (2 / alpha) * (lower - truth) * (truth < lower)
-              penalty.above.upper <- (2 / alpha) * (truth - upper) * (truth > upper)
+              penalty.below.lower <- (2 / alpha) * (lower - truth) * below.lower
+              penalty.above.upper <- (2 / alpha) * (truth - upper) * above.upper
               width + penalty.below.lower + penalty.above.upper
+          })
+
+
+#' @rdname intervalWidth
+setMethod("intervalWidth",
+          signature(interval = "DemographicArray"),
+          function(interval,
+                   lower.inclusive = TRUE,
+                   upper.inclusive = TRUE) {
+              checkIntervalArray(interval)
+              checkLogicalFlag(truth = lower.inclusive,
+                               name = "lower.inclusive")
+              checkLogicalFlag(truth = upper.inclusive,
+                               name = "upper.inclusive")
+              lower <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 1L,
+                            drop = "dimension")
+              upper <- slab(interval,
+                            dimension = i.quantile.int,
+                            elements = 2L,
+                            drop = "dimension")
+              ans <- upper - lower
+              if (is.integer(interval)) {
+                  if (lower.inclusive && upper.inclusive)
+                      ans <- ans + 1L
+                  if (!lower.inclusive && !upper.inclusive)
+                      ans <- ans - 1L
+              }
+              ans
           })
 
 
@@ -1272,31 +1414,17 @@ setMethod("midpoints",
           })
 
 
-
-## MSE <- function(point, truth) {
-##     dimtypes.pt <- dimtypes(point, use.names = FALSE)
-##     dimtypes.tr <- dimtypes(truth, use.names = FALSE)
-##     for (dimtype in c("iteration", "quantile")) {
-##         if (dimtype %in% dimtypes.val)
-##             stop(gettextf("'%s' has dimension with %s \"%s\"",
-##                           "point", "dimtype", dimtype))
-##         if (dimtype %in% dimtypes.tr)
-##             stop(gettextf("'%s' has dimension with %s \"%s\"",
-##                           "truth", "dimtype", dimtype))
-##     }
-##     truth <- tryCatch(makeCompatible(x = truth,
-##                                      y = point,
-##                                      subset = TRUE,
-##                                      check = TRUE),
-##                       error = function(e) e)
-##     if (is(truth, "error"))
-##         stop(gettextf("'%s' and '%s' not compatible : %s",
-##                       "truth", "point", truth$message))
-##     (point - truth)^2
-## }
-
-
-
+setMethod("MSE",
+          signature(point = "DemographicArray",
+                    truth = "DemographicArray"),
+          function(point, truth) {
+              checkPointArray(point)
+              checkTruthArray(truth)
+              checkPointAndTruthCompatible(point = point,
+                                           truth = truth)
+              (point - truth)^2
+          })
+          
 #' Get or set dimension names
 #' 
 #' Query or change the dimension names of a \code{\linkS4class{DemographicArray}}
@@ -2079,143 +2207,6 @@ setMethod("toInteger",
                                         dimnames = dimnames(.Data))
               }
               object
-          })
-
-## HAS_TESTS
-#' @rdname valueInInterval
-#' @export
-setMethod("valueInInterval",
-          signature(value = "DemographicArray",
-                    interval = "DemographicArray"),
-          function(value, interval, lower.inclusive = TRUE,
-                   upper.inclusive = TRUE) {
-              dim.val <- dim(value)
-              dim.int <- dim(interval)
-              names.val <- names(value)
-              names.int <- names(interval)
-              dimnames.val <- dimnames(value)
-              dimtypes.val <- dimtypes(value)
-              dimtypes.int <- dimtypes(interval)
-              DimScales.val <- DimScales(value)
-              DimScales.int <- DimScales(interval)
-              i.quantile.val <- match("quantile", dimtypes.val, nomatch = 0L)
-              i.quantile.int <- match("quantile", dimtypes.int, nomatch = 0L)
-              has.quantile.val <- i.quantile.val > 0L
-              has.quantile.int <- i.quantile.int > 0L
-              if (has.quantile.val)
-                  stop(gettextf("'%s' has dimension with %s \"%s\"",
-                                "value", "dimtype", "quantile"))
-              if (!has.quantile.int)
-                  stop(gettextf("'%s' does not have dimension with %s \"%s\"",
-                                "interval", "dimtype", "quantile"))
-              dim.quantile.int <- dim.int[i.quantile.int]
-              if (!identical(dim.quantile.int, 2L))
-                  stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
-                                "interval", "dimtype", "quantile", 2L))
-              if (!setequal(names.val, names.int[-i.quantile.int]))
-                  stop(gettextf("'%s' and '%s' have incompatible dimensions : %s vs %s",
-                                "value",
-                                "interval",
-                                paste(sprintf("\"%s\"", names.val), collapse = ", "),
-                                paste(sprintf("\"%s\"", names.int), collapse = ", ")))
-              for (name in names.val) {
-                  len.dim.val <- dim.val[match(name, names.val)]
-                  len.dim.int <- dim.int[match(name, names.int)]
-                  if (!identical(len.dim.val, len.dim.int)) 
-                      stop(gettextf("\"%s\" dimensions of '%s' and '%s' have different lengths",
-                                    name, "value", "interval"))
-                  DS.val <- DimScales.val[[name]]
-                  DS.int <- DimScales.int[[name]]
-                  dv.val <- dimvalues(DS.val)
-                  dv.int <- dimvalues(DS.int)
-                  if (!setequal(dv.val, dv.int))
-                      stop(gettextf("%s for \"%s\" dimension of '%s' and '%s' incompatible",
-                                    "dimscales", name, "value", "interval"))
-              }
-              checkLogicalFlag(value = lower.inclusive,
-                               name = "lower.inclusive")
-              checkLogicalFlag(value = upper.inclusive,
-                               name = "upper.inclusive")
-              lower <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 1L,
-                            drop = "dimension")
-              upper <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 2L,
-                            drop = "dimension")
-              lower <- makeCompatible(x = lower,
-                                      y = value,
-                                      subset = FALSE)
-              upper <- makeCompatible(x = upper,
-                                      y = value,
-                                      subset = FALSE)
-              if (lower.inclusive)
-                  within.lower <- value@.Data >= lower@.Data
-              else
-                  within.lower <- value@.Data > lower@.Data
-              if (upper.inclusive)
-                  within.upper <- value@.Data <= upper@.Data
-              else
-                  within.upper <- value@.Data < upper@.Data
-              ans <- within.lower & within.upper
-              ans <- array(ans,
-                           dim = dim.val,
-                           dimnames = dimnames.val)
-              ans
-          })
-
-## HAS_TESTS
-#' @rdname valueInInterval
-#' @export
-setMethod("valueInInterval",
-          signature(value = "numeric",
-                    interval = "DemographicArray"),
-          function(value, interval, lower.inclusive = TRUE,
-                   upper.inclusive = TRUE) {
-              dim <- dim(interval)
-              n.dim <- length(dim)
-              names <- names(interval)
-              dimtypes <- dimtypes(interval)
-              DimScales <- DimScales(interval)
-              if (!identical(length(value), 1L))
-                  stop(gettextf("'%s' is a number but does not have length %d",
-                                "value", 1L))
-              i.quantile <- match("quantile", dimtypes, nomatch = 0L)
-              has.quantile <- i.quantile > 0L
-              if (!has.quantile)
-                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
-                                "interval", "dimtype", "quantile"))
-              dim.quantile <- dim[i.quantile]
-              if (!identical(dim.quantile, 2L))
-                  stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
-                                "interval", "dimtype", "quantile", 2L))
-              if (n.dim > 1L) {
-                  if (any(dim[-i.quantile] != 1L))
-                      stop(gettextf("'%s' is a single number but '%s' has dimensions (other than the \"%s\" dimension) with length not equal to %d",
-                                    "value", "interval", "quantile", 1L))
-              }
-              checkLogicalFlag(value = lower.inclusive,
-                               name = "lower.inclusive")
-              checkLogicalFlag(value = upper.inclusive,
-                               name = "upper.inclusive")
-              lower <- slab(interval,
-                            dimension = i.quantile,
-                            elements = 1L)
-              upper <- slab(interval,
-                            dimension = i.quantile,
-                            elements = 2L)
-              if (lower.inclusive)
-                  within.lower <- value@.Data >= lower@.Data
-              else
-                  within.lower <- value@.Data > lower@.Data
-              if (upper.inclusive)
-                  within.upper <- value@.Data <= upper@.Data
-              else
-                  within.upper <- value@.Data < upper@.Data
-              ans <- within.lower & within.upper
-              ans <- as.logical(ans)
-              ans
           })
 
 ## HAS_TESTS
