@@ -20,6 +20,9 @@ valueInInterval(value, interval, lower.inclusive = TRUE,
 \item{value}{A \code{\linkS4class{DemographicArray}}, or a single
 number.}
 
+\item{interval}{A \code{\linkS4class{DemographicArray}},
+with a quantile dimension of length 2.}
+
 \item{lower.inclusive}{Logical. Whether the lower bounds
 specified in \code{interval} are considered to lie within
 the intervals.}
@@ -27,9 +30,6 @@ the intervals.}
 \item{upper.inclusive}{Logical. Whether the upper bounds
 specified in \code{interval} are considered to lie
 within the intervals. Defaults to \code{TRUE}.}
-
-\item{intervals}{A \code{\linkS4class{DemographicArray}},
-with a quantile dimension of length 2.}
 }
 \value{
 An array of logical values with the same dimensions
