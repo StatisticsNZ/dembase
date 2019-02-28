@@ -60,12 +60,14 @@ account <- Movements(population = population,
 componentNames(account)
 componentNames(account) <- c("Births", "Deaths") # capitalized
 componentNames(account)
-account <- setComponentNames(account, value = c("BIRTHS", "DEATHS"))
+library(dplyr) # to get pipes
+account <- account \%>\%
+setComponentNames(value = c("BIRTHS", "DEATHS"))
 account
-
 }
 \seealso{
 The names can also be set when creating
 the account using functions \code{\link{Movements}} and
-\code{Transitions}.
+\code{Transitions}. Components can be extracted using
+function \code{\link{components}}.
 }

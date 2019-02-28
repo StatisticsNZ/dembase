@@ -636,61 +636,137 @@ setMethod("collapseIterations",
               methods::new(class(object), .Data = .Data, metadata = metadata)
           })
 
-
-quantileExpand <- function(x) FINISH
-
-
+ 
 ## NO_TESTS
 #' @rdname credibleInterval
 #' @export
 setMethod("credibleInterval",
           signature(object = "DemographicArray"),
-          function(object, width = 95, na.rm = FALSE) {
-              dimtypes <- dimtypes(object, use.names = FALSE)
-              has.iter <- "iteration" %in% dimtypes
+          function(object, width = 95, na.rm = FALSE,
+                   adjust = c("search", "expand", "none")) {
+              dim <- dim(object)
+              .Data <- object@.Data
+              dimtypes.obj <- dimtypes(object, use.names = FALSE)
+              i.iter <- match("iteration", dimtypes.obj, nomatch = 0L)
+              has.iter <- i.iter > 0L
               if (!has.iter)
                   stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
                                 "object", "dimtype", "iteration"))
+              n.iter <- dim[i.iter]
               width <- checkAndTidyPercentage(width)
               if (isTRUE(all.equal(width, 0)))
                   stop(gettextf("'%s' equals %d",
                                 "width", 0L))
               checkLogicalFlag(value = na.rm,
                                name = "na.rm")
+              adjust <- match.arg(adjust)
               q <- 1 - width / 100
               prob <- c(q/2, 1 - q/2)
-              collapseIterations(object,
-                                 FUN = quantile,
-                                 prob = prob,
-                                 na.rm = na.rm)
+              ans <- collapseIterations(object,
+                                        FUN = quantile,
+                                        prob = prob,
+                                        na.rm = na.rm)
+              if (all(is.na(ans)))
+                  return(ans)
+              if (identical(adjust, "none"))
+                  return(ans)
+              .Data.whole.num <- (is.integer(.Data)
+                  || (all(.Data[!is.na(.Data)] == as.integer(.Data[!is.na(data)]))))
+              if (!.Data.whole.num)
+                  return(ans)
+              dimtypes.ans <- dimtypes(ans, use.names = FALSE)
+              i.quantile <- match("quantile", dimtypes.ans)
+              lower <- slab(ans,
+                            dimension = i.quantile,
+                            elements = 1L,
+                            drop = "dimension")
+              upper <- slab(ans,
+                            dimension = i.quantile,
+                            elements = 2L,
+                            drop = "dimension")
+              floor.lower <- floor(lower)
+              ceiling.upper <- ceiling(upper)
+              if (identical(adjust, "search")) {
+                  ceiling.lower <- ceiling(lower)
+                  floor.upper <- floor(upper)
+                  width.floor.floor <- floor.upper@.Data - floor.lower@.Data
+                  width.ceiling.floor <- floor.upper@.Data - ceiling.lower@.Data
+                  width.floor.ceiling <- ceiling.upper@.Data - floor.lower@.Data
+                  width.ceiling.ceiling <- ceiling.upper@.Data - ceiling.lower@.Data
+                  width.all <- matrix(c(width.floor.floor,
+                                        width.ceiling.floor,
+                                        width.floor.ceiling,
+                                        width.ceiling.ceiling),                                        
+                                      nrow = length(width.floor.floor),
+                                      ncol = 4L)
+                  transform.extend <- makeTransform(x = as(lower, "Values"),
+                                                    y = object)
+                  transform.collapse <- makeTransform(y = as(object, "Counts"),
+                                                      x = lower)
+                  floor.lower.ext <- extend(floor.lower@.Data,
+                                            transform = transform.extend)
+                  ceiling.lower.ext <- extend(ceiling.lower@.Data,
+                                              transform = transform.extend)
+                  floor.upper.ext <- extend(floor.upper@.Data,
+                                            transform = transform.extend)
+                  ceiling.upper.ext <- extend(ceiling.upper@.Data,
+                                              transform = transform.extend)
+                  inside.floor.floor <- (floor.lower.ext <= .Data) & (.Data <= floor.upper.ext)
+                  inside.ceiling.floor <- (ceiling.lower.ext <= .Data) & (.Data <= floor.upper.ext)
+                  inside.floor.ceiling <- (floor.lower.ext <= .Data) & (.Data <= ceiling.upper.ext)
+                  inside.ceiling.ceiling <- (ceiling.lower.ext <= .Data) & (.Data <= ceiling.upper.ext)
+                  sum.floor.floor <- collapse(inside.floor.floor,
+                                              transform = transform.collapse)
+                  sum.ceiling.floor <- collapse(inside.ceiling.floor,
+                                                transform = transform.collapse)
+                  sum.floor.ceiling <- collapse(inside.floor.ceiling,
+                                                transform = transform.collapse)
+                  sum.ceiling.ceiling <- collapse(inside.ceiling.ceiling,
+                                                  transform = transform.collapse)
+                  cover.floor.floor <- sum.floor.floor / n.iter
+                  cover.ceiling.floor <- sum.ceiling.floor / n.iter
+                  cover.floor.ceiling <- sum.floor.ceiling / n.iter
+                  cover.ceiling.ceiling <- sum.ceiling.ceiling / n.iter
+                  cover.all <- matrix(c(cover.floor.floor,
+                                        cover.ceiling.floor,
+                                        cover.floor.ceiling,
+                                        cover.ceiling.ceiling),                                        
+                                      nrow = length(cover.floor.floor),
+                                      ncol = 4L)
+                  width.all[is.na(cover.all) | (cover.all < (width / 100))] <- Inf
+                  best.combination <- apply(width.all, 1, which.min)
+                  lower.all <- matrix(c(lower.floor,
+                                        lower.ceiling,
+                                        lower.floor,
+                                        lower.ceiling),                                        
+                                      nrow = length(lower.floor),
+                                      ncol = 4L)
+                  upper.all <- matrix(c(upper.floor,
+                                        upper.floor,
+                                        upper.ceiling,
+                                        upper.ceiling),                                        
+                                      nrow = length(upper.floor),
+                                      ncol = 4L)
+                  lower <- lower.all[ , best.combination]
+                  upper <- upper.all[ , best.combination]
+              }
+              else if (identical(adjust, "expand")) {
+                  lower <- lower.floor
+                  upper <- upper.ceiling
+              }
+              else
+                  stop(gettextf("invalid value for '%s' : \"%s\"",
+                                "adjust", adjust))
+              slab(ans,
+                   dimension = i.quantile,
+                   elements = 1L) <- lower
+              slab(ans,
+                   dimension = i.quantile,
+                   elements = 2L) <- upper
+              ans <- toInteger(ans)
+              ans
           })
 
-
-
-## NO_TESTS
-#' @rdname credibleInterval
-#' @export
-setMethod("credibleInterval",
-          signature(object = "DemographicArray"),
-          function(object, width = 95, na.rm = FALSE) {
-              dimtypes <- dimtypes(object, use.names = FALSE)
-              has.iter <- "iteration" %in% dimtypes
-              if (!has.iter)
-                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
-                                "object", "dimtype", "iteration"))
-              width <- checkAndTidyPercentage(width)
-              if (isTRUE(all.equal(width, 0)))
-                  stop(gettextf("'%s' equals %d",
-                                "width", 0L))
-              checkLogicalFlag(value = na.rm,
-                               name = "na.rm")
-              q <- 1 - width / 100
-              prob <- c(q/2, 1 - q/2)
-              collapseIterations(object,
-                                 FUN = quantile,
-                                 prob = prob,
-                                 na.rm = na.rm)
-          })
               
               
 
@@ -1054,43 +1130,25 @@ setMethod("impute",
 setMethod("intervalContainsTruth",
           signature(interval = "DemographicArray",
                     truth = "DemographicArray"),
-          function(truth, interval, lower.inclusive = TRUE,
-                   upper.inclusive = TRUE) {
+          function(interval, truth) {
               checkIntervalArray(interval)
               checkTruthArray(truth)
-              checkIntervalAndTruthCompatible(interval = interval,
-                                              truth = truth)
-              checkLogicalFlag(truth = lower.inclusive,
-                               name = "lower.inclusive")
-              checkLogicalFlag(truth = upper.inclusive,
-                               name = "upper.inclusive")
-              lower <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 1L,
-                            drop = "dimension")
-              upper <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 2L,
-                            drop = "dimension")
+              checkIntervalAndTruthArrayCompatible(interval = interval,
+                                                   truth = truth)
+              metadata <- metadata(truth)
+              l <- splitLowerUpper(interval)
+              lower <- l$lower
+              upper <- l$upper
               lower <- makeCompatible(x = lower,
                                       y = truth,
                                       subset = FALSE)
               upper <- makeCompatible(x = upper,
                                       y = truth,
                                       subset = FALSE)
-              if (lower.inclusive)
-                  within.lower <- truth@.Data >= lower@.Data
-              else
-                  within.lower <- truth@.Data > lower@.Data
-              if (upper.inclusive)
-                  within.upper <- truth@.Data <= upper@.Data
-              else
-                  within.upper <- truth@.Data < upper@.Data
-              ans <- within.lower & within.upper
-              ans <- array(ans,
-                           dim = dim.val,
-                           dimnames = dimnames.val)
-              ans
+              .Data <- (lower <= truth) & (truth <= upper)
+              new("Values",
+                  .Data = .Data,
+                  metadata = metadata)
           })
 
 
@@ -1099,118 +1157,60 @@ setMethod("intervalContainsTruth",
 #' @export
 setMethod("intervalContainsTruth",
           signature(interval = "DemographicArray",
-                    value = "numeric"),
-          function(interval, truth, lower.inclusive = TRUE,
-                   upper.inclusive = TRUE) {
-              dim <- dim(interval)
-              n.dim <- length(dim)
-              names <- names(interval)
-              dimtypes <- dimtypes(interval)
-              DimScales <- DimScales(interval)
-              if (!identical(length(value), 1L))
-                  stop(gettextf("'%s' is a number but does not have length %d",
-                                "value", 1L))
-              i.quantile <- match("quantile", dimtypes, nomatch = 0L)
-              has.quantile <- i.quantile > 0L
-              if (!has.quantile)
-                  stop(gettextf("'%s' does not have a dimension with %s \"%s\"",
-                                "interval", "dimtype", "quantile"))
-              dim.quantile <- dim[i.quantile]
-              if (!identical(dim.quantile, 2L))
-                  stop(gettextf("dimension of '%s' with %s \"%s\" does not have length %d",
-                                "interval", "dimtype", "quantile", 2L))
-              if (n.dim > 1L) {
-                  if (any(dim[-i.quantile] != 1L))
-                      stop(gettextf("'%s' is a single number but '%s' has dimensions (other than the \"%s\" dimension) with length not equal to %d",
-                                    "value", "interval", "quantile", 1L))
-              }
-              checkLogicalFlag(value = lower.inclusive,
-                               name = "lower.inclusive")
-              checkLogicalFlag(value = upper.inclusive,
-                               name = "upper.inclusive")
-              lower <- slab(interval,
-                            dimension = i.quantile,
-                            elements = 1L)
-              upper <- slab(interval,
-                            dimension = i.quantile,
-                            elements = 2L)
-              if (lower.inclusive)
-                  within.lower <- value@.Data >= lower@.Data
-              else
-                  within.lower <- value@.Data > lower@.Data
-              if (upper.inclusive)
-                  within.upper <- value@.Data <= upper@.Data
-              else
-                  within.upper <- value@.Data < upper@.Data
-              ans <- within.lower & within.upper
-              ans <- as.logical(ans)
-              ans
+                    truth = "numeric"),
+          function(interval, truth) {
+              checkIntervalArray(interval)
+              checkTruthNumeric(truth)
+              checkIntervalAndTruthNumericCompatible(interval = interval,
+                                                     truth = truth)
+              l <- splitLowerUpper(interval)
+              lower <- l$lower
+              upper <- l$upper
+              ans <- (lower <= truth) & (truth <= upper)
+              as.logical(ans)
           })
 
 #' @rdname intervalScore
 setMethod("intervalScore",
           signature(interval = "DemographicArray",
                     truth = "DemographicArray"),
-          function(interval, truth,
-                   lower.inclusive = TRUE,
-                   upper.inclusive = TRUE) {
+          function(interval, truth) {
               checkIntervalArray(interval)
               checkTruthArray(truth)
               checkIntervalAndTruthCompatible(interval = interval,
                                               truth = truth)
-              checkLogicalFlag(truth = lower.inclusive,
-                               name = "lower.inclusive")
-              checkLogicalFlag(truth = upper.inclusive,
-                               name = "upper.inclusive")
               alpha <- getAlphaInterval(interval)
-              lower <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 1L,
-                            drop = "dimension")
-              upper <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 2L,
-                            drop = "dimension")
+              l <- splitLowerUpper(interval)
+              lower <- l$lower
+              upper <- l$upper
               lower <- makeCompatible(x = lower,
                                       y = truth,
                                       subset = FALSE)
               upper <- makeCompatible(x = upper,
                                       y = truth,
                                       subset = FALSE)
-              if (lower.inclusive)
-                  below.lower <- truth@.Data < lower@.Data
-              else
-                  below.lower <- truth@.Data <= lower@.Data
-              if (upper.inclusive)
-                  above.upper <- truth@.Data > upper@.Data
-              else
-                  above.upper <- truth@.Data >= upper@.Data
+              lower <- lower@.Data
+              upper <- upper@.Data
+              truth <- truth@.Data
               width <- upper - lower
-              penalty.below.lower <- (2 / alpha) * (lower - truth) * below.lower
-              penalty.above.upper <- (2 / alpha) * (truth - upper) * above.upper
-              width + penalty.below.lower + penalty.above.upper
+              penalty.below.lower <- (2 / alpha) * (lower - truth) * (truth < lower)
+              penalty.above.upper <- (2 / alpha) * (truth - upper) * (truth > upper)
+              .Data <- width + penalty.below.lower + penalty.above.upper
+              metadata <- metadata(truth)
+              new("Values",
+                  .Data = .Data,
+                  metadata = metadata)
           })
 
 
 #' @rdname intervalWidth
 setMethod("intervalWidth",
           signature(interval = "DemographicArray"),
-          function(interval,
-                   lower.inclusive = TRUE,
-                   upper.inclusive = TRUE) {
+          function(interval) {
               checkIntervalArray(interval)
-              checkLogicalFlag(truth = lower.inclusive,
-                               name = "lower.inclusive")
-              checkLogicalFlag(truth = upper.inclusive,
-                               name = "upper.inclusive")
-              lower <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 1L,
-                            drop = "dimension")
-              upper <- slab(interval,
-                            dimension = i.quantile.int,
-                            elements = 2L,
-                            drop = "dimension")
+              l <- splitLowerUpper(interval)
+              lower <- l$lower
+              upper <- l$upper
               ans <- upper - lower
               if (is.integer(interval)) {
                   if (lower.inclusive && upper.inclusive)

@@ -394,6 +394,13 @@ setGeneric("DimScales<-",
            function(object, value)
            standardGeneric("DimScales<-"))
 
+
+#' @export
+setGeneric("MSE",
+           function(point, truth)
+               standardGeneric("MSE"))
+
+
 #' Create object of class "Net" and "Pool".
 #'
 #' Object of class \code{\linkS4class{Net}} and \code{\linkS4class{Pool}}
@@ -419,6 +426,7 @@ setGeneric("DimScales<-",
 #' 
 #' @name net-pool-generators
 NULL
+
 
 #' @rdname net-pool-generators
 #' @export
@@ -1530,7 +1538,8 @@ setGeneric("componentNames<-",
 #' credibleInterval(x, na.rm = FALSE)
 #' @export
 setGeneric("credibleInterval",
-           function(object, width = 95, na.rm = FALSE)
+           function(object, width = 95, na.rm = FALSE,
+                    adjust = c("search", "expand", "none"))
                standardGeneric("credibleInterval"))
 
 setGeneric("dbind2",
@@ -2598,6 +2607,10 @@ setGeneric("intervalContainsTruth",
 setGeneric("intervalScore",
            function(interval, truth)
                standardGeneric("intervalScore"))
+
+setGeneric("intervalWidth",
+           function(interval)
+               standardGeneric("intervalWidth"))
 
 setGeneric("InternalMovements",
            function(internal, template)

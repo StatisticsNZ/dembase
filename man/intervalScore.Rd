@@ -6,23 +6,16 @@
 \alias{intervalScore,DemographicArray,DemographicArray-method}
 \title{Interval score.}
 \usage{
-intervalScore(values, truth, alpha = NULL, na.rm = FALSE)
+intervalScore(interval, truth)
 
-\S4method{intervalScore}{DemographicArray,DemographicArray}(values, truth,
-  alpha = NULL, na.rm = FALSE)
+\S4method{intervalScore}{DemographicArray,DemographicArray}(interval,
+  truth)
 }
 \arguments{
-\item{values}{An object of class \code{\linkS4class{DemographicArray}}
-containing the forecasts.}
+\item{interval}{An object of class \code{\linkS4class{DemographicArray}}.}
 
 \item{truth}{An object of class \code{\linkS4class{DemographicArray}}
 containing the held-back data.}
-
-\item{alpha}{A number between 0 and 0.5.}
-
-\item{na.rm}{Logical. Whether to ignore missing values
-when calculating prediction intervals. Only relevant when
-\code{values} has an \code{"interval"} dimension.}
 }
 \value{
 A \code{\linkS4class{DemographicArray}} object
@@ -45,15 +38,11 @@ Interval scores reward accuracy and narrow prediction intervals. They equal
 the width of the prediction interval plus penalties for being outside
 the interval.  For the details, see Section 6.2 of the reference below.
 
-\code{values} holds the forecasts.  It must have a dimension with
-\code{\link{dimtype}} \code{"iteration"} or \code{"quantile"}.  If
-it has a dimension with dimtype \code{"quantile"} there can be only
+\code{interval} holds the prediction intervals from the forecasts.
+It must have a dimension with \code{\link{dimtype}} \code{"quantile"}.
+There here can be only
 two quantiles, and these quantiles must be symmetric (for instance,
 5\% and 95\% are valid, but 5\% and 90\% are not.)
-
-The \code{alpha} argument is used only if \code{values} has an
-\code{"iteration"} dimension.  The prediction intervals
-then have the form \code{(alpha/2, 1 - alpha/2)}.
 
 The return value contains a score for each quantity being predicted.
 These scores can be aggregated using \code{sum} or
@@ -61,31 +50,33 @@ These scores can be aggregated using \code{sum} or
 or a score for each time period.
 }
 \examples{
-## Make up some data
-values <- Values(array(c(23, 25, 21, 28,
-                         18, 16, 22, 23),
-                       dim = c(2, 4),
-                       dimnames = list(quantile = c("10\%", "90\%"),
-                                       year = 2011:2014)),
-                 dimscales = c(year = "Points"))
+interval <- Values(array(c(23, 25, 21, 28,
+                           18, 16, 22, 23),
+                         dim = c(2, 4),
+                         dimnames = list(quantile = c("10\%", "90\%"),
+                                         year = 2011:2014)),
+                   dimscales = c(year = "Points"))
 truth <- ValuesOne(c(22, 23, 24, 25),
                    labels = 2011:2014,
                    name = "year",
                    dimscale = "Points")
-score <- intervalScore(values, truth)
+interval
+truth
+score <- intervalScore(interval = interval,
+                       truth = truth)
 ## high score in 2013, since value outside interval
-## (recalling that high score = low quality)
+## (recalling that a high score implies low quality)
 score
 ## scores can be summed, eg to give an overall score
 sum(score)
 }
 \references{
 Gneiting T and Raftery A. 2007. Strictly proper scoring rules,
-prediction, and estimation. \emph{Journal of the Americal
+prediction, and estimation. \emph{Journal of the American
 Statistical Association}. 102(477): 539-578.
 }
 \seealso{
-\code{\link{MSE}} and \code{\link{RMSE}} are standard measures
+\code{\link{MSE}} is a standard measure
 of the accuracy of point estimates (as opposed to prediction
 intervals.)
 }

@@ -10,6 +10,9 @@ credibleInterval(object, width = 95, na.rm = FALSE)
 
 \S4method{credibleInterval}{DemographicArray}(object, width = 95,
   na.rm = FALSE)
+
+\S4method{credibleInterval}{DemographicArray}(object, width = 95,
+  na.rm = FALSE)
 }
 \arguments{
 \item{object}{A \code{\link{DemographicArray}}. The array
