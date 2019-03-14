@@ -6,13 +6,11 @@
 \alias{credibleInterval,DemographicArray-method}
 \title{Calculate credible intervals}
 \usage{
-credibleInterval(object, width = 95, na.rm = FALSE)
+credibleInterval(object, width = 95, na.rm = FALSE,
+  adjust = c("search", "expand", "none"))
 
 \S4method{credibleInterval}{DemographicArray}(object, width = 95,
-  na.rm = FALSE)
-
-\S4method{credibleInterval}{DemographicArray}(object, width = 95,
-  na.rm = FALSE)
+  na.rm = FALSE, adjust = c("search", "expand", "none"))
 }
 \arguments{
 \item{object}{A \code{\link{DemographicArray}}. The array
@@ -22,6 +20,9 @@ must have a dimension with \code{\link{dimtype}}
 \item{width}{A percentage value.}
 
 \item{na.rm}{\code{TRUE} (the default) or \code{FALSE}.}
+
+\item{adjust}{\code{"search"} (the default), \code{"expand"},
+or \code{"none"}. See the details for an explanation.}
 }
 \value{
 An object with the same class as \code{object},
@@ -29,30 +30,100 @@ in which the \code{"iteration"} dimension is replaced
 by a \code{"quantiles"} dimension of length 2.
 }
 \description{
-Calculate credible intervals from a \code{\link{DemographicArray}}.
-The demographic array must have a dimension with \code{\link{dimtype}}
-\code{"iteration"}.
+Calculate credible intervals for a \code{\link{DemographicArray}}.
+When the array consists of whole numbers the credible intervals,
+by default, also consist of whole numbers.
 }
 \details{
+Credible intervals summarise variation across a posterior sample.
+To represent a posterior sample, a \code{\link{DemographicArray}}
+must have a dimension with \code{\link{dimtype}} \code{"iteration"}.
+If \code{object} does not have a dimension with dimtype
+\code{"iteration"}, \code{credibleInterval} throws an error.
+
 \code{width} must be a percentage value. It can equal 100,
 but cannot equal 0.
 
-The credible intervals are calculated using the quantiles
+When \code{object} consists of real numbers,
+\code{credibleInterval} returns intervals of the form
 \code{(q/2, 1 - q/2)} where \code{q = 1 - width/100}.
+
+When \code{object} consists of whole numbers (ie if
+\code{is.integer(object)} is \code{TRUE} or if
+\code{all(as.integer(object) == object)}), the calculations
+are more complicated.
+
+Step 1 is to calculate quantiles using the same formula
+as for real numbers. Intervals calculated in this way
+will, in general, be composed of real numbers. These
+intervals can, arguably, act as quick and
+dirty measures of uncertainty.
+They are, however, poorly defined. For instance, are 
+the values \code{0} and \code{4} inside or outside the
+interval \code{(0.1, 3.9)}? Are they inside the
+interval \code{(0.8, 3.2)}? These ambiguities make
+non-whole-number intervals unsuitable for tasks such
+as assessing coverage rates involving whole numbers.
+
+When \code{adjust} is \code{"search"} or \code{"expand"},
+\code{credibleInterval} adjusts credible intervals
+for whole numbers so that the credible intervals
+themselves consist of whole numbers and enclose at least
+as large a proportion of the posterior sample as the
+original intervals.
+
+When \code{adjust} is \code{"expand"}, the interval
+\code{(l, u)} is expanded to \code{(floor(l), ceiling(u))}.
+
+When \code{adjust} is \code{"search"}, \code{credibleInterval}
+calculates, for each cell, the four intervals
+
+\code{(floor(l), floor(u))}
+
+\code{(ceiling(l), floor(u))}
+
+\code{(floor(l), ceiling(u))}
+
+\code{(ceiling(l), ceiling(u))}
+
+and selects the narrowest interval that encloses at least
+\code{width} percent of the posterior sample. The
+\code{"search"} approarchshould yield intervals that are,
+on average, slightly narrower than the \code{"expand"} approach,
+and is therefore the default.
+
+Note that the \code{adjust} argument is only relevant
+when \code{object} consists entirely of integers.
+When \code{object} contains one or more non-integers,
+the \code{credibleInterval} ignores \code{adjust}.
 
 When \code{na.rm} is \code{TRUE} (the default), missing values
 are removed before the credible interval is calculated.
 }
 \examples{
-x <- Values(array(runif(20),
-                  dim = c(2, 10),
-                  dimnames = list(sex = c("F", "M"),
-                                  iteration = 1:10)))
-credibleInterval(x)
-credibleInterval(x, width = 50)
-x[1] <- NA
-credibleInterval(x)
-credibleInterval(x, na.rm = FALSE)
+set.seed(0)
+
+## 'object' contains fractions
+object <- Values(array(runif(n = 20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("F", "M"),
+                                       iteration = 1:10)))
+credibleInterval(object)
+credibleInterval(object, width = 50)
+
+## 'object' entirely whole numbers
+object <- Values(array(rpois(n = 20, lambda = 10),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("F", "M"),
+                                       iteration = 1:10)))
+credibleInterval(object, width = 90, adjust = "none")
+credibleInterval(object, width = 90, adjust = "expand")
+credibleInterval(object, width = 90, adjust = "search")
+credibleInterval(object, width = 90)
+## 'na.rm' argument
+object[1] <- NA
+credibleInterval(object)
+credibleInterval(object, na.rm = TRUE)
 }
 \seealso{
 \code{credibleInterval} calls function

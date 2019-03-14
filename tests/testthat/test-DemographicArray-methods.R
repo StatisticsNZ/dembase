@@ -1648,6 +1648,273 @@ test_that("quantiles works", {
     expect_identical(quantile(x, na.rm = TRUE), quantile(a, na.rm = TRUE))
 })
 
+test_that("recodeCategories method for Counts works with old, new", {
+    ## one dimension, old-new
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "reg",
+                                     old = c("c", "b"),
+                                     new = c("C", "B"))
+    ans.expected <- Counts(array(1:6,
+                                 dim = 3:2,
+                                 dimnames = list(reg = c("a", "B", "C"),
+                                                 sex = c("m", "f"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## one dimension, sexes
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "sex",
+                                     old = c("m", "f"),
+                                     new = c("Male", "Female"))
+    ans.expected <- Counts(array(1:6,
+                                 dim = 3:2,
+                                 dimnames = list(reg = c("a", "b", "c"),
+                                                 sex = c("Male", "Female"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_identical(dimtypes(ans.obtained)[["sex"]], "sex")
+    ## two dimensions - not orig-dest or parent-child
+    x <- Counts(array(1:9,
+                      dim = c(3, 3),
+                      dimnames = list(reg1 = c("a", "b", "c"),
+                                      reg2 = c("a", "b", "d"))))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = 1:2,
+                                     old = "b", 
+                                     new = "B")
+    ans.expected <- Counts(array(1:9,
+                                 dim = c(3, 3),
+                                 dimnames = list(reg1 = c("a", "B", "c"),
+                                                 reg2 = c("a", "B", "d"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions -  parent-child
+    x <- Counts(array(1:9,
+                      dim = c(3, 3),
+                      dimnames = list(reg_parent = c("a", "b", "c"),
+                                      reg_child = c("a", "b", "d"))))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "reg",
+                                     old = "a", 
+                                     new = "A")
+    ans.expected <- Counts(array(1:9,
+                                 dim = c(3, 3),
+                                 dimnames = list(reg_parent = c("A", "b", "c"),
+                                                 reg_child = c("A", "b", "d"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## works with triangles
+    x <- Counts(array(1:6,
+                      dim = 3:1,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      triangle = c("upper", "lower"),
+                                      time = "2001-2005")))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "triangle",
+                                     old = c("Upper", "Lower"),
+                                     new = c("TU", "TL"))
+    ans.expected <- Counts(array(1:6,
+                                 dim = 3:1,
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 triangle = c("TU", "TL"),
+                                                 time = "2001-2005")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("recodeCategories throws appropriate errors with old, new", {
+    ## 'old' has missing values
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    expect_error(recodeCategories(x,
+                                  dimension = "reg",
+                                  old = c("c", NA),
+                                  new = c("C", "B")),
+                 "'old' has missing values")
+    ## 'new' has duplicates
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    expect_error(recodeCategories(x,
+                                  dimension = "reg",
+                                  old = c("c", "b"),
+                                  new = c("B", "B")),
+                 "'new' has duplicates")
+    ## 'old' and 'new' have different lengths
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    expect_error(recodeCategories(x,
+                                  dimension = "reg",
+                                  old = "c",
+                                  new = c("B", "C")),
+                 "'old' and 'new' have different lengths")
+    ## 'dimension' is not Categories
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("m", "f"))))
+    expect_error(recodeCategories(x,
+                                  dimension = "age",
+                                  old = "0-4", 
+                                  new = "A"),
+                 "dimension \"age\" has dimscale \"Intervals\"")
+    ## unused value in 'old'
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    expect_error(recodeCategories(x,
+                                  dimension = "reg",
+                                  old = "d", 
+                                  new = "D"),
+                 "'old' includes value \"d\" but \"reg\" dimension of 'object' does not include \"d\"")
+    ## invalid value for Triangles
+    x <- Counts(array(1:6,
+                      dim = 3:1,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      triangle = c("upper", "lower"),
+                                      time = "2001-2005")))
+    expect_error(recodeCategories(x,
+                                  dimension = "triangle",
+                                  old = c("Upper", "Lower"),
+                                  new = c("TU", "Wrong")),
+                 "problem creating \"Triangles\" dimscale for \"triangle\" dimension :")
+})
+
+test_that("recodeCategories method for Counts works with concordances", {
+    ## one dimension, old-new
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    conc <- Concordance(data.frame(lower = letters, upper = LETTERS))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "reg",
+                                     concordance = conc)
+    ans.expected <- Counts(array(1:6,
+                                 dim = 3:2,
+                                 dimnames = list(reg = c("A", "B", "C"),
+                                                 sex = c("m", "f"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## one dimension, sexes
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    conc <- Concordance(data.frame(short = c("f", "m"),
+                                   long = c("Female", "Male")))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "sex",
+                                     concordance = conc)
+    ans.expected <- Counts(array(1:6,
+                                 dim = 3:2,
+                                 dimnames = list(reg = c("a", "b", "c"),
+                                                 sex = c("Male", "Female"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_identical(dimtypes(ans.obtained)[["sex"]], "sex")
+    ## two dimensions - not orig-dest or parent-child
+    x <- Counts(array(1:9,
+                      dim = c(3, 3),
+                      dimnames = list(reg1 = c("a", "b", "c"),
+                                      reg2 = c("a", "b", "d"))))
+    conc <- Concordance(data.frame(lower = letters, upper = LETTERS))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = 1:2,
+                                     concordance = conc)
+    ans.expected <- Counts(array(1:9,
+                                 dim = c(3, 3),
+                                 dimnames = list(reg1 = c("A", "B", "C"),
+                                                 reg2 = c("A", "B", "D"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## two dimensions -  parent-child
+    x <- Counts(array(1:9,
+                      dim = c(3, 3),
+                      dimnames = list(reg_parent = c("a", "b", "c"),
+                                      reg_child = c("a", "b", "d"))))
+    conc <- Concordance(data.frame(lower = letters, upper = LETTERS))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "reg",
+                                     concordance = conc)
+    ans.expected <- Counts(array(1:9,
+                                 dim = c(3, 3),
+                                 dimnames = list(reg_parent = c("A", "B", "C"),
+                                                 reg_child = c("A", "B", "D"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## works with triangles
+    x <- Counts(array(1:6,
+                      dim = 3:1,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      triangle = c("upper", "lower"),
+                                      time = "2001-2005")))
+    conc <- Concordance(data.frame(old = c("Upper", "Lower"), new = c("TU", "TL")))
+    ans.obtained <- recodeCategories(x,
+                                     dimension = "triangle",
+                                     old = c("Upper", "Lower"),
+                                     new = c("TU", "TL"))
+    ans.expected <- Counts(array(1:6,
+                                 dim = 3:1,
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 triangle = c("TU", "TL"),
+                                                 time = "2001-2005")))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("recodeCategories throws appropriate errors with concordances", {
+    ## concordance not OneToTone
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    conc <- Concordance(data.frame(from = c("a", "b", "c"),
+                                   to = c("A", "A", "B")))
+    expect_error(recodeCategories(x,
+                                  dimension = "reg",
+                                  concordance = conc),
+                 "'concordance' has class \"ManyToOne\"")
+    ## 'dimension' is not Categories
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("m", "f"))))
+    conc <- Concordance(data.frame(from = c("0-4", "5-9", "10+"),
+                                   to = c("A", "B", "C")))
+    expect_error(recodeCategories(x,
+                                  dimension = "age",
+                                  concordance = conc),
+                 "\"age\" dimension has dimscale \"Intervals\"")
+    ## value not found in concordance
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    conc <- Concordance(data.frame(from = c("a", "b"),
+                                   to = c("A", "B")))
+    expect_error(recodeCategories(x,
+                                  dimension = "reg",
+                                  concordance = conc),
+                 "unable to recode categories for \"reg\" dimension :")
+    ## invalid value for Triangles
+    x <- Counts(array(1:6,
+                      dim = 3:1,
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      triangle = c("upper", "lower"),
+                                      time = "2001-2005")))
+    conc <- Concordance(data.frame(old = c("Upper", "Lower"),
+                                  new = c("TU", "Wrong")))
+    expect_error(recodeCategories(x,
+                                  dimension = "triangle",
+                                  concordance = conc),
+                 "problem creating \"Triangles\" dimscale for \"triangle\" dimension :")
+})
+
+    
 test_that("resetIterations works", {
     x <- Counts(array(1:6,
                       dim = c(3, 2),

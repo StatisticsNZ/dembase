@@ -7,15 +7,13 @@
 \alias{intervalContainsTruth,DemographicArray,numeric-method}
 \title{Test whether intervals contain true values}
 \usage{
-intervalContainsTruth(interval, truth, lower.inclusive = TRUE,
-  upper.inclusive = TRUE)
+intervalContainsTruth(interval, truth)
 
 
   \S4method{intervalContainsTruth}{DemographicArray,DemographicArray}(interval,
-  truth, lower.inclusive = TRUE, upper.inclusive = TRUE)
+  truth)
 
-\S4method{intervalContainsTruth}{DemographicArray,numeric}(interval, truth,
-  lower.inclusive = TRUE, upper.inclusive = TRUE)
+\S4method{intervalContainsTruth}{DemographicArray,numeric}(interval, truth)
 }
 \arguments{
 \item{interval}{A \code{\linkS4class{DemographicArray}},
@@ -23,47 +21,30 @@ with a quantile dimension of length 2.}
 
 \item{truth}{A \code{\linkS4class{DemographicArray}}, or a single
 number.}
-
-\item{lower.inclusive}{Logical. Whether the lower bounds
-specified in \code{interval} are considered to lie within
-the intervals.}
-
-\item{upper.inclusive}{Logical. Whether the upper bounds
-specified in \code{interval} are considered to lie
-within the intervals. Defaults to \code{TRUE}.}
 }
 \value{
-An array of logical values with the same dimensions
+An \code{\linkS4class{DemographicArray}}
+of \code{1}s and \code{0}s with the same dimensions
 as \code{truth}, or, if \code{truth} is a number,
-a single logical value.
+a single \code{1} or \code{0}.
 }
 \description{
-Test whether intervals contain values.  These values
-are referred to as the truth, because of the way in
-which \code{intervalContainsTruth} is typically used,
-which is within simulations. In simulations, the
-analyst generates the true rates or counts, and hence
-knows what they are. \code{intervalContainsTruth} is used
-to keep track of the number of intervals that contain
-the true values.  This information is then used to calculate
-coverage rates, ie frequency with which credible interval
-of a given nominal coverage rate actually contains the
-true value.
+Test whether intervals contain specified values.  These values
+are referred to as 'truth' because \code{intervalContainsTruth}
+is typically used as part of a simulation study,
+where the analyst generates the true values, and
+tests the ability of the model to recover these values.
 }
 \details{
-\code{interval} should have the same dimensions
-and dimscales as \code{truth}, but also have a dimension
+\code{interval} must have the same dimensions
+and dimscales as \code{truth}, and also a dimension
 with length 2 and \code{\link{dimtype}}
-\code{"quantile"}. The quantile dimension specifies
-the upper and lower bounds. See below for an example.
+\code{"quantile"} specifying the intervals.
 
-The \code{lower.inclusive} and \code{upper.inclusive}
-arguments can be used to specify whether the intervals are
-open or closed at the boundaries. The difference between
-open and closed boundaries is typically unimportant
-when \code{value} consists of real numbers, but can
-be important when \code{value} consists of integers, especially
-when the integers are small.
+An interval \code{(l, u)} is said to contain a value \code{v}
+if \code{l <= t <= u}. The use of \code{<=} is immaterial
+when \code{l} and \code{u} are real numbers but makes a difference
+when \code{l} and \code{u} are integers.
 
 \code{truth} can be a single number, in which case all dimensions
 of \code{interval}, other than the quantile dimension, should
@@ -74,6 +55,15 @@ of its arguments than most functions in \code{dembase}.
 Although it reorders dimensions and categories
 in \code{interval} and \code{truth}, it does not collapse
 or expand dimensions, or drop any levels.
+
+When \code{truth} is a \code{\linkS4class{DemographicArray}}
+\code{intervalContainsTruth} returns a \code{\linkS4class{Values}}
+object with \code{1}s and \code{0}s,
+rather than an ordinary array of
+\code{TRUE}s and \code{FALSE}s. The advantage of the
+\code{\linkS4class{Values}} object is that it can
+more easily be collapsed or otherwise manipulated:
+see below for an example.
 }
 \examples{
 interval <- Values(array(c(-0.1, 0.4, 0.2, 0.7),
@@ -93,12 +83,11 @@ truth <- 5L
 intervalContainsTruth(interval = interval,
                       truth = truth)
 intervalContainsTruth(interval = interval,
-                      truth = truth,
-                      lower.inclusive = FALSE)
+                      truth = truth)
 }
 \seealso{
-Function \code{\link{credibleInterval}} is a convenience
-function for creating \code{interval} objects of the right form
+Function \code{\link{credibleInterval}} creates
+\code{interval} objects of the right form
 for \code{intervalContainsTruth}. Function \code{\link{MSE}},
 is another function that may be useful in simulation studies.
 }

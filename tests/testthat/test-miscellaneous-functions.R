@@ -4,42 +4,6 @@ context("miscellaneous-functions")
 n.test <- 5
 test.identity <- FALSE
 
-
-## GENERAL-PURPOSE CHECKING FUNCTIONS ##############################################
-
-test_that("checkAndTidyPercentage works", {
-    checkAndTidyPercentage <- dembase:::checkAndTidyPercentage
-    expect_identical(checkAndTidyPercentage(value = 50L,
-                                            name = "percent"),
-                     50)
-    expect_identical(checkAndTidyPercentage(value = 0,
-                                            name = "percent"),
-                     0)
-    expect_identical(checkAndTidyPercentage(value = 100,
-                                            name = "percent"),
-                     100)
-    expect_identical(checkAndTidyPercentage(value = 93.382,
-                                            name = "percent"),
-                     93.382)
-    expect_error(checkAndTidyPercentage(value = "wrong",
-                                        name = "percent"),
-                 "'percent' has class \"character\"")
-    expect_error(checkAndTidyPercentage(value = c(90, 91),
-                                        name = "percent"),
-                 "'percent' does not have length 1")
-    expect_error(checkAndTidyPercentage(value = NA_integer_,
-                                        name = "percent"),
-                 "'percent' is missing")
-    expect_error(checkAndTidyPercentage(value = 100.0001,
-                                        name = "percent"),
-                 "'percent' is not between 0 and 100")
-    expect_error(checkAndTidyPercentage(value = -32,
-                                        name = "percent"),
-                 "'percent' is not between 0 and 100")
-})
-
-
-
 ## FUNCTIONS TO OBTAIN CONSTANTS ###################################################
 
 test_that("getDimtypesPairs works", {
@@ -305,6 +269,46 @@ test_that("cleanAgeGroupConc works", {
     y <- c("0", "1-4", "5-9", "10+")
     ans.obtained <- cleanAgeGroupConc(x)
     ans.expected <- Concordance(data.frame(old = x, new = y))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("cleanAgeGroupLifeTableYears works", {
+    cleanAgeGroupLifeTableYears <- dembase:::cleanAgeGroupLifeTableYears
+    age <- c(0, 1, 5, 10)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- c("0", "1-4", "5-9", "10+")
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(10, 1, 5, 10, 0)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- c("10+", "1-4", "5-9", "10+", "0")
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(0, 5, 10)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- c("0-4", "5-9", "10+")
+    expect_identical(ans.obtained, ans.expected)
+    age <- c("0", 5, 10)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- c("0-4", "5-9", "10+")
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(0, 5, NA, 10)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- c("0-4", "5-9", NA, "10+")
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(1, 5, 10)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(0, 1, 5, 10.5, 15)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(0, 1, 5, 10, 16)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    age <- c(0, 1, 10)
+    ans.obtained <- cleanAgeGroupLifeTableYears(age)
+    ans.expected <- NULL
     expect_identical(ans.obtained, ans.expected)
 })
 

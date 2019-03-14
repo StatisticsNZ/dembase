@@ -662,16 +662,28 @@ setMethod("credibleInterval",
               adjust <- match.arg(adjust)
               q <- 1 - width / 100
               prob <- c(q/2, 1 - q/2)
-              ans <- collapseIterations(object,
-                                        FUN = quantile,
-                                        prob = prob,
-                                        na.rm = na.rm)
+              if (na.rm)
+                  ans <- collapseIterations(object,
+                                            FUN = quantile,
+                                            prob = prob,
+                                            na.rm = na.rm)
+              else {
+                  names <- paste0(prob * 100, "%")
+                  FUN <- function(x) {
+                      if (any(is.na(x)))
+                          structure(.Data = c(NA, NA), names = names)
+                      else
+                          quantile(x, prob = prob)
+                  }
+                  ans <- collapseIterations(object,
+                                            FUN = FUN)
+              }
               if (all(is.na(ans)))
                   return(ans)
               if (identical(adjust, "none"))
                   return(ans)
               .Data.whole.num <- (is.integer(.Data)
-                  || (all(.Data[!is.na(.Data)] == as.integer(.Data[!is.na(data)]))))
+                  || (all(.Data[!is.na(.Data)] == as.integer(.Data[!is.na(.Data)]))))
               if (!.Data.whole.num)
                   return(ans)
               dimtypes.ans <- dimtypes(ans, use.names = FALSE)
@@ -699,10 +711,13 @@ setMethod("credibleInterval",
                                         width.ceiling.ceiling),                                        
                                       nrow = length(width.floor.floor),
                                       ncol = 4L)
-                  transform.extend <- makeTransform(x = as(lower, "Values"),
+                  x <- as(lower, "Values")
+                  transform.extend <- makeTransform(x = x,
                                                     y = object)
-                  transform.collapse <- makeTransform(y = as(object, "Counts"),
-                                                      x = lower)
+                  x <- as(object, "Counts")
+                  dimtypes(x)[i.iter] <- "state"
+                  transform.collapse <- makeTransform(x = x,
+                                                      y = lower)
                   floor.lower.ext <- extend(floor.lower@.Data,
                                             transform = transform.extend)
                   ceiling.lower.ext <- extend(ceiling.lower@.Data,
@@ -711,10 +726,10 @@ setMethod("credibleInterval",
                                             transform = transform.extend)
                   ceiling.upper.ext <- extend(ceiling.upper@.Data,
                                               transform = transform.extend)
-                  inside.floor.floor <- (floor.lower.ext <= .Data) & (.Data <= floor.upper.ext)
-                  inside.ceiling.floor <- (ceiling.lower.ext <= .Data) & (.Data <= floor.upper.ext)
-                  inside.floor.ceiling <- (floor.lower.ext <= .Data) & (.Data <= ceiling.upper.ext)
-                  inside.ceiling.ceiling <- (ceiling.lower.ext <= .Data) & (.Data <= ceiling.upper.ext)
+                  inside.floor.floor <- 1 * ((floor.lower.ext <= .Data) & (.Data <= floor.upper.ext))
+                  inside.ceiling.floor <- 1 * ((ceiling.lower.ext <= .Data) & (.Data <= floor.upper.ext))
+                  inside.floor.ceiling <- 1 * ((floor.lower.ext <= .Data) & (.Data <= ceiling.upper.ext))
+                  inside.ceiling.ceiling <- 1 * ((ceiling.lower.ext <= .Data) & (.Data <= ceiling.upper.ext))
                   sum.floor.floor <- collapse(inside.floor.floor,
                                               transform = transform.collapse)
                   sum.ceiling.floor <- collapse(inside.ceiling.floor,
@@ -735,24 +750,26 @@ setMethod("credibleInterval",
                                       ncol = 4L)
                   width.all[is.na(cover.all) | (cover.all < (width / 100))] <- Inf
                   best.combination <- apply(width.all, 1, which.min)
-                  lower.all <- matrix(c(lower.floor,
-                                        lower.ceiling,
-                                        lower.floor,
-                                        lower.ceiling),                                        
-                                      nrow = length(lower.floor),
+                  lower.all <- matrix(c(floor.lower,
+                                        ceiling.lower,
+                                        floor.lower,
+                                        ceiling.lower),                                        
+                                      nrow = length(floor.lower),
                                       ncol = 4L)
-                  upper.all <- matrix(c(upper.floor,
-                                        upper.floor,
-                                        upper.ceiling,
-                                        upper.ceiling),                                        
-                                      nrow = length(upper.floor),
+                  upper.all <- matrix(c(floor.upper,
+                                        floor.upper,
+                                        ceiling.upper,
+                                        ceiling.upper),                                        
+                                      nrow = length(floor.upper),
                                       ncol = 4L)
-                  lower <- lower.all[ , best.combination]
-                  upper <- upper.all[ , best.combination]
+                  index.best <- cbind(seq_along(best.combination),
+                                      best.combination)
+                  lower <- lower.all[index.best]
+                  upper <- upper.all[index.best]
               }
               else if (identical(adjust, "expand")) {
-                  lower <- lower.floor
-                  upper <- upper.ceiling
+                  lower <- floor.lower
+                  upper <- ceiling.upper
               }
               else
                   stop(gettextf("invalid value for '%s' : \"%s\"",
@@ -1145,7 +1162,7 @@ setMethod("intervalContainsTruth",
               upper <- makeCompatible(x = upper,
                                       y = truth,
                                       subset = FALSE)
-              .Data <- (lower <= truth) & (truth <= upper)
+              .Data <- 1L * (lower <= truth) & (truth <= upper)
               new("Values",
                   .Data = .Data,
                   metadata = metadata)
@@ -1167,7 +1184,7 @@ setMethod("intervalContainsTruth",
               lower <- l$lower
               upper <- l$upper
               ans <- (lower <= truth) & (truth <= upper)
-              as.logical(ans)
+              as.integer(ans)
           })
 
 #' @rdname intervalScore
@@ -1204,6 +1221,7 @@ setMethod("intervalScore",
 
 
 #' @rdname intervalWidth
+#' @export
 setMethod("intervalWidth",
           signature(interval = "DemographicArray"),
           function(interval) {
@@ -1211,14 +1229,7 @@ setMethod("intervalWidth",
               l <- splitLowerUpper(interval)
               lower <- l$lower
               upper <- l$upper
-              ans <- upper - lower
-              if (is.integer(interval)) {
-                  if (lower.inclusive && upper.inclusive)
-                      ans <- ans + 1L
-                  if (!lower.inclusive && !upper.inclusive)
-                      ans <- ans - 1L
-              }
-              ans
+              upper - lower
           })
 
 
@@ -1557,64 +1568,130 @@ setMethod("prop.table",
               methods::callGeneric()
           })
 
+## HAS_TESTS
+setMethod("recodeCategories",
+          signature(object = "DemographicArray",
+                    dimension = "ANY",
+                    old = "ANY",
+                    new = "ANY",
+                    concordance = "missing"),
+          function(object, dimension = NULL, old = NULL, new = NULL,
+                   concordance = NULL) {
+              dim <- dim(object)
+              names <- names(object)
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              DimScales <- DimScales(object, use.names = FALSE)
+              dimension <- tidySubscript(dimension,
+                                         nDim = length(dim),
+                                         names = names)
+              for (name in c("old", "new")) {
+                  value <- get(name)
+                  if (any(is.na(value)))
+                      stop(gettextf("'%s' has missing values",
+                                    name))
+                  if (any(duplicated(value)))
+                      stop(gettextf("'%s' has duplicates",
+                                    name))
+              }
+              if (!identical(length(old), length(new)))
+                  stop(gettextf("'%s' and '%s' have different lengths",
+                                "old", "new"))
+              for (i.dim in seq_along(dim)) {
+                  recode.this.dimension <- i.dim %in% dimension
+                  if (recode.this.dimension) {
+                      DimScale <- DimScales[[i.dim]]
+                      if (!methods::is(DimScale, "Categories"))
+                          stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
+                                        names[i.dim], class(DimScale)))
+                      labels.old <- dimvalues(DimScale)
+                      labels.new <- labels.old
+                      name.dim <- names[i.dim]
+                      for (i.old in seq_along(old)) {
+                          label.old <- old[i.old]
+                          i.label <- match(label.old, labels.old, nomatch = 0L)
+                          has.label <- i.label > 0L
+                          if (has.label)
+                              labels.new[i.label] <- new[i.old]
+                          else {
+                              stop(gettextf("'%s' includes value \"%s\" but \"%s\" dimension of '%s' does not include \"%s\"",
+                                            "old", label.old, name.dim, "object", label.old, "strict", "TRUE"))
+                          }
+                      }
+                      class.dimscale <- class(DimScale)
+                      DimScale <- tryCatch(methods::new(class.dimscale, dimvalues = labels.new),
+                                           error = function(e) e)
+                      if (methods::is(DimScale, "error"))
+                          stop(gettextf("problem creating \"%s\" %s for \"%s\" dimension : %s",
+                                        class.dimscale, "dimscale", name.dim, DimScale$message))
+                      DimScales[[i.dim]] <- DimScale
+                  }
+              }
+              metadata <- methods::new("MetaData",
+                                       nms = names,
+                                       dimtypes = dimtypes,
+                                       DimScales = DimScales)
+              .Data <- object@.Data
+              dimnames(.Data)[dimension] <- dimnames(metadata)[dimension]
+              methods::new(class(object),
+                           .Data = .Data,
+                           metadata = metadata)
+          })
 
 
-## ## NO_TESTS
-## setMethod("relabelCategories",
-##           signature(object = "DemographicArray",
-##                     dimension = "ANY",
-##                     concordance = "OneToOne"),
-##           function(object, dimension, concordance, to = NULL) {
-##               dim <- dim(object)
-##               names <- names(object)
-##               dimtypes <- dimtypes(object, use.names = FALSE)
-##               DimScales <- DimScales(object, use.names = FALSE)
-##               dimension <- tidySubscript(dimension, nDim = length(dim), names = names)
-##               for (i in seq_along(dim)) {
-##                   apply.concordance <- i %in% dimension
-##                   if (apply.concordance) {
-##                       DimScale <- DimScales[[i]]
-##                       if (!methods::is(DimScale, "Categories"))
-##                           stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
-##                                         names[i], class(DimScale)))
-##                       codes.old <- dimvalues(DimScale)
-##                       codes.new <- translate(codes.old, concordance = concordance)
-##                       DimScale <- methods::new("Categories", dimvalues = codes.new)
-##                       DimScales[[i]] <- DimScale
-##                   }
-##               }
-##               metadata <- methods::new("MetaData",
-##                               nms = names,
-##                               dimtypes = dimtypes,
-##                               DimScales = DimScales)
-##               .Data <- object@.Data
-##               dimnames(.Data)[dimension] <- dimnames(metadata)[dimension]
-##               methods::new("Counts", .Data = .Data, metadata = metadata)
-##           })
-
-## ## NO_TESTS
-## setMethod("relabelCategories",
-##           signature(object = "DemographicArray",
-##                     dimension = "missing",
-##                     concordance = "OneToOne"),
-##           function(object, dimension, concordance) {
-##               DimScales <- DimScales(object, use.names = FALSE)
-##               in.dimension <- logical(length = length(DimScales))
-##               codes.from <- codesFrom(concordance)
-##               for (i in seq_along(DimScales)) {
-##                   DimScale <- DimScales[[i]]
-##                   if (methods::is(DimScale, "Categories")) {
-##                       codes <- dimvalues(DimScale)
-##                       in.dimension[i] <- all(codes %in% codes.from)
-##                   }
-##                   else
-##                       in.dimension[i] <- FALSE
-##               }
-##               dimension <- which(in.dimension)
-##               methods::callGeneric(object = object,
-##                           dimension = dimension,
-##                           concordance = concordance)
-##           })
+## HAS_TESTS
+setMethod("recodeCategories",
+          signature(object = "DemographicArray",
+                    dimension = "ANY",
+                    old = "missing",
+                    new = "missing",
+                    concordance = "Concordance"),
+          function(object, dimension = NULL,
+                   old = NULL, new = NULL,
+                   concordance = NULL) {
+              dim <- dim(object)
+              names <- names(object)
+              dimtypes <- dimtypes(object, use.names = FALSE)
+              DimScales <- DimScales(object, use.names = FALSE)
+              dimension <- tidySubscript(dimension,
+                                         nDim = length(dim),
+                                         names = names)
+              if (!methods::is(concordance, "OneToOne"))
+                  stop(gettextf("'%s' has class \"%s\"",
+                                "concordance", class(concordance)))
+              for (i.dim in seq_along(dim)) {
+                  recode.this.dimension <- i.dim %in% dimension
+                  if (recode.this.dimension) {
+                      name.dim <- names[i.dim]
+                      DimScale <- DimScales[[i.dim]]
+                      if (!methods::is(DimScale, "Categories"))
+                          stop(gettextf("\"%s\" dimension has dimscale \"%s\"",
+                                        names[i.dim], class(DimScale)))
+                      labels.old <- dimvalues(DimScale)
+                      labels.new <- tryCatch(translate(labels.old,
+                                                       concordance = concordance),
+                                             error = function(e) e)
+                      if (methods::is(labels.new, "error"))
+                          stop(gettextf("unable to recode categories for \"%s\" dimension : %s",
+                                        name.dim, labels.new$message))
+                      class.dimscale <- class(DimScale)
+                      DimScale <- tryCatch(methods::new(class.dimscale, dimvalues = labels.new),
+                                           error = function(e) e)
+                      if (methods::is(DimScale, "error"))
+                          stop(gettextf("problem creating \"%s\" %s for \"%s\" dimension : %s",
+                                        class.dimscale, "dimscale", name.dim, DimScale$message))
+                      DimScales[[i.dim]] <- DimScale
+                  }
+              }
+              metadata <- methods::new("MetaData",
+                                       nms = names,
+                                       dimtypes = dimtypes,
+                                       DimScales = DimScales)
+              .Data <- object@.Data
+              dimnames(.Data)[dimension] <- dimnames(metadata)[dimension]
+              methods::new(class(object),
+                           .Data = .Data,
+                           metadata = metadata)
+          })
 
 ## ## need to deal with pairs of dims
 ## setMethod("reorderCategories",

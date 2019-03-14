@@ -30,7 +30,7 @@ collapseDimension(object, dimension = NULL, margin = NULL, weights,
   dimension = NULL, margin = NULL, na.rm = FALSE)
 }
 \arguments{
-\item{object}{An object of class' \code{\linkS4class{DemographicArray}}.}
+\item{object}{An object of class \code{\linkS4class{DemographicArray}}.}
 
 \item{dimension}{Names or indices of the dimensions to be collapsed.}
 

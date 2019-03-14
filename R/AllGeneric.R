@@ -1137,7 +1137,7 @@ setGeneric("collapseCategories",
 #' remaining dimension, and the dimtype is changed to \code{"state"}.  See
 #' below for examples.
 #'
-#' @param object An object of class' \code{\linkS4class{DemographicArray}}.
+#' @param object An object of class \code{\linkS4class{DemographicArray}}.
 #' @param dimension Names or indices of the dimensions to be collapsed.
 #' @param margin Names or indices of the dimensions that will remain after the
 #' collapsing.
@@ -1500,16 +1500,72 @@ setGeneric("componentNames<-",
 
 #' Calculate credible intervals
 #'
-#' Calculate credible intervals from a \code{\link{DemographicArray}}.
-#' The demographic array must have a dimension with \code{\link{dimtype}}
-#' \code{"iteration"}.
+#' Calculate credible intervals for a \code{\link{DemographicArray}}.
+#' When the array consists of whole numbers the credible intervals,
+#' by default, also consist of whole numbers.
+#' 
+#' Credible intervals summarise variation across a posterior sample.
+#' To represent a posterior sample, a \code{\link{DemographicArray}}
+#' must have a dimension with \code{\link{dimtype}} \code{"iteration"}.
+#' If \code{object} does not have a dimension with dimtype
+#' \code{"iteration"}, \code{credibleInterval} throws an error.
 #'
 #' \code{width} must be a percentage value. It can equal 100,
 #' but cannot equal 0.
 #'
-#' The credible intervals are calculated using the quantiles
+#' When \code{object} consists of real numbers,
+#' \code{credibleInterval} returns intervals of the form
 #' \code{(q/2, 1 - q/2)} where \code{q = 1 - width/100}.
 #'
+#' When \code{object} consists of whole numbers (ie if
+#' \code{is.integer(object)} is \code{TRUE} or if
+#' \code{all(as.integer(object) == object)}), the calculations
+#' are more complicated.
+#'
+#' Step 1 is to calculate quantiles using the same formula
+#' as for real numbers. Intervals calculated in this way
+#' will, in general, be composed of real numbers. These
+#' intervals can, arguably, act as quick and
+#' dirty measures of uncertainty.
+#' They are, however, poorly defined. For instance, are 
+#' the values \code{0} and \code{4} inside or outside the
+#' interval \code{(0.1, 3.9)}? Are they inside the
+#' interval \code{(0.8, 3.2)}? These ambiguities make
+#' non-whole-number intervals unsuitable for tasks such
+#' as assessing coverage rates involving whole numbers.
+#'
+#' When \code{adjust} is \code{"search"} or \code{"expand"},
+#' \code{credibleInterval} adjusts credible intervals
+#' for whole numbers so that the credible intervals
+#' themselves consist of whole numbers and enclose at least
+#' as large a proportion of the posterior sample as the
+#' original intervals.
+#'
+#' When \code{adjust} is \code{"expand"}, the interval
+#' \code{(l, u)} is expanded to \code{(floor(l), ceiling(u))}.
+#'
+#' When \code{adjust} is \code{"search"}, \code{credibleInterval}
+#' calculates, for each cell, the four intervals
+#'
+#' \code{(floor(l), floor(u))}
+#'
+#' \code{(ceiling(l), floor(u))}
+#'
+#' \code{(floor(l), ceiling(u))}
+#'
+#' \code{(ceiling(l), ceiling(u))}
+#'
+#' and selects the narrowest interval that encloses at least
+#' \code{width} percent of the posterior sample. The
+#' \code{"search"} approarchshould yield intervals that are,
+#' on average, slightly narrower than the \code{"expand"} approach,
+#' and is therefore the default.
+#'
+#' Note that the \code{adjust} argument is only relevant
+#' when \code{object} consists entirely of integers.
+#' When \code{object} contains one or more non-integers,
+#' the \code{credibleInterval} ignores \code{adjust}.
+#' 
 #' When \code{na.rm} is \code{TRUE} (the default), missing values
 #' are removed before the credible interval is calculated.
 #'
@@ -1517,6 +1573,8 @@ setGeneric("componentNames<-",
 #' must have a dimension with \code{\link{dimtype}}
 #' \code{"iteration"}.
 #' @param width A percentage value.
+#' @param adjust \code{"search"} (the default), \code{"expand"},
+#' or \code{"none"}. See the details for an explanation.
 #' @param na.rm \code{TRUE} (the default) or \code{FALSE}.
 #'
 #' @return An object with the same class as \code{object},
@@ -1527,15 +1585,29 @@ setGeneric("componentNames<-",
 #' \code{\link{collapseIteration}}.
 #'
 #' @examples
-#' x <- Values(array(runif(20),
-#'                   dim = c(2, 10),
-#'                   dimnames = list(sex = c("F", "M"),
-#'                                   iteration = 1:10)))
-#' credibleInterval(x)
-#' credibleInterval(x, width = 50)
-#' x[1] <- NA
-#' credibleInterval(x)
-#' credibleInterval(x, na.rm = FALSE)
+#' set.seed(0)
+#'
+#' ## 'object' contains fractions
+#' object <- Values(array(runif(n = 20),
+#'                        dim = c(2, 10),
+#'                        dimnames = list(sex = c("F", "M"),
+#'                                        iteration = 1:10)))
+#' credibleInterval(object)
+#' credibleInterval(object, width = 50)
+#'
+#' ## 'object' entirely whole numbers
+#' object <- Values(array(rpois(n = 20, lambda = 10),
+#'                        dim = c(2, 10),
+#'                        dimnames = list(sex = c("F", "M"),
+#'                                        iteration = 1:10)))
+#' credibleInterval(object, width = 90, adjust = "none")
+#' credibleInterval(object, width = 90, adjust = "expand")
+#' credibleInterval(object, width = 90, adjust = "search")
+#' credibleInterval(object, width = 90)
+#' ## 'na.rm' argument
+#' object[1] <- NA
+#' credibleInterval(object)
+#' credibleInterval(object, na.rm = TRUE)
 #' @export
 setGeneric("credibleInterval",
            function(object, width = 95, na.rm = FALSE,
@@ -2457,31 +2529,21 @@ setGeneric("inferDimvalues",
 
 #' Test whether intervals contain true values
 #'
-#' Test whether intervals contain values.  These values
-#' are referred to as the truth, because of the way in
-#' which \code{intervalContainsTruth} is typically used,
-#' which is within simulations. In simulations, the
-#' analyst generates the true rates or counts, and hence
-#' knows what they are. \code{intervalContainsTruth} is used
-#' to keep track of the number of intervals that contain
-#' the true values.  This information is then used to calculate
-#' coverage rates, ie frequency with which credible interval
-#' of a given nominal coverage rate actually contains the
-#' true value.
+#' Test whether intervals contain specified values.  These values
+#' are referred to as 'truth' because \code{intervalContainsTruth}
+#' is typically used as part of a simulation study,
+#' where the analyst generates the true values, and
+#' tests the ability of the model to recover these values.
 #'
-#' \code{interval} should have the same dimensions
-#' and dimscales as \code{truth}, but also have a dimension
+#' \code{interval} must have the same dimensions
+#' and dimscales as \code{truth}, and also a dimension
 #' with length 2 and \code{\link{dimtype}}
-#' \code{"quantile"}. The quantile dimension specifies
-#' the upper and lower bounds. See below for an example.
+#' \code{"quantile"} specifying the intervals.
 #'
-#' The \code{lower.inclusive} and \code{upper.inclusive}
-#' arguments can be used to specify whether the intervals are
-#' open or closed at the boundaries. The difference between
-#' open and closed boundaries is typically unimportant
-#' when \code{value} consists of real numbers, but can
-#' be important when \code{value} consists of integers, especially
-#' when the integers are small.
+#' An interval \code{(l, u)} is said to contain a value \code{v}
+#' if \code{l <= t <= u}. The use of \code{<=} is immaterial
+#' when \code{l} and \code{u} are real numbers but makes a difference
+#' when \code{l} and \code{u} are integers.
 #'
 #' \code{truth} can be a single number, in which case all dimensions
 #' of \code{interval}, other than the quantile dimension, should
@@ -2492,24 +2554,28 @@ setGeneric("inferDimvalues",
 #' Although it reorders dimensions and categories
 #' in \code{interval} and \code{truth}, it does not collapse
 #' or expand dimensions, or drop any levels.
+#'
+#' When \code{truth} is a \code{\linkS4class{DemographicArray}}
+#' \code{intervalContainsTruth} returns a \code{\linkS4class{Values}}
+#' object with \code{1}s and \code{0}s,
+#' rather than an ordinary array of
+#' \code{TRUE}s and \code{FALSE}s. The advantage of the
+#' \code{\linkS4class{Values}} object is that it can
+#' more easily be collapsed or otherwise manipulated:
+#' see below for an example.
 #' 
 #' @param interval A \code{\linkS4class{DemographicArray}},
 #' with a quantile dimension of length 2.
 #' @param truth A \code{\linkS4class{DemographicArray}}, or a single
 #' number.
-#' @param lower.inclusive Logical. Whether the lower bounds
-#' specified in \code{interval} are considered to lie within
-#' the intervals.
-#' @param upper.inclusive Logical. Whether the upper bounds
-#' specified in \code{interval} are considered to lie
-#' within the intervals. Defaults to \code{TRUE}.
 #'
-#' @return An array of logical values with the same dimensions
+#' @return An \code{\linkS4class{DemographicArray}}
+#' of \code{1}s and \code{0}s with the same dimensions
 #' as \code{truth}, or, if \code{truth} is a number,
-#' a single logical value.
+#' a single \code{1} or \code{0}.
 #' 
-#' @seealso Function \code{\link{credibleInterval}} is a convenience
-#' function for creating \code{interval} objects of the right form
+#' @seealso Function \code{\link{credibleInterval}} creates
+#' \code{interval} objects of the right form
 #' for \code{intervalContainsTruth}. Function \code{\link{MSE}},
 #' is another function that may be useful in simulation studies.
 #'
@@ -2531,12 +2597,10 @@ setGeneric("inferDimvalues",
 #' intervalContainsTruth(interval = interval,
 #'                       truth = truth)
 #' intervalContainsTruth(interval = interval,
-#'                       truth = truth,
-#'                       lower.inclusive = FALSE)
+#'                       truth = truth)
 #' @export
 setGeneric("intervalContainsTruth",
-          function(interval, truth, lower.inclusive = TRUE,
-                   upper.inclusive = TRUE)
+          function(interval, truth)
               standardGeneric("intervalContainsTruth"))
 
 
@@ -2608,6 +2672,42 @@ setGeneric("intervalScore",
            function(interval, truth)
                standardGeneric("intervalScore"))
 
+#' Calculate the widths of credible intervals
+#'
+#' Calculate the widths of credible intervals
+#' stored in a \code{\link{DemographicArray}}.
+#' If \code{(l, u)}, is a credible interval,
+#' then the width of that interval equals
+#' \code{u - l}.
+#'
+#' \code{interval} must have a dimension of length
+#' 2 with \code{\link{dimtype}} \code{"quantile"}
+#' specifying the intervals.  \code{interval} is
+#' typically calculated using function
+#' \code{\link{credibleInterval}}.
+#' 
+#' @param A \code{\link{DemographicArray}}.
+#'
+#' @param A \code{\link{DemographicArray}}
+#' holding the widths.
+#'
+#' @examples
+#' #' set.seed(0)
+#' object <- Values(array(runif(n = 20),
+#'                        dim = c(2, 10),
+#'                        dimnames = list(sex = c("F", "M"),
+#'                                        iteration = 1:10)))
+#' interval <- credibleInterval(object)
+#' interval
+#' intervalWidth(interval)
+#' object <- Values(array(rpois(n = 20, lambda = 10),
+#'                        dim = c(2, 10),
+#'                        dimnames = list(sex = c("F", "M"),
+#'                                        iteration = 1:10)))
+#' interval <- credibleInterval(object, width = 90)
+#' interval
+#' intervalWidth(interval)
+#' @export
 setGeneric("intervalWidth",
            function(interval)
                standardGeneric("intervalWidth"))
@@ -3105,6 +3205,150 @@ setGeneric("population",
 setGeneric("reallocateToEndAges",
            function(object, min = 15, max = 50, weights, ...)
                standardGeneric("reallocateToEndAges"))
+
+
+#' Change category labels
+#'
+#' Change the labels used by one or more dimensions with
+#' \code{\link{dimscale}} \code{"Categories"}.
+#'
+#' There are two ways of specifying the changes in labels.
+#' The first is to use arguments \code{old} and \code{new};
+#' the second is supply a one-to-one \code{\link{Concordance}}.
+#' See below for examples.
+#'
+#' If the \code{old} and \code{new} arguments are used, they
+#' must have the same length, and must not contain missing
+#' values or duplicates.
+#'
+#' Every value in \code{old} must also be in
+#' the dimension that is being recoded. However,
+#' \code{old} does not have to contain all
+#' the values that are in the dimension
+#' being recoded.
+#'
+#' With concordances, the opposite rules apply.
+#' \code{concordance} can have values that are
+#' not contained in the dimension being recoded.
+#' However, every value that is in the dimension
+#' being recoded must also be in \code{concordance}.
+#'
+#' Roughly speaking, the \code{old}-\code{new} approach
+#' is best suited to changing a small number of labels
+#' during interactive use. The \code{concordance}
+#' approach is often appropriate for production code,
+#' since an unanticipated value leads to an error,
+#' which may protect against nasty surprises.
+#'
+#' \code{recodeCategories} works with dimensions
+#' with \code{\link{dimscale}} \code{"Sexes"} and
+#' \code{"Triangles"}, both of which are special types
+#' of \code{"Categories"} dimscales.
+#'
+#' @inheritParams collapseCategories
+#' @param old The old values for the labels.
+#' @param new The new values for the labels.
+#' @param concordance A one-to-one \code{\link{Concordance}}.
+#'
+#' @return A modified version of \code{object} with new
+#' category labels.
+#'
+#' @examples
+#' x <- Counts(array(1:6,
+#'                   dim = c(2, 3),
+#'                   dimnames = list(sex = c("Female",
+#'                                           "Male"),
+#'                                   country = c("China",
+#'                                               "New Zealand",
+#'                                               "USA"))))
+#' x
+#' ## single dimension, using 'old' and 'new' arguments
+#' recodeCategories(x,
+#'                  dimension = "country",
+#'                  old = c("New Zealand", "China"),
+#'                  new = c("NZD", "CHN"))
+#' recodeCategories(x,
+#'                  dimension = 2,
+#'                  old = c("New Zealand", "China"),
+#'                  new = c("NZD", "CHN"))
+#' ## 'old' cannot contain value not contained
+#' ## in dimension being recoded
+#' \dontrun{
+#' recodeCategories(x,
+#'                  dimension = "country",
+#'                  old = c("China",
+#'                          "New Zealand",
+#'                          "Some other country"),
+#'                  new = c("CHN",
+#'                         "NZD",
+#'                         "Whatever"))
+#' }
+#' ## single dimension, using a concordance - note 
+#' ## that with concordances it is OK to have an
+#' ## category - in this case "Australia"
+#' conc <- Concordance(data.frame(long = c("Australia",
+#'                                         "China",
+#'                                         "New Zealand",
+#'                                         "USA"),
+#'                                short = c("AUS",
+#'                                          "CHN",
+#'                                          "NZD",
+#'                                          "USA")))
+#' recodeCategories(x,
+#'                  dimension = "country",
+#'                  concordance = conc)
+#' ## but with concordances, every category in the
+#' ## dimension must be included in the concordance
+#' conc <- Concordance(data.frame(long = c("New Zealand",
+#'                                         "USA"),
+#'                                short = c("NZD",
+#'                                          "USA")))
+#' \dontrun{
+#' recodeCategories(x,
+#'                  dimension = "country",
+#'                  concordance = conc)
+#' }
+#' ## 'recodeCategories' works with dimensions
+#' ## with dimscale "Sexes" ...
+#' recodeCategories(x,
+#'                  dimension = "sex",
+#'                  old = c("Female", "Male"),
+#'                  new = c("F", "M"))
+#' ## ... though specifying categories that are not
+#' ## valid for dimscale "Sexes" is an error
+#' \dontrun{
+#' recodeCategories(x,
+#'                  dimension = "sex",
+#'                  old = c("Female", "Male"),
+#'                  new = c("Ladies", "Gentlemen"))
+#' }
+#' ## two dimensions, using 'old' and 'new' arguments
+#' x <- Counts(array(1:9,
+#'                   dim = c(3, 3),
+#'                   dimnames = list(country_orig = c("China",
+#'                                                    "New Zealand",
+#'                                                    "USA"),
+#'                                   country_dest = c("China",
+#'                                                    "New Zealand",
+#'                                                    "USA"))))
+#' x
+#' recodeCategories(x,
+#'                  dimension = c("country_orig", "country_dest"),
+#'                  old = c("China", "New Zealand"),
+#'                  new = c("CHN", "NZD"))
+#' ## with origin-destination, or parent-child dimensions
+#' ## passing the base name also works
+#' recodeCategories(x,
+#'                  dimension = "country",
+#'                  old = c("China", "New Zealand"),
+#'                  new = c("CHN", "NZD"))
+#' @export
+setGeneric("recodeCategories",
+           function(object, dimension = NULL,
+                    old = NULL, new = NULL,
+                   concordance = NULL)
+              standardGeneric("recodeCategories"))
+
 
 setGeneric("reorderCategories",
            function(object, dimension, subset, weights, ...)
