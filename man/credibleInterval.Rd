@@ -13,7 +13,7 @@ credibleInterval(object, width = 95, na.rm = FALSE,
   na.rm = FALSE, adjust = c("search", "expand", "none"))
 }
 \arguments{
-\item{object}{A \code{\link{DemographicArray}}. The array
+\item{object}{A \code{\linkS4class{DemographicArray}}. The array
 must have a dimension with \code{\link{dimtype}}
 \code{"iteration"}.}
 
@@ -30,13 +30,13 @@ in which the \code{"iteration"} dimension is replaced
 by a \code{"quantiles"} dimension of length 2.
 }
 \description{
-Calculate credible intervals for a \code{\link{DemographicArray}}.
+Calculate credible intervals for a \code{\linkS4class{DemographicArray}}.
 When the array consists of whole numbers the credible intervals,
 by default, also consist of whole numbers.
 }
 \details{
 Credible intervals summarise variation across a posterior sample.
-To represent a posterior sample, a \code{\link{DemographicArray}}
+To represent a posterior sample, a \code{\linkS4class{DemographicArray}}
 must have a dimension with \code{\link{dimtype}} \code{"iteration"}.
 If \code{object} does not have a dimension with dimtype
 \code{"iteration"}, \code{credibleInterval} throws an error.
@@ -127,5 +127,5 @@ credibleInterval(object, na.rm = TRUE)
 }
 \seealso{
 \code{credibleInterval} calls function
-\code{\link{collapseIteration}}.
+\code{\link{collapseIterations}}.
 }

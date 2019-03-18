@@ -44,6 +44,16 @@ checkPositiveVector <- function(value, name) {
     NULL             
 }
 
+checkScalarNumeric <- function(value, name) {
+    if (!is.numeric(value))
+        stop(gettextf("'%s' is non-numeric",
+                      name))
+    if (!identical(length(value), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    NULL
+}
+
 
 ## HAS_TESTS
 checkSinglePercent <- function(value, name) {

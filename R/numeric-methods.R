@@ -1,4 +1,21 @@
 
+## HAS_TESTS
+#' @rdname exported-not-api
+#' @export
+setMethod("extend",
+          signature(object = "numeric", transform = "ExtendTransform"),
+          function(object, transform) {
+              if (!identical(length(object), 1L))
+                  stop(gettextf("'%s' does not have length %d",
+                                "object", 1L))
+              methods::validObject(transform)
+              if (is.integer(object))
+                  .Data <- as.integer(object)
+              else
+                  .Data <- as.numeric(object)
+              array(.Data, dim = transform@dimAfter)
+          })
+
 #' @rdname redistribute
 ## NO_TESTS - has some, needs more for means = TRUE
 setMethod("redistribute",

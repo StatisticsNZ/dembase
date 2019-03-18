@@ -2,6 +2,28 @@
 
 context("numeric-methods")
 
+test_that("extend works with numeric scalar", {
+    makeTransform <- dembase:::makeTransform
+    y <- Values(array(0,
+                      dim = c(3, 2),
+                      dimnames = list(age = c("0-4", "5-9", "10+"),
+                                      sex = c("m", "f"))))
+    transform <- makeTransform(x = 1, y = y)
+    ans.obtained <- extend(object = 0, transform = transform)
+    ans.expected <- array(0, dim = c(3, 2))
+    expect_identical(ans.obtained, ans.expected)
+    y <- Values(array(0L,
+                      dim = 3L,
+                      dimnames = list(age = c("0-4", "5-9", "10+"))))
+    transform <- makeTransform(x = 1, y = y)
+    ans.obtained <- extend(object = 0L, transform = transform)
+    ans.expected <- array(0L, dim = 3)
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(extend(1:2, transform),
+                 "'object' does not have length 1")    
+})
+
+
 test_that("checkAndTidyWeights method for numeric works", {
     checkAndTidyWeights <- dembase:::checkAndTidyWeights
     target <- Values(array(1.0,

@@ -58,7 +58,7 @@ setMethod("%in%",
 #' @rdname internal-methods
 #' @export
 setMethod("Compare",
-          signature(e1 = "Quantile", e2 = "ANY"),
+          signature(e1 = "Quantiles", e2 = "ANY"),
           function(e1, e2) {
               nms <- deparse(substitute(e1))
               checkSinglePercent(value = e2,
@@ -73,7 +73,7 @@ setMethod("Compare",
 #' @rdname internal-methods
 #' @export
 setMethod("Compare",
-          signature(e1 = "ANY", e2 = "Quantile"),
+          signature(e1 = "ANY", e2 = "Quantiles"),
           function(e1, e2) {
               nms <- deparse(substitute(e2))
               checkSinglePercent(value = e1,

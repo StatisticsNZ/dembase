@@ -64,6 +64,9 @@
 \alias{length,MetaData-method}
 \alias{show,MetaData-method}
 \alias{summary,Movements-method}
+\alias{\%in\%,Quantiles-method}
+\alias{Compare,Quantiles,ANY-method}
+\alias{Compare,ANY,Quantiles-method}
 \alias{diff,Quantiles-method}
 \alias{labels,Quantiles-method}
 \alias{summary,DemographicArray-method}
@@ -190,6 +193,12 @@
 \S4method{show}{MetaData}(object)
 
 \S4method{summary}{Movements}(object)
+
+\S4method{\%in\%}{Quantiles}(x, table)
+
+\S4method{Compare}{Quantiles,ANY}(e1, e2)
+
+\S4method{Compare}{ANY,Quantiles}(e1, e2)
 
 \S4method{diff}{Quantiles}(x)
 

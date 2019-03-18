@@ -11,16 +11,13 @@ intervalWidth(interval)
 \S4method{intervalWidth}{DemographicArray}(interval)
 }
 \arguments{
-\item{A}{\code{\link{DemographicArray}}.}
-
-\item{A}{\code{\link{DemographicArray}}
-holding the widths.}
+\item{interval}{A \code{\linkS4class{DemographicArray}}.}
 }
 \description{
 Calculate the widths of credible intervals
-stored in a \code{\link{DemographicArray}}.
+stored in a \code{\linkS4class{DemographicArray}}.
 If \code{(l, u)}, is a credible interval,
-then the width of that interval equals
+then the width of the interval equals
 \code{u - l}.
 }
 \details{

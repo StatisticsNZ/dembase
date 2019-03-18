@@ -3,7 +3,8 @@
 %   R/Component-methods.R, R/Counts-methods.R, R/DemographicAccount-methods.R,
 %   R/DemographicArray-methods.R, R/DimScale-methods.R, R/Intervals-methods.R,
 %   R/MetaData-methods.R, R/Points-methods.R, R/Quantiles-methods.R,
-%   R/Values-methods.R, R/array-methods.R, R/miscellaneous-functions.R
+%   R/Values-methods.R, R/array-methods.R, R/miscellaneous-functions.R,
+%   R/numeric-methods.R
 \docType{class}
 \name{exported-not-api}
 \alias{exported-not-api}
@@ -48,7 +49,7 @@
 \alias{collapse,Values,CollapseTransform-method}
 \alias{makeCompatible,Values,DemographicArray-method}
 \alias{makeTransform,Values,DemographicArray-method}
-\alias{makeTransform,Values,numeric-method}
+\alias{makeTransform,numeric,Values-method}
 \alias{collapse,array,CollapseTransform-method}
 \alias{extend,array,ExtendTransform-method}
 \alias{checkAndTidyAlong}
@@ -64,6 +65,7 @@
 \alias{addIterationsToMetadata}
 \alias{expandAx}
 \alias{makeAxStart}
+\alias{extend,numeric,ExtendTransform-method}
 \title{Classes and functions that are exported but that are not part of the API.}
 \usage{
 DimScales(object, use.names = TRUE)
@@ -147,7 +149,7 @@ stepLengths(object)
 \S4method{makeTransform}{Values,DemographicArray}(x, y, subset = FALSE,
   concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{Values,numeric}(x, y, subset = FALSE,
+\S4method{makeTransform}{numeric,Values}(x, y, subset = FALSE,
   check = TRUE)
 
 \S4method{collapse}{array,CollapseTransform}(object, transform)
@@ -181,6 +183,8 @@ addIterationsToMetadata(object, iterations)
 expandAx(ax, object)
 
 makeAxStart(mx)
+
+\S4method{extend}{numeric,ExtendTransform}(object, transform)
 }
 \arguments{
 \item{object}{Typically an object of class

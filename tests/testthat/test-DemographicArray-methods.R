@@ -693,7 +693,7 @@ test_that("collapseIterations works", {
 })
 
 test_that("credibleInterval works with valid arguments", {
-    for (i in seq_len(10)) {
+    for (i in seq_len(5)) {
         x <- Counts(array(rpois(n = 120, lambda = 1:12),
                           dim = c(2, 2, 3, 10),
                           dimnames = list(region = c("Region 1", "Region 2"),
@@ -714,7 +714,7 @@ test_that("credibleInterval works with valid arguments", {
     expect_identical(credibleInterval(x, na.rm = TRUE), credibleInterval(x.na.omit))
 })
 
-test_that("credibleInterval throws correct error", {
+test_that("credibleInterval throws correct errors", {
     x <- Counts(array(rpois(n = 120, lambda = 1:12),
                       dim = c(2, 2, 3, 10),
                       dimnames = list(region = c("Region 1", "Region 2"),

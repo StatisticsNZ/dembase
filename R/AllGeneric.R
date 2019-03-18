@@ -1500,12 +1500,12 @@ setGeneric("componentNames<-",
 
 #' Calculate credible intervals
 #'
-#' Calculate credible intervals for a \code{\link{DemographicArray}}.
+#' Calculate credible intervals for a \code{\linkS4class{DemographicArray}}.
 #' When the array consists of whole numbers the credible intervals,
 #' by default, also consist of whole numbers.
 #' 
 #' Credible intervals summarise variation across a posterior sample.
-#' To represent a posterior sample, a \code{\link{DemographicArray}}
+#' To represent a posterior sample, a \code{\linkS4class{DemographicArray}}
 #' must have a dimension with \code{\link{dimtype}} \code{"iteration"}.
 #' If \code{object} does not have a dimension with dimtype
 #' \code{"iteration"}, \code{credibleInterval} throws an error.
@@ -1569,7 +1569,7 @@ setGeneric("componentNames<-",
 #' When \code{na.rm} is \code{TRUE} (the default), missing values
 #' are removed before the credible interval is calculated.
 #'
-#' @param object A \code{\link{DemographicArray}}. The array
+#' @param object A \code{\linkS4class{DemographicArray}}. The array
 #' must have a dimension with \code{\link{dimtype}}
 #' \code{"iteration"}.
 #' @param width A percentage value.
@@ -1582,7 +1582,7 @@ setGeneric("componentNames<-",
 #' by a \code{"quantiles"} dimension of length 2.
 #'
 #' @seealso  \code{credibleInterval} calls function
-#' \code{\link{collapseIteration}}.
+#' \code{\link{collapseIterations}}.
 #'
 #' @examples
 #' set.seed(0)
@@ -2675,7 +2675,7 @@ setGeneric("intervalScore",
 #' Calculate the widths of credible intervals
 #'
 #' Calculate the widths of credible intervals
-#' stored in a \code{\link{DemographicArray}}.
+#' stored in a \code{\linkS4class{DemographicArray}}.
 #' If \code{(l, u)}, is a credible interval,
 #' then the width of the interval equals
 #' \code{u - l}.
@@ -2686,7 +2686,7 @@ setGeneric("intervalScore",
 #' typically calculated using function
 #' \code{\link{credibleInterval}}.
 #' 
-#' @param interval A \code{\link{DemographicArray}}.
+#' @param interval A \code{\linkS4class{DemographicArray}}.
 #'
 #' @examples
 #' #' set.seed(0)

@@ -662,11 +662,13 @@ setMethod("credibleInterval",
               adjust <- match.arg(adjust)
               q <- 1 - width / 100
               prob <- c(q/2, 1 - q/2)
-              if (na.rm)
+              if (na.rm) {
+                  quantile <- stats::quantile
                   ans <- collapseIterations(object,
                                             FUN = quantile,
                                             prob = prob,
                                             na.rm = na.rm)
+              }
               else {
                   names <- paste0(prob * 100, "%")
                   quantile <- function(x) {
@@ -682,8 +684,9 @@ setMethod("credibleInterval",
                   return(ans)
               if (identical(adjust, "none"))
                   return(ans)
+              .Data.obs <- !is.na(.Data)
               .Data.whole.num <- (is.integer(.Data)
-                  || (all(.Data[!is.na(.Data)] == as.integer(.Data[!is.na(.Data)]))))
+                  || (all(.Data[.Data.obs] == as.integer(.Data[.Data.obs]))))
               if (!.Data.whole.num)
                   return(ans)
               dimtypes.ans <- dimtypes(ans, use.names = FALSE)
@@ -711,7 +714,10 @@ setMethod("credibleInterval",
                                         width.ceiling.ceiling),                                        
                                       nrow = length(width.floor.floor),
                                       ncol = 4L)
-                  x <- as(lower, "Values")
+                  if (length(lower) > 1L)
+                      x <- as(lower, "Values")
+                  else
+                      x <- lower
                   transform.extend <- makeTransform(x = x,
                                                     y = object)
                   x <- as(object, "Counts")
@@ -726,10 +732,14 @@ setMethod("credibleInterval",
                                             transform = transform.extend)
                   ceiling.upper.ext <- extend(ceiling.upper@.Data,
                                               transform = transform.extend)
-                  inside.floor.floor <- 1 * ((floor.lower.ext <= .Data) & (.Data <= floor.upper.ext))
-                  inside.ceiling.floor <- 1 * ((ceiling.lower.ext <= .Data) & (.Data <= floor.upper.ext))
-                  inside.floor.ceiling <- 1 * ((floor.lower.ext <= .Data) & (.Data <= ceiling.upper.ext))
-                  inside.ceiling.ceiling <- 1 * ((ceiling.lower.ext <= .Data) & (.Data <= ceiling.upper.ext))
+                  inside.floor.floor <- 1L * ((.Data.obs & (floor.lower.ext <= .Data))
+                      & (.Data.obs & (.Data <= floor.upper.ext)))
+                  inside.ceiling.floor <- 1L * ((.Data.obs & (ceiling.lower.ext <= .Data))
+                      & (.Data.obs & (.Data <= floor.upper.ext)))
+                  inside.floor.ceiling <- 1L * ((.Data.obs & (floor.lower.ext <= .Data))
+                      & (.Data.obs & (.Data <= ceiling.upper.ext)))
+                  inside.ceiling.ceiling <- 1L * ((.Data.obs & (ceiling.lower.ext <= .Data))
+                      & (.Data.obs & (.Data <= ceiling.upper.ext)))
                   sum.floor.floor <- collapse(inside.floor.floor,
                                               transform = transform.collapse)
                   sum.ceiling.floor <- collapse(inside.ceiling.floor,
@@ -738,10 +748,12 @@ setMethod("credibleInterval",
                                                 transform = transform.collapse)
                   sum.ceiling.ceiling <- collapse(inside.ceiling.ceiling,
                                                   transform = transform.collapse)
-                  cover.floor.floor <- sum.floor.floor / n.iter
-                  cover.ceiling.floor <- sum.ceiling.floor / n.iter
-                  cover.floor.ceiling <- sum.floor.ceiling / n.iter
-                  cover.ceiling.ceiling <- sum.ceiling.ceiling / n.iter
+                  sum.obs <- collapse(1L * .Data.obs,
+                                      transform = transform.collapse)
+                  cover.floor.floor <- sum.floor.floor / sum.obs
+                  cover.ceiling.floor <- sum.ceiling.floor / sum.obs
+                  cover.floor.ceiling <- sum.floor.ceiling / sum.obs
+                  cover.ceiling.ceiling <- sum.ceiling.ceiling / sum.obs
                   cover.all <- matrix(c(cover.floor.floor,
                                         cover.ceiling.floor,
                                         cover.floor.ceiling,
