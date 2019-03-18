@@ -1324,35 +1324,36 @@ setMethod("makeTransform",
                   }
               }
               methods::new("ExtendTransform",
-                  dims = dims,
-                  indices = indices,
-                  dimBefore = dimBefore,
-                  dimAfter = dimAfter)
+                           dims = dims,
+                           indices = indices,
+                           dimBefore = dimBefore,
+                           dimAfter = dimAfter)
           })
 
-## HAS_TESTS
+## NO_TESTS
 #' @rdname exported-not-api
 #' @export
 setMethod("makeTransform",
-          signature(x = "Values", y = "numeric"),
+          signature(x = "numeric", y = "Values"),
           function(x, y, subset = FALSE, check = TRUE) {
               if (check) {
-                  if (!identical(length(y), 1L))
+                  if (!identical(length(x), 1L))
                       stop(gettextf("'%s' has class \"%s\" but does not have length %d",
-                                    "y", class(y), 1L))
-                  if (identical(length(x), 0L))
+                                    "x", class(x), 1L))
+                  if (identical(length(y), 0L))
                       stop(gettextf("'%s' has length %d",
-                                    "x", 0L))
+                                    "y", 0L))
               }
-              dimBefore <- dim(x)
-              indices <- lapply(dimBefore, function(n) rep(1L, times = n))
-              dims <- c(1L, rep(0L, times = length(dimBefore) - 1L))
-              methods::new("CollapseTransform",
-                  indices = indices,
-                  dims = dims,
-                  dimBefore = dimBefore,
-                  dimAfter = 1L)
-          })                  
+              dimBefore <- 1L
+              dimAfter <- dim(y)
+              indices <- lapply(dimAfter, function(n) rep(1L, times = n))
+              dims <- c(1L, rep(0L, times = length(dimAfter) - 1L))
+              methods::new("ExtendTransform",
+                           indices = indices,
+                           dims = dims,
+                           dimBefore = dimBefore,
+                           dimAfter = dimAfter)
+          })
 
 ## HAS_TESTS
 #' @export

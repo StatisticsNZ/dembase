@@ -2095,35 +2095,34 @@ test_that("makeTransform method for Values works when y has class DemographicArr
     expect_identical(ans.obtained, ans.expected)
 })
 
-
-test_that("makeTransform method for Values works when y has class numeric", {
+test_that("makeTransform method for Values works when x has class numeric", {
     makeTransform <- dembase:::makeTransform
-    x <- Counts(array(0,
+    y <- Values(array(0,
                       dim = c(3, 2),
                       dimnames = list(age = c("0-4", "5-9", "10+"),
-                      sex = c("m", "f"))))
-    expect_identical(makeTransform(x = x, y = 1),
-                     new("CollapseTransform",
+                                      sex = c("m", "f"))))
+    expect_identical(makeTransform(x = 1, y = y),
+                     new("ExtendTransform",
                          dims = c(1L, 0L),
                          indices = list(c(1L, 1L, 1L), c(1L, 1L)),
-                         dimBefore = c(3L, 2L),
-                         dimAfter = 1L))
-    x <- Counts(array(0,
+                         dimBefore = 1L,
+                         dimAfter = c(3L, 2L)))
+    y <- Values(array(0,
                       dim = 3L,
                       dimnames = list(age = c("0-4", "5-9", "10+"))))
-    expect_identical(makeTransform(x = x, y = 1),
-                     new("CollapseTransform",
+    expect_identical(makeTransform(x = 1, y = y),
+                     new("ExtendTransform",
                          dims = 1L,
                          indices = list(c(1L, 1L, 1L)),
-                         dimBefore = 3L,
-                         dimAfter = 1L))
-    expect_error(makeTransform(x, 1:2),
-                 "'y' has class \"integer\" but does not have length 1")
-    x <- Counts(array(0,
+                         dimBefore = 1L,
+                         dimAfter = 3L))
+    expect_error(makeTransform(1:2, y),
+                 "'x' has class \"integer\" but does not have length 1")
+    y <- Values(array(0,
                       dim = 0L,
                       dimnames = list(age = character())))
-    expect_error(makeTransform(x, 1),
-                 "'x' has length 0")    
+    expect_error(makeTransform(1, y),
+                 "'y' has length 0")    
 })
 
 test_that("reallocateToEndAges works", {

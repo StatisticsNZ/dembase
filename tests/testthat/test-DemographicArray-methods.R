@@ -709,6 +709,9 @@ test_that("credibleInterval works with valid arguments", {
         expect_true(all(subarray(ans.expand, quantile == "90%") >= subarray(ans.none, quantile == "90%")))
         expect_true(all(intervalWidth(ans.search) <= intervalWidth(ans.expand)))
     }
+    x <- ValuesOne(c(1:3, NA), labels = 1:4, name = "iteration")
+    x.na.omit <- ValuesOne(1:3, labels = 1:3, name = "iteration")
+    expect_identical(credibleInterval(x, na.rm = TRUE), credibleInterval(x.na.omit))
 })
 
 test_that("credibleInterval throws correct error", {
