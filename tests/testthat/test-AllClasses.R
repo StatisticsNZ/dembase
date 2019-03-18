@@ -221,20 +221,20 @@ test_that("triangle dimension works as expected", {
                                   new("Intervals", dimvalues = c(0, 5, 10, Inf)),
                                   new("Intervals", dimvalues = c(0, 5, 10)),
                                   new("Triangles", dimvalues = c("Upper", "Lower"))))))
-  expect_error(new("MetaData",
-                  nms = c("sex", "triangle"),
-                   dimtypes = c("state", "triangle"),
-                   DimScales = list(
-                       new("Categories", dimvalues = c("Male", "Female")),
-                       new("Triangles", dimvalues = c("Upper", "Lower")))),
-               "has dimtype \"triangle\" but does not have two dimensions with dimtype \"age\", \"time\", \"cohort\"")
-  expect_error(new("MetaData",
-                   nms = c("age", "triangle"),
-                   dimtypes = c("age", "triangle"),
-                   DimScales = list(
-                       new("Points", dimvalues = 1:2),
-                       new("Triangles", dimvalues = c("Upper", "Lower")))),
-               "has dimtype \"triangle\" but does not have two dimensions with dimtype \"age\", \"time\", \"cohort\"")
+  ## expect_error(new("MetaData",
+  ##                 nms = c("sex", "triangle"),
+  ##                  dimtypes = c("state", "triangle"),
+  ##                  DimScales = list(
+  ##                      new("Categories", dimvalues = c("Male", "Female")),
+  ##                      new("Triangles", dimvalues = c("Upper", "Lower")))),
+  ##              "has dimtype \"triangle\" but does not have two dimensions with dimtype \"age\", \"time\", \"cohort\"")
+  ## expect_error(new("MetaData",
+  ##                  nms = c("age", "triangle"),
+  ##                  dimtypes = c("age", "triangle"),
+  ##                  DimScales = list(
+  ##                      new("Points", dimvalues = 1:2),
+  ##                      new("Triangles", dimvalues = c("Upper", "Lower")))),
+  ##              "has dimtype \"triangle\" but does not have two dimensions with dimtype \"age\", \"time\", \"cohort\"")
   expect_error(new("MetaData",
                   nms = c("age", "time", "triangle"),
                   dimtypes = c("age", "time", "triangle"),

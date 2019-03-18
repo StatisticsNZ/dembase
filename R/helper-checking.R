@@ -43,3 +43,20 @@ checkPositiveVector <- function(value, name) {
                       name))
     NULL             
 }
+
+
+## HAS_TESTS
+checkSinglePercent <- function(value, name) {
+    pattern <- "^\\d+(\\.\\d+)?%$"
+    if (!identical(length(value), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    if (is.na(value))
+        stop(gettextf("'%s' is missing",
+                      name))
+    if (!grepl(pattern, value))
+        stop(gettextf("'%s' [%s] is not a valid percentage value",
+                      name, value))
+    NULL
+}
+

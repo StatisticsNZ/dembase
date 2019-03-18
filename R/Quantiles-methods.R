@@ -35,6 +35,55 @@ setAs(from = "Quantiles", to = "Iterations",
           methods::new("Iterations")
       })
 
+## HAS_TESTS
+#' @rdname internal-methods
+#' @export
+setMethod("%in%",
+          signature(x = "Quantiles", table = "ANY"),
+          function(x, table) {
+              nms <- deparse(substitute(x))
+              table.decimal <- numeric(length = length(table))
+              for (i in seq_along(table)) {
+                  checkSinglePercent(table[i],
+                                     name = "table")
+                  table.decimal[i] <- percentToDecimal(table[i])
+              }
+              indices <- methods::callGeneric(x = dimvalues(x),
+                                              table = table.decimal)
+              indices <- list(indices)
+              methods::new("SubArrayIndices", nms = nms, indices = indices)
+          })
+
+## HAS_TESTS
+#' @rdname internal-methods
+#' @export
+setMethod("Compare",
+          signature(e1 = "Quantile", e2 = "ANY"),
+          function(e1, e2) {
+              nms <- deparse(substitute(e1))
+              checkSinglePercent(value = e2,
+                                 name = "e2")
+              e2 <- percentToDecimal(e2)
+              indices <- methods::callGeneric(e1 = dimvalues(e1), e2 = e2)
+              indices <- list(indices)
+              methods::new("SubArrayIndices", nms = nms, indices = indices)
+          })
+
+## HAS_TESTS
+#' @rdname internal-methods
+#' @export
+setMethod("Compare",
+          signature(e1 = "ANY", e2 = "Quantile"),
+          function(e1, e2) {
+              nms <- deparse(substitute(e2))
+              checkSinglePercent(value = e1,
+                                 name = "e1")
+              e1 <- percentToDecimal(e1)
+              indices <- methods::callGeneric(e1 = e1, e2 = dimvalues(e2))
+              indices <- list(indices)
+              methods::new("SubArrayIndices", nms = nms, indices = indices)
+          })
+
 #' @rdname internal-methods
 ## NO_TESTS
 setMethod("diff",

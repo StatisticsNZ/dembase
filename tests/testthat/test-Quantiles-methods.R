@@ -1,6 +1,33 @@
 
 context("Quantiles-methods")
 
+test_that("%in% works with Quantiles", {
+    assign("%in%", getFromNamespace("%in%", "dembase"))
+    x <- new("Quantiles", dimvalues = c(0.1, 0.9))
+    expect_identical(x %in% c("10%", "50%", "90%"),
+                     new("SubArrayIndices",
+                         nms = "x",
+                         indices = list(c(TRUE, TRUE))))
+    expect_identical(x %in% c("10.1%", "20%", "90%"),
+                     new("SubArrayIndices",
+                         nms = "x",
+                         indices = list(c(FALSE, TRUE))))
+})
+
+test_that("Compare works with Quantiles", {
+    x <- new("Quantiles", dimvalues = c(0.1, 0.9))
+    expect_identical(x >= "50%",
+                     new("SubArrayIndices",
+                         nms = "x",
+                         indices = list(c(FALSE, TRUE))))
+    expect_identical("50%" > x,
+                     new("SubArrayIndices",
+                         nms = "x",
+                         indices = list(c(TRUE, FALSE))))
+    expect_error(x == x,
+                 "attempt to compare two dimscales")
+})
+
 test_that("coercion from Quantiles to Triangles works", {
   expect_that(as(new("Quantiles", dimvalues = c(0.025, 0.5, 0.975)), "Triangles"),
               throws_error("labels not valid for dimscale"))

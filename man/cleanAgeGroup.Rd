@@ -21,6 +21,19 @@ expected by functions such as \code{\link{Counts}} and
 \code{\link{Values}}.
 }
 \details{
+\code{cleanAgeGroup} strips off spaces or other symbols,
+converts text to numbers, and otherwise tries to guess at
+the age-group labels.
+
+It is common for age groups to be coded using only the first
+year, so that, for instance, \code{0}, \code{1}, \code{5},
+\code{...}, \code{100} is short for \code{"0"},
+\code{"1-4"}, \code{"5-9"}, \code{...}, \code{"100+"}.
+\code{cleanAgeGroup} interprets a vector\code{age}
+as a set of age-group labels if the unique values from \code{age},
+once sorted, form a sequence, \code{0, 5, 10, ...} or
+\code{0, 1, 5, 10, ...}.
+
 \code{cleanAgeGroup} does the reformatting. \code{cleanAgeGroupConc}
 constructs a \code{{Concordance}} between the old and
 new age-group labels.
@@ -44,16 +57,18 @@ does not recognize.
 \examples{
 x1 <- c("0 - 4 years", "90 plus years", "25 - 29 years")
 x2 <- c("10 to 19 Yr", "80 years and over")
-x3 <- c("5--9", "10plus", "0--4")
-x4 <- c("10plus", "10plus", "5--9", "5--9")
+x3 <- c(10, 0, 5, 1, 5)
+x4 <- c("5--9", "10plus", "0--4")
+x5 <- c("10plus", "10plus", "5--9", "5--9")
 
 ## Use cleanAgeGroup directly
 cleanAgeGroup(x1)
 cleanAgeGroup(x2)
+cleanAgeGroup(x3)
 
 ## Set up concordance and use that
-conc <- cleanAgeGroupConc(x3)
-translate(x4, concordance = conc)
+conc <- cleanAgeGroupConc(x4)
+translate(x5, concordance = conc)
 
 }
 \seealso{

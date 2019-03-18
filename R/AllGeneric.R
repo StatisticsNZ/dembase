@@ -2677,7 +2677,7 @@ setGeneric("intervalScore",
 #' Calculate the widths of credible intervals
 #' stored in a \code{\link{DemographicArray}}.
 #' If \code{(l, u)}, is a credible interval,
-#' then the width of that interval equals
+#' then the width of the interval equals
 #' \code{u - l}.
 #'
 #' \code{interval} must have a dimension of length
@@ -2686,10 +2686,7 @@ setGeneric("intervalScore",
 #' typically calculated using function
 #' \code{\link{credibleInterval}}.
 #' 
-#' @param A \code{\link{DemographicArray}}.
-#'
-#' @param A \code{\link{DemographicArray}}
-#' holding the widths.
+#' @param interval A \code{\link{DemographicArray}}.
 #'
 #' @examples
 #' #' set.seed(0)

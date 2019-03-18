@@ -35,3 +35,34 @@ test_that("checkAndTidyPercentage works", {
                  "'percent' is not between 0 and 100")
 })
 
+
+
+test_that("checkSinglePercent works", {
+    checkSinglePercent <- dembase:::checkSinglePercent
+    expect_identical(checkSinglePercent(value = "50%",
+                                        name = "e1"),
+                     NULL)
+    expect_identical(checkSinglePercent(value = "0.0001%",
+                                        name = "e2"),
+                     NULL)
+    expect_identical(checkSinglePercent(value = "0%",
+                                        name = "e1"),
+                     NULL)
+    expect_error(checkSinglePercent(value = c("0%", "1%"),
+                                    name = "e1"),
+                 "'e1' does not have length 1")
+    expect_error(checkSinglePercent(value = NA,
+                                    name = "e1"),
+                 "'e1' is missing")
+    expect_error(checkSinglePercent(value = "33",
+                                    name = "e1"),
+                 "'e1' \\[33\\] is not a valid percentage value")
+    expect_error(checkSinglePercent(value = "a33%",
+                                    name = "e1"),
+                 "'e1' \\[a33%\\] is not a valid percentage value")
+    expect_error(checkSinglePercent(value = "33%a",
+                                    name = "e1"),
+                 "'e1' \\[33%a\\] is not a valid percentage value")
+})
+
+

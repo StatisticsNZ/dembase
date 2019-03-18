@@ -158,10 +158,10 @@ setClass("MetaData",
              ## triangle dimension
              has.triangle <- "triangle" %in% dimtypes
              if (has.triangle) {
-                 has.two.age.time.cohort <- sum(dimtypes %in% c("age", "time", "cohort")) == 2L
-                 if (!has.two.age.time.cohort)
-                     return(gettextf("has dimtype \"%s\" but does not have two dimensions with dimtype \"%s\", \"%s\", \"%s\"",
-                                     "triangle", "age", "time", "cohort"))
+                 ## has.two.age.time.cohort <- sum(dimtypes %in% c("age", "time", "cohort")) == 2L
+                 ## if (!has.two.age.time.cohort)
+                 ##     return(gettextf("has dimtype \"%s\" but does not have two dimensions with dimtype \"%s\", \"%s\", \"%s\"",
+                 ##                     "triangle", "age", "time", "cohort"))
                  for (dimtype in c("age", "time")) {
                      i.dimtype <- match(dimtype, dimtypes, nomatch = 0L)
                      has.dimtype <- i.dimtype > 0L

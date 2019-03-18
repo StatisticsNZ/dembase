@@ -841,6 +841,19 @@ test_that("monthStartNum works", {
                  "invalid value for 'monthStart' : \"wrong\" is not a valid month")
 })
 
+test_that("percentToDecimal works", {
+    percentToDecimal <- dembase:::percentToDecimal
+    ans.obtained <- percentToDecimal("23.3%")
+    ans.expected <- 0.233
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- percentToDecimal("0%")
+    ans.expected <- 0
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- percentToDecimal("100%")
+    ans.expected <- 1
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("timeToPeriod works", {
     ans.obtained <- timeToPeriod(c(2000, 2049, 2033),
                                  breaks = seq(2000, 2050, 5))

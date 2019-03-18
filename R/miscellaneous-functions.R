@@ -933,6 +933,18 @@ monthStartNum <- function(monthStart) {
     i
 }
 
+
+## HAS_TESTS
+## assumes that 'checkSinglePercent' has been called first
+percentToDecimal <- function(x) {
+    pattern <- "(\\d+(\\.\\d+)?)%"
+    ans <- sub(pattern, "\\1", x)
+    ans <- as.numeric(ans)
+    ans <- ans / 100
+    ans
+}    
+
+
 ## HAS_TESTS (via ageToAgeGroup and timeToPeriod)
 pointToIntervalInner <- function(vec, breaks, firstOpen, lastOpen, nameVec) {
     if (!is.numeric(vec) && !is.character(vec) && !is.factor(vec))

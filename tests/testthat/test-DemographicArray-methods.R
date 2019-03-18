@@ -693,18 +693,22 @@ test_that("collapseIterations works", {
 })
 
 test_that("credibleInterval works with valid arguments", {
-    x <- Counts(array(rpois(n = 120, lambda = 1:12),
-               dim = c(2, 2, 3, 10),
-               dimnames = list(region = c("Region 1", "Region 2"),
-               sex = c("Male", "Female"),
-               age = c("0-4", "5-9", "10+"),
-               iteration = 1:10)))
-    ans.obtained <- credibleInterval(x)
-    ans.expected <- collapseIterations(x, prob = c(0.025, 0.975))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- credibleInterval(x, width = 80)
-    ans.expected <- collapseIterations(x, prob = c(0.1, 0.9))
-    expect_identical(ans.obtained, ans.expected)
+    for (i in seq_len(10)) {
+        x <- Counts(array(rpois(n = 120, lambda = 1:12),
+                          dim = c(2, 2, 3, 10),
+                          dimnames = list(region = c("Region 1", "Region 2"),
+                                          sex = c("Male", "Female"),
+                                          age = c("0-4", "5-9", "10+"),
+                                          iteration = 1:10)))
+        ans.search <- credibleInterval(x, width = 80)
+        ans.expand <- credibleInterval(x, width = 80, adjust = "expand")
+        ans.none <- credibleInterval(x, width = 80, adjust = "none")
+        ans.none.expected <- collapseIterations(x, prob = c(0.1, 0.9))
+        expect_identical(ans.none, ans.none.expected)
+        expect_true(all(subarray(ans.expand, quantile == "10%") <= subarray(ans.none, quantile == "10%")))
+        expect_true(all(subarray(ans.expand, quantile == "90%") >= subarray(ans.none, quantile == "90%")))
+        expect_true(all(intervalWidth(ans.search) <= intervalWidth(ans.expand)))
+    }
 })
 
 test_that("credibleInterval throws correct error", {

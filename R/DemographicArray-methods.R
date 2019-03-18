@@ -669,14 +669,14 @@ setMethod("credibleInterval",
                                             na.rm = na.rm)
               else {
                   names <- paste0(prob * 100, "%")
-                  FUN <- function(x) {
+                  quantile <- function(x) {
                       if (any(is.na(x)))
                           structure(.Data = c(NA, NA), names = names)
                       else
-                          quantile(x, prob = prob)
+                          stats::quantile(x, prob = prob)
                   }
                   ans <- collapseIterations(object,
-                                            FUN = FUN)
+                                            FUN = quantile)
               }
               if (all(is.na(ans)))
                   return(ans)
