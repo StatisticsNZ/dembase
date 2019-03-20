@@ -357,6 +357,7 @@ cleanAgeGroup <- function(age) {
     age <- tolower(age)
     age <- gsub("(?<![0-9])0+(?=[0-9])", "", age, perl = TRUE)
     age <- sub("infant", "0", age)
+    age <- sub("in 1st year", "0", age)
     age <- sub("less than 1 year", "0", age)
     age <- sub("under1|under 1", "0", age)
     age <- sub("year|years|yr|yrs", "", age)
