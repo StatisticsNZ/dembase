@@ -1515,6 +1515,46 @@ setMethod("pairAligned",
           })
 
 ## HAS_TESTS
+#' @rdname pairToState
+#' @export
+setMethod("pairToState",
+          signature(object = "DemographicArray"),
+          function(object) {
+              .Data.old <- object@.Data
+              names.old <- names(object)
+              dimtypes.old <- dimtypes(object, use.names = FALSE)
+              DimScales <- DimScales(object, use.names = FALSE)
+              dimtypes.with.pairs <- getDimtypesWithPairs()
+              names.new <- names.old
+              dimtypes.new <- dimtypes.old
+              for (i in seq_along(names.old)) {
+                  name.old <- names.old[i]
+                  dimtype.old <- dimtypes.old[i]
+                  if (dimtype.old %in% dimtypes.with.pairs) {
+                      dimtypes.new[i] <- "state"
+                      suffix <- getSuffixes(dimtype.old)
+                      pattern <- paste0(suffix, "$")
+                      replacement <- sub("^_", ".", suffix)
+                      name.new <- sub(pattern = pattern,
+                                      replacement = replacement,
+                                      x = name.old)
+                      names.new[i] <- name.new
+                  }
+              }
+              metadata.new <- methods::new("MetaData",
+                                           nms = names.new,
+                                           dimtypes = dimtypes.new,
+                                           DimScales = DimScales)
+              .Data.new <- array(.Data.old,
+                                 dim = dim(metadata.new),
+                                 dimnames = dimnames(metadata.new))
+              new(class(object),
+                  .Data = .Data.new,
+                  metadata = metadata.new)
+          })
+                  
+
+## HAS_TESTS
 #' @rdname perturb
 #' @export
 setMethod("perturb",

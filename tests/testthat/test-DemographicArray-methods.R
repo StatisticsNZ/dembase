@@ -1591,6 +1591,41 @@ test_that("pairAligned works", {
     expect_true(pairAligned(x, base = "eth"))
 })
 
+test_that("pairToState works", {
+    ## array with no paired dimensions returned unchanged
+    x <- Values(array(1,
+                      dim = c(3, 2),
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("f", "m"))))
+    ans.obtained <- pairToState(x)
+    ans.expected <- x
+    expect_identical(ans.obtained, ans.expected)
+    ## origin-destination converted to state
+    x <- Values(array(1,
+                      dim = c(3, 3),
+                      dimnames = list(reg_orig = c("a", "b", "c"),
+                                      reg_dest = c("a", "b", "c"))))
+    ans.obtained <- pairToState(x)
+    ans.expected <- Values(array(1,
+                                 dim = c(3, 3),
+                                 dimnames = list(reg.orig = c("a", "b", "c"),
+                                                 reg.dest = c("a", "b", "c"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_true(all(dimtypes(ans.obtained) == "state"))
+    ## parent-child to state
+    x <- Values(array(1,
+                      dim = c(3, 3),
+                      dimnames = list(reg_parent = c("a", "b", "c"),
+                                      reg_child = c("a", "b", "c"))))
+    ans.obtained <- pairToState(x)
+    ans.expected <- Values(array(1,
+                                 dim = c(3, 3),
+                                 dimnames = list(reg.parent = c("a", "b", "c"),
+                                                 reg.child = c("a", "b", "c"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_true(all(dimtypes(ans.obtained) == "state"))
+})
+
 test_that("perturb throws appropriate errors", {
     set.seed(100)
     x <- Counts(array(1:6,

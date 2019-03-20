@@ -3047,6 +3047,47 @@ setGeneric("pairAligned",
            function(object, base = NULL)
                standardGeneric("pairAligned"))
 
+#' Convert dimensions with paired dimtypes to state dimtypes
+#'
+#' \code{\link{dimtypes}} \code{"origin"} and \code{"destination"},
+#' and \code{\link{dimtypes}} \code{"parent"} and \code{"child"},
+#' always come in pairs. If one of these dimensions is collapsed,
+#' the remaining dimension is converted to dimtype \code{"state"},
+#' and the \code{"_orig"}, \code{"_dest"}, \code{"_parent"}
+#' or \code{"_child"} suffix in its name disappears.
+#' Normally this behaviour is useful, but sometimes it is not.
+#' \code{pairToState} converts all dimensions
+#' in \code{object} with \code{\link{dimtype}} \code{"origin"},
+#' \code{"destination"}, \code{"parent"}, or \code{"child"}
+#' to \code{\link{dimtype}} \code{"state"}. To conform to the rule
+#' that paired dimensions, and only paired dimensions, have
+#' suffixes code{"_orig"}, \code{"_dest"}, \code{"_parent"}
+#' or \code{"_child"}, the names of transformed dimensions
+#' are changed, with the \code{"_"} characters in the
+#' suffixes being changed to \code{"."}.
+#'
+#' @param An object of class \code{\linkS4class{DemographicArray}}.
+#'
+#' @return An object with the same class as \code{object},
+#' but with altered dimtypes and names, if any paired dimtypes were
+#' present in \code{object}.
+#'
+#' @seealso For descriptions of dimtypes and the rules that govern
+#' them, see \code{\link{dimtypes}}.  Dimensions are collapsed
+#' using function \code{\link{collapseDimension}}.
+#'
+#' @examples
+#' x <- Counts(array(1:9,
+#'                   dim = c(3, 3),
+#'                   dimnames = list(region_orig = c("A", "B", "C"),
+#'                                   region_dest = c("A", "B", "C"))))
+#' x
+#' pairToState(x)
+#' @export
+setGeneric("pairToState",
+           function(object)
+               standardGeneric("pairToState"))
+
 #' Generate demographic array consisting of random values.
 #'
 #' If \code{object} has a dimension with \code{\link{dimtype}}
