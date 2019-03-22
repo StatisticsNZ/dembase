@@ -11,7 +11,7 @@ pairToState(object)
 \S4method{pairToState}{DemographicArray}(object)
 }
 \arguments{
-\item{An}{object of class \code{\linkS4class{DemographicArray}}.}
+\item{object}{An object of class \code{\linkS4class{DemographicArray}}.}
 }
 \value{
 An object with the same class as \code{object},

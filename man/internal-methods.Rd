@@ -67,6 +67,7 @@
 \alias{\%in\%,Quantiles-method}
 \alias{Compare,Quantiles,ANY-method}
 \alias{Compare,ANY,Quantiles-method}
+\alias{Compare,Quantiles,Quantiles-method}
 \alias{diff,Quantiles-method}
 \alias{labels,Quantiles-method}
 \alias{summary,DemographicArray-method}
@@ -199,6 +200,8 @@
 \S4method{Compare}{Quantiles,ANY}(e1, e2)
 
 \S4method{Compare}{ANY,Quantiles}(e1, e2)
+
+\S4method{Compare}{Quantiles,Quantiles}(e1, e2)
 
 \S4method{diff}{Quantiles}(x)
 

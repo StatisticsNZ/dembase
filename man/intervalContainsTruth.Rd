@@ -23,8 +23,8 @@ with a quantile dimension of length 2.}
 number.}
 }
 \value{
-An \code{\linkS4class{DemographicArray}}
-of \code{1}s and \code{0}s with the same dimensions
+An \code{\linkS4class{Values}} object, consisting
+of \code{1}s and \code{0}s, with the same dimensions
 as \code{truth}, or, if \code{truth} is a number,
 a single \code{1} or \code{0}.
 }
@@ -32,8 +32,8 @@ a single \code{1} or \code{0}.
 Test whether intervals contain specified values.  These values
 are referred to as 'truth' because \code{intervalContainsTruth}
 is typically used as part of a simulation study,
-where the analyst generates the true values, and
-tests the ability of the model to recover these values.
+where the analyst generates the true values, and then
+sees whether the model is able to recover these values.
 }
 \details{
 \code{interval} must have the same dimensions
@@ -42,15 +42,16 @@ with length 2 and \code{\link{dimtype}}
 \code{"quantile"} specifying the intervals.
 
 An interval \code{(l, u)} is said to contain a value \code{v}
-if \code{l <= t <= u}. The use of \code{<=} is immaterial
-when \code{l} and \code{u} are real numbers but makes a difference
-when \code{l} and \code{u} are integers.
+if \code{l <= t <= u}. The use of \code{<=}, rather than
+\code{<}, makes no difference
+when \code{l} and \code{u} are real numbers, but does make
+a difference when \code{l} and \code{u} are integers.
 
 \code{truth} can be a single number, in which case all dimensions
 of \code{interval}, other than the quantile dimension, should
 have length 1.
 
-\code{valueInInterval} is stricter about the compatibility
+\code{intervalContainsTruth} is stricter about the compatibility
 of its arguments than most functions in \code{dembase}.
 Although it reorders dimensions and categories
 in \code{interval} and \code{truth}, it does not collapse
@@ -66,13 +67,15 @@ more easily be collapsed or otherwise manipulated:
 see below for an example.
 }
 \examples{
-interval <- Values(array(c(-0.1, 0.4, 0.2, 0.7),
+interval <- Values(array(c(-0.1, 0.2, 0.4, 0.7),
                          dim = c(2, 2),
-                         dimnames = list(sex = c("Female", "Male"),
-                                         quantile = c("2.5\%", "97.5\%"))))
+                         dimnames = list(quantile = c("2.5\%", "97.5\%"),
+                                         sex = c("Female", "Male"))))
 truth <- ValuesOne(c(0.3, 0.5),
                    labels = c("Female", "Male"),
                    name = "sex")
+interval
+truth
 intervalContainsTruth(interval = interval,
                       truth = truth)
 
@@ -80,8 +83,6 @@ interval <- ValuesOne(c(5L, 8L),
                       labels = c("5\%", "95\%"),
                       name = "quantile")
 truth <- 5L
-intervalContainsTruth(interval = interval,
-                      truth = truth)
 intervalContainsTruth(interval = interval,
                       truth = truth)
 }

@@ -1,12 +1,12 @@
 Package: dembase
 Type: Package
 Title: Analysing Cross-Classified Data about Populations
-Version: 0.0.0.99
-Date: 2019-03-21
+Version: 0.0.0.100
+Date: 2019-03-22
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
-	   email = "john.bryant@stats.govt.nz",
+	   email = "john.r.bryant@gmail.com",
 	   role = c("cre", "aut")),
     person(given = "Jenny",
            family = "Harlow",

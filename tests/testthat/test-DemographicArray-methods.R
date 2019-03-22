@@ -401,6 +401,20 @@ test_that("DimScales method works", {
                                    new("Sexes", dimvalues = c("Male", "Female")))))
 })
 
+test_that("MSE works", {
+    point <- Values(array(1:6,
+                          dim = c(3, 2),
+                          dimnames = list(age = c("0-4", "5-9", "10+"),
+                                          sex = c("Male", "Female"))))
+    truth <- Counts(array(6:1,
+                          dim = c(2, 3),
+                          dimnames = list(sex = c("Female", "Male"),
+                                          age = c("0-4", "5-9", "10+"))))
+    ans.obtained <- MSE(point = point, truth = truth)
+    ans.expected <- (truth - point)^2
+    expect_identical(ans.obtained, ans.expected)
+})
+
 test_that("ageMax works", {
     x <- Values(array(1:6,
                       dim = c(3, 2),
@@ -1070,182 +1084,118 @@ test_that("impute works", {
                  "'max' has missing values")
 })
 
-test_that("intervalScore works when 'values' has iterations dimension", {
-    ## 'truth' has same dimension as 'values'
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
-    truth <- Counts(array(rnorm(2),
-                          dim = 2,
-                          dimnames = list(sex = c("f", "m"))))
-    alpha <- 0.1
-    ans.obtained <- intervalScore(values = values,
-                                  truth = truth,
-                                  alpha = alpha)
-    ul <- collapseIterations(values, prob = c(0.05, 0.95))
-    u <- ul[,2]
-    l <- ul[,1]
-    ans.expected <- (u-l) + 20*(l-truth)*(truth<l) + 20*(truth-u)*(truth>u)
-    expect_identical(ans.obtained, ans.expected)
-    ## 'truth' needs to be collapsed
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
-    truth <- Counts(array(rnorm(4),
+test_that("intervalContainsTruth works when truth is a demographic array", {
+    truth <- Values(array(c(0.1, -0.1, 0.8, 1.1),
                           dim = c(2, 2),
-                          dimnames = list(sex = c("f", "m"),
-                                          reg = c("a", "b"))))
-    alpha <- 0.1
-    ans.obtained <- intervalScore(values = values,
-                                  truth = truth,
-                                  alpha = alpha)
-    ul <- collapseIterations(values, prob = c(0.05, 0.95))
-    u <- ul[,2]
-    l <- ul[,1]
-    tt <- collapseDimension(truth, dim = "reg")
-    ans.expected <- (u-l) + 20*(l-tt)*(tt<l) + 20*(tt-u)*(tt>u)
+                          dimnames = list(region = 1:2,
+                                          sex = c("F", "M"))))
+    interval <- Counts(array(0:1,
+                             dim = c(2, 2, 2),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             sex = c("F", "M"),
+                                             region = 2:1)))
+    ans.obtained <- intervalContainsTruth(interval = interval,
+                                          truth = truth)
+    ans.expected <- Values(array(c(1L, 0L, 1L, 0L),
+                                 dim = c(2, 2),
+                                 dimnames = list(region = 1:2,
+                                                 sex = c("F", "M"))))
     expect_identical(ans.obtained, ans.expected)
-    ## 'values' has missing value
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
-    values[1] <- NA
-    truth <- Counts(array(rnorm(2),
+    ans.obtained <- intervalContainsTruth(truth = truth,
+                                          interval = aperm(interval, 3:1))
+    ans.expected <- Values(array(c(1L, 0L, 1L, 0L),
+                                 dim = c(2, 2),
+                                 dimnames = list(region = 1:2,
+                                                 sex = c("F", "M"))))
+    expect_identical(ans.obtained, ans.expected)
+    truth <- Values(array(1:2,
                           dim = 2,
-                          dimnames = list(sex = c("f", "m"))))
-    alpha <- 0.1
-    ans.obtained <- intervalScore(values = values,
-                                  truth = truth,
-                                  alpha = alpha,
-                                  na.rm = TRUE)
-    ul <- collapseIterations(values, prob = c(0.05, 0.95), na.rm = TRUE)
-    u <- ul[,2]
-    l <- ul[,1]
-    ans.expected <- (u-l) + 20*(l-truth)*(truth<l) + 20*(truth-u)*(truth>u)
+                          dimnames = list(sex = c("F", "M"))))
+    interval <- Counts(array(1:2,
+                             dim = c(2, 2),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             sex = c("F", "M"))))
+    ans.obtained <- intervalContainsTruth(interval = interval,
+                                          truth = truth)
+    ans.expected <- Values(array(c(1L, 1L),
+                          dim = 2,
+                          dimnames = list(sex = c("F", "M"))))
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("intervalScore works when 'values' has quantile dimension", {
-    ## 'truth' has same dimension as 'values'
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
-    values <- collapseIterations(values, prob = c(0.1, 0.9))
-    truth <- Counts(array(rnorm(2),
-                          dim = 2,
-                          dimnames = list(sex = c("f", "m"))))
-    ans.obtained <- intervalScore(values = values,
-                                  truth = truth)
-    u <- values[,2]
-    l <- values[,1]
-    ans.expected <- (u-l) + 10*(l-truth)*(truth<l) + 10*(truth-u)*(truth>u)
+test_that("intervalContainsTruth works when truth is a number", {
+    interval <- Counts(array(0:1,
+                             dim = c(2, 1),
+                             dimnames = list(quantile = c("0.05", "0.95"),
+                                             region = 2)))
+    ans.obtained <- intervalContainsTruth(interval = interval,
+                                          truth = 0.5)
+    ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
-    ## 'truth' needs to be collapsed
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
-    values <- collapseIterations(values, prob = c(0.1, 0.9))
-    truth <- Counts(array(rnorm(4),
-                          dim = c(2, 2),
-                          dimnames = list(sex = c("f", "m"),
-                                          reg = c("a", "b"))))
-    ans.obtained <- intervalScore(values = values,
-                                  truth = truth)
-    u <- values[,2]
-    l <- values[,1]
-    tt <- collapseDimension(truth, dim = "reg")
-    ans.expected <- (u-l) + 10*(l-tt)*(tt<l) + 10*(tt-u)*(tt>u)
+    ans.obtained <- intervalContainsTruth(interval = interval,
+                                          truth = 0L)
+    ans.expected <- 1L
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- intervalContainsTruth(interval = interval,
+                                          truth = -1)
+    ans.expected <- 0L
+    expect_identical(ans.obtained, ans.expected)
+    interval <- Counts(array(1:2,
+                             dim = 2,
+                             dimnames = list(quantile = c("0.05", "0.95"))))
+    ans.obtained <- intervalContainsTruth(truth = 1.5,
+                                          interval = interval)
+    ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
 })
 
-
-test_that("intervalScore throws appropriate errors", {
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
+test_that("intervalScore works when 'truth' is array", {
+    ## 'truth' has same dimension as 'interval'
+    interval <- Counts(array(rnorm(200),
+                             dim = c(2, 100),
+                             dimnames = list(sex = c("f", "m"),
+                                             iter = 1:100)))
+    interval <- credibleInterval(interval, width = 80)
     truth <- Counts(array(rnorm(2),
                           dim = 2,
                           dimnames = list(sex = c("f", "m"))))
-    alpha <- 0.1
-    expect_error(intervalScore(values = truth,
-                               truth = truth,
-                               alpha = alpha),
-                 "'values' does not have a dimension with dimtype \"iteration\" or \"quantile\"")
-    values.wrong  <- Counts(array(rnorm(200),
-                                  dim = c(2, 100),
-                                  dimnames = list(reg = c("a", "n"),
-                                                  iter = 1:100)))
-    expect_error(intervalScore(values = values.wrong,
-                               truth = truth,
-                               alpha = alpha),
-                 "'truth' and 'values' not compatible")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = NULL),
-                 "'values' has dimension with dimtype \"iteration\" but 'alpha' is NULL")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = "1"),
-                 "'alpha' is non-numeric")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = c(0.1, 0.1)),
-                 "'alpha' does not have length 1")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = as.numeric(NA)),
-                 "'alpha' is missing")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = 0.5),
-                 "'alpha' must be greater than 0 and less than 0.5")
-    values.q <- collapseIterations(values,
-                                   prob = c(0.1, 0.9))
-    expect_warning(intervalScore(values = values.q,
-                                 truth = truth,
-                                 alpha = 0.5),
-                   "'values' has dimension with dimtype \"quantile\" but 'alpha' is not NULL")
-    values.wrong <- collapseIterations(values,
-                                       prob = c(0.1, 0.5, 0.8))
-    expect_error(intervalScore(values = values.wrong,
-                               truth = truth),
-                 "'values' does not have 2 quantiles")
-    values.wrong <- collapseIterations(values,
-                                       prob = c(0.1, 0.8))
-    expect_error(intervalScore(values = values.wrong,
-                               truth = truth),
-                 "quantiles for 'values' not symmetric")
-    values <- Counts(array(rnorm(200),
-                           dim = c(2, 100),
-                           dimnames = list(sex = c("f", "m"),
-                                           iter = 1:100)))
-    values[1] <- NA
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = 0.2,
-                               na.rm = 1),
-                 "'na.rm' does not have type \"logical\"")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = 0.2,
-                               na.rm = c(TRUE, FALSE)),
-                 "'na.rm' does not have length 1")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = 0.2,
-                               na.rm = NA),
-                 "'na.rm' is missing")
-    expect_error(intervalScore(values = values,
-                               truth = truth,
-                               alpha = 0.2,
-                               na.rm = FALSE),
-                 "'na.rm' is FALSE but 'values' contains missing values")
+    ans.obtained <- intervalScore(interval = interval,
+                                  truth = truth)
+    u <- interval[,2]
+    l <- interval[,1]
+    ans.expected <- (u-l) + (2/0.2)*(l-truth)*(truth<l) + (2/0.2)*(truth-u)*(truth>u)
+    expect_identical(ans.obtained, ans.expected)
+    ## 'interval' needs to be rearranged
+    interval <- Counts(array(rnorm(200),
+                             dim = c(2, 100),
+                             dimnames = list(reg = c("b", "a"),
+                                             iter = 1:100)))
+    interval <- credibleInterval(interval, width = 80)
+    truth <- Counts(array(rnorm(2),
+                          dim = 2,
+                          dimnames = list(reg = c("a", "b"))))
+    ans.obtained <- intervalScore(interval = interval,
+                                  truth = truth)
+    u <- interval[,2][2:1]
+    l <- interval[,1][2:1]
+    ans.expected <- (u-l) + (2/0.2)*(l-truth)*(truth<l) + (2/0.2)*(truth-u)*(truth>u)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("intervalScore works when 'truth' is number", {
+    interval <- Counts(array(rnorm(200),
+                             dim = c(1, 1, 100),
+                             dimnames = list(sex = "f",
+                                             reg = "a",
+                                             iter = 1:100)))
+    interval <- credibleInterval(interval, width = 80)
+    truth <- 0
+    ans.obtained <- intervalScore(interval = interval,
+                                  truth = truth)
+    u <- interval[2]
+    l <- interval[1]
+    ans.expected <- (u-l) + (2/0.2)*(l-truth)*(truth<l) + (2/0.2)*(truth-u)*(truth>u)
+    expect_identical(ans.obtained, ans.expected)
 })
     
 test_that("limits works", {
@@ -2405,202 +2355,6 @@ test_that("toInteger works", {
     expect_identical(toInteger(x, force = TRUE), y)
 })
 
-test_that("valueInInterval works when value is a demographic array", {
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2, 2),
-                             dimnames = list(quantile = c("0.05", "0.95"),
-                                             sex = c("F", "M"),
-                                             region = 2:1)))
-    ans.obtained <- valueInInterval(value = value,
-                                    interval = interval)
-    ans.expected <- array(c(TRUE, FALSE, TRUE, FALSE),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M")))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = value,
-                                    interval = aperm(interval, 3:1))
-    ans.expected <- array(c(TRUE, FALSE, TRUE, FALSE),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M")))
-    expect_identical(ans.obtained, ans.expected)
-    value <- Values(array(1:2,
-                          dim = 2,
-                          dimnames = list(sex = c("F", "M"))))
-    interval <- Counts(array(1:2,
-                             dim = c(2, 2),
-                             dimnames = list(quantile = c("0.05", "0.95"),
-                                             sex = c("F", "M"))))
-    ans.obtained <- valueInInterval(value = value,
-                                    interval = interval)
-    ans.expected <- array(c(TRUE, TRUE),
-                          dim = 2,
-                          dimnames = list(sex = c("F", "M")))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = value,
-                                    interval = interval,
-                                    lower.inclusive = FALSE)
-    ans.expected <- array(c(FALSE, TRUE),
-                          dim = 2,
-                          dimnames = list(sex = c("F", "M")))
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = value,
-                                    interval = interval,
-                                    lower.inclusive = FALSE,
-                                    upper.inclusive = FALSE)
-    ans.expected <- array(c(FALSE, FALSE),
-                          dim = 2,
-                          dimnames = list(sex = c("F", "M")))
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("valueInInterval throws appropriate errors when value is a demographic array", {
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(quantile = c("5%", "90%"),
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2, 2),
-                             dimnames = list(quantile = c("0.05", "0.95"),
-                                             sex = c("F", "M"),
-                                             region = 1:2)))
-    expect_error(valueInInterval(value = value,
-                                 interval = interval),
-                 "'value' has dimension with dimtype \"quantile\"")
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2, 2),
-                             dimnames = list(time = c(2000, 2005),
-                                             sex = c("F", "M"),
-                                             region = 1:2)))
-    expect_error(valueInInterval(value = value,
-                                 interval = interval),
-                 "'interval' does not have dimension with dimtype \"quantile\"")
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(3, 2, 2),
-                             dimnames = list(quantile = c("0.025", "0.5", "0.975"),
-                                             sex = c("F", "M"),
-                                             region = 1:2)))
-    expect_error(valueInInterval(value = value,
-                                 interval = interval),
-                 "dimension of 'interval' with dimtype \"quantile\" does not have length 2")
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2, 2),
-                             dimnames = list(quantile = c("0.025", "0.975"),
-                                             sex = c("F", "M"),
-                                             wrong = 1:2)))
-    expect_error(valueInInterval(value = value,
-                                 interval = interval),
-                 "'value' and 'interval' have incompatible dimensions : \"region\", \"sex\" vs \"quantile\", \"sex\", \"wrong\"")
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(3, 2),
-                          dimnames = list(region = 1:3,
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2, 2),
-                             dimnames = list(quantile = c("0.025", "0.975"),
-                                             sex = c("F", "M"),
-                                             region = 1:2)))
-    expect_error(valueInInterval(value = value,
-                                 interval = interval),
-                 "\"region\" dimensions of 'value' and 'interval' have different lengths")
-    value <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          sex = c("F", "M"))))
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2, 2),
-                             dimnames = list(quantile = c("0.025", "0.975"),
-                                            sex = c("Female", "Male"),
-                                             region = 1:2)))
-    expect_error(valueInInterval(value = value,
-                                 interval = interval),
-                 "dimscales for \"sex\" dimension of 'value' and 'interval' incompatible")
-})
-
-test_that("valueInInterval works when value is a number", {
-    interval <- Counts(array(0:1,
-                             dim = c(2, 1),
-                             dimnames = list(quantile = c("0.05", "0.95"),
-                                             region = 2)))
-    ans.obtained <- valueInInterval(value = 0.5,
-                                    interval = interval)
-    ans.expected <- TRUE
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = 0L,
-                                    interval = interval)
-    ans.expected <- TRUE
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = 0L,
-                                    interval = interval,
-                                    lower = FALSE)
-    ans.expected <- FALSE
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = 1L,
-                                    interval = interval,
-                                    lower = FALSE)
-    ans.expected <- TRUE
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- valueInInterval(value = 1L,
-                                    interval = interval,
-                                    upper = FALSE)
-    ans.expected <- FALSE
-    expect_identical(ans.obtained, ans.expected)
-    interval <- Counts(array(1:2,
-                             dim = 2,
-                             dimnames = list(quantile = c("0.05", "0.95"))))
-    ans.obtained <- valueInInterval(value = 1.5,
-                                    interval = interval)
-    ans.expected <- TRUE
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("valueInInterval throws appropriate errors when value is a number", {
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2),
-                             dimnames = list(quantile = c("0.05", "0.95"),
-                                             sex = c("F", "M"))))
-    expect_error(valueInInterval(value = 1:2,
-                                 interval = interval),
-                 "'value' is a number but does not have length 1")
-    interval <- Counts(array(0:1,
-                             dim = c(2, 2),
-                             dimnames = list(region = 1:2,
-                                             sex = c("F", "M"))))
-    expect_error(valueInInterval(value = 1,
-                                 interval = interval),
-                 "'interval' does not have a dimension with dimtype \"quantile\"")
-    interval <- Counts(array(0:1,
-                             dim = c(3, 2),
-                             dimnames = list(quantile = c("0.01", "0.5", "0.99"),
-                                             sex = c("F", "M"))))
-    expect_error(valueInInterval(value = 1,
-                                 interval = interval),
-                 "dimension of 'interval' with dimtype \"quantile\" does not have length 2")
-    interval <- Values(array(c(0.1, -0.1, 0.8, 1.1),
-                          dim = c(2, 2),
-                          dimnames = list(region = 1:2,
-                                          quantile = c(0.1, 0.9))))
-    expect_error(valueInInterval(value = 1,
-                                 interval = interval),
-                 "'value' is a single number but 'interval' has dimensions \\(other than the \"quantile\" dimension\\) with length not equal to 1")
-})
 
 test_that("unname works", {
     x <- Counts(array(1:4,

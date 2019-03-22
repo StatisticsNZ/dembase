@@ -1164,7 +1164,7 @@ setMethod("intervalContainsTruth",
               checkTruthArray(truth)
               checkIntervalAndTruthArrayCompatible(interval = interval,
                                                    truth = truth)
-              metadata <- metadata(truth)
+              metadata <- truth@metadata
               l <- splitLowerUpper(interval)
               lower <- l$lower
               upper <- l$upper
@@ -1174,7 +1174,8 @@ setMethod("intervalContainsTruth",
               upper <- makeCompatible(x = upper,
                                       y = truth,
                                       subset = FALSE)
-              .Data <- 1L * (lower <= truth) & (truth <= upper)
+              truth <- truth@.Data
+              .Data <- 1L * ((lower <= truth) & (truth <= upper))
               new("Values",
                   .Data = .Data,
                   metadata = metadata)
@@ -1206,8 +1207,9 @@ setMethod("intervalScore",
           function(interval, truth) {
               checkIntervalArray(interval)
               checkTruthArray(truth)
-              checkIntervalAndTruthCompatible(interval = interval,
-                                              truth = truth)
+              checkIntervalAndTruthArrayCompatible(interval = interval,
+                                                   truth = truth)
+              metadata <- truth@metadata
               alpha <- getAlphaInterval(interval)
               l <- splitLowerUpper(interval)
               lower <- l$lower
@@ -1225,11 +1227,33 @@ setMethod("intervalScore",
               penalty.below.lower <- (2 / alpha) * (lower - truth) * (truth < lower)
               penalty.above.upper <- (2 / alpha) * (truth - upper) * (truth > upper)
               .Data <- width + penalty.below.lower + penalty.above.upper
-              metadata <- metadata(truth)
-              new("Values",
+              new("Counts",
                   .Data = .Data,
                   metadata = metadata)
           })
+
+#' @rdname intervalScore
+setMethod("intervalScore",
+          signature(interval = "DemographicArray",
+                    truth = "numeric"),
+          function(interval, truth) {
+              checkIntervalArray(interval)
+              checkTruthNumeric(truth)
+              checkIntervalAndTruthNumericCompatible(interval = interval,
+                                                     truth = truth)
+              alpha <- getAlphaInterval(interval)
+              l <- splitLowerUpper(interval)
+              lower <- l$lower
+              upper <- l$upper
+              lower <- lower@.Data
+              upper <- upper@.Data
+              width <- upper - lower
+              penalty.below.lower <- (2 / alpha) * (lower - truth) * (truth < lower)
+              penalty.above.upper <- (2 / alpha) * (truth - upper) * (truth > upper)
+              ans <- width + penalty.below.lower + penalty.above.upper
+              as.numeric(ans)
+          })
+
 
 
 #' @rdname intervalWidth
@@ -1436,7 +1460,9 @@ setMethod("midpoints",
               methods::callGeneric(object = object, dimension = dimension)
           })
 
-
+## NO_TESTS
+#' @rdname MSE
+#' @export
 setMethod("MSE",
           signature(point = "DemographicArray",
                     truth = "DemographicArray"),
@@ -1445,8 +1471,9 @@ setMethod("MSE",
               checkTruthArray(truth)
               checkPointAndTruthCompatible(point = point,
                                            truth = truth)
-              (point - truth)^2
+              (truth - point)^2 # 'truth' first, so that answer has same metadata as 'truth'
           })
+
           
 #' Get or set dimension names
 #' 
@@ -1621,6 +1648,8 @@ setMethod("prop.table",
           })
 
 ## HAS_TESTS
+#' @rdname recodeCategories
+#' @export
 setMethod("recodeCategories",
           signature(object = "DemographicArray",
                     dimension = "ANY",
@@ -1691,6 +1720,8 @@ setMethod("recodeCategories",
 
 
 ## HAS_TESTS
+#' @rdname recodeCategories
+#' @export
 setMethod("recodeCategories",
           signature(object = "DemographicArray",
                     dimension = "ANY",

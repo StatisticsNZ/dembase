@@ -84,6 +84,16 @@ setMethod("Compare",
               methods::new("SubArrayIndices", nms = nms, indices = indices)
           })
 
+## HAS_TESTS
+#' @rdname internal-methods
+#' @export
+setMethod("Compare",
+          signature(e1 = "Quantiles", e2 = "Quantiles"),
+          function(e1, e2) {
+              stop(gettext("attempt to compare two dimscales"))
+          })
+
+
 #' @rdname internal-methods
 ## NO_TESTS
 setMethod("diff",

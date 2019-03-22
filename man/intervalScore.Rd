@@ -4,23 +4,26 @@
 \name{intervalScore}
 \alias{intervalScore}
 \alias{intervalScore,DemographicArray,DemographicArray-method}
-\title{Interval score.}
+\alias{intervalScore,DemographicArray,numeric-method}
+\title{Interval score, a measure of forecast quality}
 \usage{
 intervalScore(interval, truth)
 
 \S4method{intervalScore}{DemographicArray,DemographicArray}(interval,
   truth)
+
+\S4method{intervalScore}{DemographicArray,numeric}(interval, truth)
 }
 \arguments{
-\item{interval}{An object of class \code{\linkS4class{DemographicArray}}.}
+\item{interval}{A \code{\linkS4class{DemographicArray}},
+with a quantile dimension of length 2.}
 
-\item{truth}{An object of class \code{\linkS4class{DemographicArray}}
-containing the held-back data.}
+\item{truth}{A \code{\linkS4class{DemographicArray}}, or a single
+number.}
 }
 \value{
-A \code{\linkS4class{DemographicArray}} object
-with the same dimensions as \code{truth}, containing a
-score for each value.
+A \code{\linkS4class{Counts}} object with the
+same dimensions as \code{truth}, or a single number.
 }
 \description{
 The interval score is a way of measuring the quality of a probabilistic
@@ -42,7 +45,7 @@ the interval.  For the details, see Section 6.2 of the reference below.
 It must have a dimension with \code{\link{dimtype}} \code{"quantile"}.
 There here can be only
 two quantiles, and these quantiles must be symmetric (for instance,
-5\% and 95\% are valid, but 5\% and 90\% are not.)
+5\% and 95\% is a valid pair, but 5\% and 90\% is not.)
 
 The return value contains a score for each quantity being predicted.
 These scores can be aggregated using \code{sum} or
@@ -69,6 +72,16 @@ score <- intervalScore(interval = interval,
 score
 ## scores can be summed, eg to give an overall score
 sum(score)
+
+## single number
+interval <- Values(array(c(-1, 1),
+                         dim = 2,
+                         dimnames = list(quantile = c("10\%", "90\%"))))
+truth <- 0.3
+interval
+truth
+intervalScore(interval = interval,
+              truth = truth)
 }
 \references{
 Gneiting T and Raftery A. 2007. Strictly proper scoring rules,
