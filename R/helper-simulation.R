@@ -123,7 +123,3 @@ checkPointAndTruthCompatible <- function(point, truth) {
     }
     NULL
 }
-
-
-
-quantileInt <- function
