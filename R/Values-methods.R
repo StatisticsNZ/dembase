@@ -174,7 +174,7 @@ setMethod("Ops",
 as.data.frame.Values <- function(x, row.names = NULL, optional = FALSE,
                                  stringsAsFactors = TRUE,
                                  responseName = "value",
-                                 direction = c("wide", "long"),
+                                 direction = c("long", "wide"),
                                  midpoints = FALSE, ...) {
     direction <- match.arg(direction)
     if (!identical(midpoints, FALSE)) {
@@ -183,8 +183,13 @@ as.data.frame.Values <- function(x, row.names = NULL, optional = FALSE,
         else
             x <- midpoints(x, dimension = midpoints)
     }
-    if (direction == "wide")
-        as.data.frame(x@.Data, row.names = row.names, optional = optional, ...)
+    if (direction == "wide") {
+        x <- x@.Data
+        as.data.frame(x,
+                      row.names = row.names,
+                      optional = optional,
+                      ...)
+    }
     else
         asDataFrame(x,
                     responseName = responseName,

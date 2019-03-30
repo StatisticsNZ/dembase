@@ -423,7 +423,7 @@ test_that("as.data.frame works", {
                                  sex = c("Male", "Female"),
                                  region = c("a", "b")),
                      value = 1:12)
-    expect_identical(as.data.frame(x, direction = "long", midpoints = TRUE),
+    expect_identical(as.data.frame(x, midpoints = TRUE),
                      df)
     a <- array(0L,
                dim = c(0, 2),

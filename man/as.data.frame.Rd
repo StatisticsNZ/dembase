@@ -6,15 +6,15 @@
 \alias{as.data.frame}
 \alias{as.data.frame,Counts-method}
 \alias{as.data.frame,Values-method}
-\title{Convert a DemographicArray Object to a Data Frame}
+\title{Convert a DemographicArray to a data.frame}
 \usage{
 \S4method{as.data.frame}{Counts}(x, row.names = NULL, optional = FALSE,
   stringsAsFactors = TRUE, responseName = "count",
-  direction = c("wide", "long"), midpoints = FALSE, ...)
+  direction = c("long", "wide"), midpoints = FALSE, ...)
 
 \S4method{as.data.frame}{Values}(x, row.names = NULL, optional = FALSE,
   stringsAsFactors = TRUE, responseName = "value",
-  direction = c("wide", "long"), midpoints = FALSE, ...)
+  direction = c("long", "wide"), midpoints = FALSE, ...)
 }
 \arguments{
 \item{x}{Object of class \code{\linkS4class{DemographicArray}}.}
@@ -32,8 +32,8 @@ is \code{"long"}.  Defaults to \code{"count"} if \code{object} is
 \code{\linkS4class{Counts}} and \code{"value"} if \code{object} is
 \code{\linkS4class{Values}}.}
 
-\item{direction}{Logical.  Governs whether data are converted to
-\code{"wide"} (the default) or \code{"long"} format.}
+\item{direction}{Character.  Whether data are converted to
+\code{"long"} format (the default) or \code{"wide"} format.}
 
 \item{midpoints}{\code{FALSE} (the default), \code{TRUE}, or names of
 dimensions with \code{\link{dimscale}} \code{"Intervals"}.}
@@ -44,36 +44,47 @@ dimensions with \code{\link{dimscale}} \code{"Intervals"}.}
 A data frame.
 }
 \description{
-Convert a \code{"\linkS4class{DemographicArray}"} object to a data frame.  The
-data frame can be a "wide" or "long" format.
+Convert a \code{\linkS4class{DemographicArray}} object to a data frame.
 }
 \details{
-If \code{direction} is \code{"wide"}, then \code{object} is flattened into a
-matrix before conversion to a data frame, which is what the method for
-ordinary arrays does.  If \code{direction} is \code{"long"}, then
+If \code{direction} is \code{"long"}, then
 \code{object} is put into "long" format, with a column to represent each
 dimension, plus a final column holding the data.  The final column is called
 \code{"count"} if \code{object} has class \code{\linkS4class{Counts}} and
 \code{"value"} if \code{object} has class \code{\linkS4class{Counts}}.
+
+If \code{direction} is \code{"wide"}, then \code{object} is flattened into a
+matrix before conversion to a data frame, which is what the method for
+ordinary arrays does.
 
 If \code{midpoints} is \code{FALSE}, interval labels are converted into
 factors.  If \code{midpoints} is \code{TRUE}, interval labels are replaced
 by numbers giving their midpoints.  If names of individual dimensions are
 supplied, then only the named dimensions are converted.
 }
+\section{Warning}{
+
+
+By default, the \code{as.data.frame} methods for demographic arrays
+convert the arrays to long format, since this is almost always what
+is wanted. This is different from the \code{\link[base]{as.data.frame}}
+method for ordinary arrays in the \code{base} package, which always
+converts to wide format.
+}
+
 \examples{
 library(demdata)
 popn <- Counts(VAPopn)
 as.data.frame(popn)
-as.data.frame(popn, direction = "long")
+as.data.frame(popn, direction = "wide")
 
 x <- Values(array(1:4,
                   dim = c(2, 2),
                   dimnames = list(age = c("0-39", "40+"),
                       period = c("2001-2010", "2011-2020"))))
-as.data.frame(x, direction = "long")
-as.data.frame(x, direction = "long", midpoints = TRUE)
-as.data.frame(x, direction = "long", midpoints = "period")
+as.data.frame(x)
+as.data.frame(x, midpoints = TRUE)
+as.data.frame(x, midpoints = "period")
 }
 \seealso{
 \code{\link[base]{as.data.frame}},

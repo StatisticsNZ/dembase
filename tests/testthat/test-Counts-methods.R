@@ -418,20 +418,20 @@ test_that("as.data.frame works", {
                                  region = c("a", "b")),
                      count = 1:12)
     x <- Counts(a)
-    expect_identical(as.data.frame(x), as.data.frame(a))
-    expect_identical(as.data.frame(x, midpoints = TRUE), as.data.frame(b))
-    expect_identical(as.data.frame(x, midpoints = "age"), as.data.frame(b))
-    expect_identical(as.data.frame(x, midpoints = 1), as.data.frame(b))
-    expect_identical(as.data.frame(x, direction = "long", midpoints = TRUE), d)
-    expect_identical(as.data.frame(x, direction = "long", midpoints = "age"), d)
+    expect_identical(as.data.frame(x, direction = "wide"), as.data.frame(a))
+    expect_identical(as.data.frame(x, direction = "wide", midpoints = TRUE), as.data.frame(b))
+    expect_identical(as.data.frame(x, direction = "wide", midpoints = "age"), as.data.frame(b))
+    expect_identical(as.data.frame(x, direction = "wide", midpoints = 1), as.data.frame(b))
+    expect_identical(as.data.frame(x, midpoints = TRUE), d)
+    expect_identical(as.data.frame(x, midpoints = "age"), d)
     a <- array(0L,
                dim = c(0, 2),
                dimnames = list(age = NULL,
                sex = c("Male", "Female")))
     x <- Counts(a)
-    expect_identical(as.data.frame(x),
+    expect_identical(as.data.frame(x, direction = "wide"),
                      as.data.frame(a))
-    expect_identical(as.data.frame(x, direction = "long"),
+    expect_identical(as.data.frame(x),
                      as(x, "data.frame"))
     a <- array(1:4,
                dim = c(2, 2),
@@ -444,18 +444,18 @@ test_that("as.data.frame works", {
                     period = c(2002.5, 2002.5, 2007.5, 2007.5),
                     count = 1:4)
     x <- Counts(a)
-    expect_identical(as.data.frame(x), as.data.frame(a))
-    expect_identical(as.data.frame(x, midpoints = "period"), as.data.frame(b))
-    expect_identical(as.data.frame(x, midpoints = "period", direction = "long"), d)
+    expect_identical(as.data.frame(x, direction = "wide"), as.data.frame(a))
+    expect_identical(as.data.frame(x, direction = "wide", midpoints = "period"), as.data.frame(b))
+    expect_identical(as.data.frame(x, midpoints = "period"), d)
     x <- Counts(array(1:6,
                       dim = c(2, 3),
                       dimnames = list(sex = c("f", "m"), quantile = c("0%", "50%", "100%"))))
-    df <- as.data.frame(x, direction = "long")
+    df <- as.data.frame(x)
     expect_identical(levels(df$quantile), c("0%", "50%", "100%"))
     x <- Counts(array(1:6,
                       dim = c(2, 3),
                       dimnames = list(sex = c("f", "m"), quantile = c("0%", "50%", "100%"))))
-    df <- as.data.frame(x, responseName = "Count", direction = "long")
+    df <- as.data.frame(x, responseName = "Count")
     expect_identical(names(df), c("sex", "quantile", "Count"))
 })
 
