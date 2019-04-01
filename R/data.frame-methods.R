@@ -3,7 +3,7 @@
 #' demographic arrays
 #'
 #' \code{dtabs} is a simplified version of function
-#' \code{\link[stats]{xtabs}} designed specifically for
+#' \code{\link[stats]{xtabs}}, designed specifically for
 #' constructing demographic arrays.
 #'
 #' The \code{data} argument comes first, so that \code{dtabs}
@@ -24,6 +24,8 @@
 #'
 #' @param data A data.frame or matrix.
 #' @param formula A formula: see \code{\link{xtabs}} for details.
+#' @param na.rm Logical. Whether to remove \code{NA}s before tabulating.
+#' Defaults to \code{FALSE}.
 #' @param fill The value to use for combinations of
 #' variables that do not occur in \code{data}.
 #'
@@ -49,7 +51,7 @@
 #' dtabs(d_incomplete, count ~ age + sex)
 #' dtabs(d_incomplete, count ~ age + sex, fill = NA)
 #' @export
-dtabs <- function(data, formula, fill = 0L) {
+dtabs <- function(data, formula, na.rm = FALSE, fill = 0L) {
     if (missing(data))
         stop(gettextf("'%s' is missing with no default",
                       "data"))
@@ -64,10 +66,18 @@ dtabs <- function(data, formula, fill = 0L) {
     if (!methods::is(formula, "formula"))
         stop(gettextf("'%s' is not a formula",
                       "formula"))
+    if (!identical(length(is.na), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "is.na", 1L))
+    if (is.na(na.rm))
+        stop(gettextf("'%s' is missing",
+                      "na.rm"))
     if (!identical(length(fill), 1L))
         stop(gettextf("'%s' does not have length %d",
                       "fill", 1L))
-    values <- stats::model.frame(formula = formula, data = data)
+    values <- stats::model.frame(formula = formula,
+                                 data = data,
+                                 na.action = stats::na.pass)
     has.response <- length(formula) > 2L
     if (has.response) {
         terms <- terms(values)
@@ -86,7 +96,7 @@ dtabs <- function(data, formula, fill = 0L) {
     tapply(X = X,
            INDEX = INDEX,
            FUN = sum,
-           na.rm = FALSE,
+           na.rm = na.rm,
            default = fill,
            simplify = TRUE)
 }

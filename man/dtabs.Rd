@@ -5,12 +5,15 @@
 \title{Simplified version of 'xtabs' for constructing
 demographic arrays}
 \usage{
-dtabs(data, formula, fill = 0L)
+dtabs(data, formula, na.rm = FALSE, fill = 0L)
 }
 \arguments{
 \item{data}{A data.frame or matrix.}
 
 \item{formula}{A formula: see \code{\link{xtabs}} for details.}
+
+\item{na.rm}{Logical. Whether to remove \code{NA}s before tabulating.
+Defaults to \code{FALSE}.}
 
 \item{fill}{The value to use for combinations of
 variables that do not occur in \code{data}.}
@@ -20,7 +23,7 @@ An array.
 }
 \description{
 \code{dtabs} is a simplified version of function
-\code{\link[stats]{xtabs}} designed specifically for
+\code{\link[stats]{xtabs}}, designed specifically for
 constructing demographic arrays.
 }
 \details{
