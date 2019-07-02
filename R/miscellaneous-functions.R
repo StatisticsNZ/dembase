@@ -361,7 +361,7 @@ cleanAgeGroup <- function(age) {
     age <- sub("less than 1 year", "0", age)
     age <- sub("under1|under 1", "0", age)
     age <- sub("year|years|yr|yrs", "", age)
-    age <- sub("and over|plus|and above", "+", age)
+    age <- sub("and over|plus|and above|and older", "+", age)
     age <- sub("to|-+|_+", "-", age)
     age <- gsub(" ", "", age)
     age <- gsub("lessthanone", "0", age)
