@@ -2561,7 +2561,17 @@ asDataFrame <- function(object, responseName, stringsAsFactors = TRUE) {
     }
     i.points <- which(sapply(DimScales(object), methods::is,"Points"))
     i.quantiles <- which(sapply(DimScales(object), methods::is,"Quantiles"))
-    coerce.to.numeric <- setdiff(i.points, i.quantiles)
+    is.intervals.single <- function(DS) {
+        if (methods::is(DS, "Intervals")) {
+            dv <- DS@dimvalues
+            (length(dv) > 0L) && (all(diff(dv) == 1L))
+        }
+        else
+            FALSE
+    }
+    i.intervals.single <- which(sapply(DimScales(object), is.intervals.single))
+    coerce.to.numeric <- c(setdiff(i.points, i.quantiles),
+                           i.intervals.single)
     if (stringsAsFactors) {
         quantileToFactor <- function(x) {
             x <- as.numeric(sub("%$", "", x))

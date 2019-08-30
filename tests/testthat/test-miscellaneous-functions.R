@@ -3322,6 +3322,19 @@ test_that("asDataFrame works", {
                                         stringsAsFactors = FALSE)
     ans.expected$age <- as.numeric(ans.expected$age)
     expect_identical(ans.obtained, ans.expected)
+    x <- Counts(array(1:18,
+                      dim = c(2, 3, 3),
+                      dimnames = list(sex = c("f", "m"),
+                                      age = 0:2,
+                                      year = 2000:2002)),
+                dimscales = c(age = "Intervals", year = "Intervals"))
+    ans.obtained <- asDataFrame(x, responseName = "count",
+                                stringsAsFactors = FALSE)
+    ans.expected <- as.data.frame.table(x@.Data, responseName = "count",
+                                        stringsAsFactors = FALSE)
+    ans.expected$age <- as.numeric(ans.expected$age)
+    ans.expected$year <- as.numeric(ans.expected$year)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("intervalsToPoints works", {
