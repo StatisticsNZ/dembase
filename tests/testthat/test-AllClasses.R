@@ -112,14 +112,13 @@ test_that("dimensions have dimscales permitted for dimtypes", {
                     new("Intervals", dimvalues = c(0, 5, 10, Inf)))),
               throws_error(paste("dimension \"region\" has dimtype \"state\"",
                                  "but dimscale \"Intervals\"")))
-  expect_that(validObject(new("MetaData",
+  expect_true(validObject(new("MetaData",
                               nms = c("region", "sex", "iteration"),
                               dimtypes = c("state", "state", "iteration"),
                               DimScales = list(
                                 new("Categories", dimvalues = c("Region 1", "Region 2")),
                                 new("Categories", dimvalues = c("Male", "Female")),
-                                new("Iterations", dimvalues = 1:5)))),
-              is_true())
+                                new("Iterations", dimvalues = 1:5)))))
   expect_that(new("MetaData",
                   nms = c("region", "sex", "iteration"),
                   dimtypes = c("state", "state", "iteration"),
@@ -133,13 +132,12 @@ test_that("dimensions have dimscales permitted for dimtypes", {
 
 
 test_that("origin, destination, parent, and child dimensions work as expected", {
-  expect_that(validObject(new("MetaData",
+  expect_true(validObject(new("MetaData",
                               nms = c("region_orig", "region_dest"),
                               dimtypes = c("origin", "destination"),
                               DimScales = list(
                                 new("Categories", dimvalues = c("reg1", "reg2", "reg3")),
-                                new("Categories", dimvalues = c("reg1", "reg2", "reg3"))))),
-              is_true())
+                                new("Categories", dimvalues = c("reg1", "reg2", "reg3"))))))
   expect_that(new("MetaData",
                   nms = c("region_orig", "region_dest"),
                   dimtypes = c("state", "destination"),
@@ -156,13 +154,12 @@ test_that("origin, destination, parent, and child dimensions work as expected", 
                     new("Categories", dimvalues = c("reg1", "reg2", "reg3")))),
               throws_error(paste("dimension \"region1\" has dimtype \"origin\"",
                                  "but not suffix \"_orig\"")))
-  expect_that(validObject(new("MetaData",
+  expect_true(validObject(new("MetaData",
                               nms = c("ethnicity_parent", "ethnicity_child"),
                               dimtypes = c("parent", "child"),
                               DimScales = list(
                                 new("Categories", dimvalues = c("eth1", "eth2", "eth3")),
-                                new("Categories", dimvalues = c("eth1", "eth2", "eth3"))))),
-              is_true())
+                                new("Categories", dimvalues = c("eth1", "eth2", "eth3"))))))
   expect_that(new("MetaData",
                   nms = c("ethnicity_parent", "ethnicity_wrong"),
                   dimtypes = c("parent", "state"),
@@ -182,20 +179,18 @@ test_that("origin, destination, parent, and child dimensions work as expected", 
 })
 
 test_that("iteration and quantile dimensions work as expected", {
-  expect_that(validObject(new("MetaData",
+  expect_true(validObject(new("MetaData",
                               nms = c("sex", "iteration"),
                               dimtypes = c("state", "iteration"),
                               DimScales = list(
                                 new("Categories", dimvalues = c("Male", "Female")),
-                                new("Iterations", dimvalues = 1:3)))),
-              is_true())
-  expect_that(validObject(new("MetaData",
+                                new("Iterations", dimvalues = 1:3)))))
+  expect_true(validObject(new("MetaData",
                               nms = c("sex", "quantile"),
                               dimtypes = c("state", "quantile"),
                               DimScales = list(
                                 new("Categories", dimvalues = c("Male", "Female")),
-                                new("Quantiles", dimvalues = c(0.025, 0.5, 0.975))))),
-              is_true())
+                                new("Quantiles", dimvalues = c(0.025, 0.5, 0.975))))))
   expect_that(new("MetaData",
                   nms = c("quantile1", "quantile2"),
                   dimtypes = c("quantile", "quantile"),
@@ -254,7 +249,7 @@ test_that("triangle dimension works as expected", {
 })
 
 test_that("validity tests for DemographicArray object work", {
-  expect_that(validObject(new("Counts",
+  expect_true(validObject(new("Counts",
                               array(1:12,
                                     dim = c(2, 2, 3),
                                     dimnames = list(region = c("Region 1", "Region 2"),
@@ -266,8 +261,7 @@ test_that("validity tests for DemographicArray object work", {
                                 DimScales = list(
                                   new("Categories", dimvalues = c("Region 1", "Region 2")),
                                   new("Categories", dimvalues = c("Male", "Female")),
-                                  new("Intervals", dimvalues = c(0, 5, 10, Inf)))))),
-              is_true())
+                                  new("Intervals", dimvalues = c(0, 5, 10, Inf)))))))
   expect_that(new("Counts",
                   array("a",
                         dim = c(2, 2, 3),
@@ -793,20 +787,17 @@ test_that("class Iterations works", {
 ## MISCELLANEOUS ###############################################################
 
 test_that("valid objects of class CollapseTransform pass validity tests", {
-    expect_that(validObject(new("CollapseTransform")),
-                is_true())
-    expect_that(validObject(new("CollapseTransform",
+    expect_true(validObject(new("CollapseTransform")))
+    expect_true(validObject(new("CollapseTransform",
                                 indices = list(1:4, 1:3),
                                 dims = 1:2,
                                 dimBefore = 4:3,
-                                dimAfter = 4:3)),
-                is_true())
-    expect_that(validObject(new("CollapseTransform",
+                                dimAfter = 4:3)))
+    expect_true(validObject(new("CollapseTransform",
                                 indices = list(c(0L, 1L), c(1L, 2L)),
                                 dims = c(2L, 1L),
                                 dimBefore = c(2L, 2L),
-                                dimAfter = c(2:1))),
-                is_true())
+                                dimAfter = c(2:1))))
   })
 
 test_that("invalid objects of class CollapseTransform throw appropriate errors", {

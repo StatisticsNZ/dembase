@@ -2773,8 +2773,7 @@ test_that("getIterationDimvalues works", {
 
 test_that("validDimnames works", {
   validDimnames <- dembase:::validDimnames
-  expect_that(validDimnames(list(age = "0-4", sex = "Male")),
-              is_true())
+  expect_true(validDimnames(list(age = "0-4", sex = "Male")))
   expect_that(validDimnames(NULL),
               is_identical_to("'dimnames' is NULL"))
   expect_that(validDimnames(list(age = "0-4", sex = c("Male", NA))),
@@ -2785,15 +2784,13 @@ test_that("validDimnames works", {
               is_identical_to("element 2 of 'dimnames' has duplicates"))
   expect_that(validDimnames(list(age = "0-4", age = c("Female", "Male"))),
               is_identical_to("'names' has duplicates"))
-  expect_that(validDimnames(list(age = "0-4", age = c("Female", "Male")),
-                            includeNames = FALSE),
-              is_true())
+  expect_true(validDimnames(list(age = "0-4", age = c("Female", "Male")),
+                            includeNames = FALSE))
 })
 
 test_that("validNames works", {
   validNames <- dembase:::validNames
-  expect_that(validNames(c("sex", "age")),
-              is_true())
+  expect_true(validNames(c("sex", "age")))
   expect_that(validNames(NULL),
               is_identical_to("'names' is NULL"))
   expect_that(validNames(c("age", NA)),
@@ -2802,8 +2799,7 @@ test_that("validNames works", {
               is_identical_to("'names' has elements with length 0"))
   expect_that(validNames(c("age", "age")),
               is_identical_to("'names' has duplicates"))
-  expect_that(validNames(character()),
-              is_true())
+  expect_true(validNames(character()))
 })
 
 
@@ -3146,13 +3142,13 @@ test_that("extractNumbersFromStartOfStrings works", {
 
 test_that("stringsAreIntegers works", {
   stringsAreIntegers <- dembase:::stringsAreIntegers
-  expect_that(stringsAreIntegers("1"), is_true())
-  expect_that(stringsAreIntegers("1a"), is_false())
+  expect_true(stringsAreIntegers("1"))
+  expect_false(stringsAreIntegers("1a"))
   expect_that(stringsAreIntegers(c("1", "5")), is_identical_to(c(TRUE, TRUE)))
   expect_that(stringsAreIntegers(c("1", "a")), is_identical_to(c(TRUE, FALSE)))
-  expect_that(stringsAreIntegers("1.0"), is_true())
-  expect_that(stringsAreIntegers("-1"), is_true())
-  expect_that(stringsAreIntegers("Inf"), is_false())
+  expect_true(stringsAreIntegers("1.0"))
+  expect_true(stringsAreIntegers("-1"))
+  expect_false(stringsAreIntegers("Inf"))
   expect_that(stringsAreIntegers(character()), is_identical_to(logical()))
 })
 
@@ -3755,9 +3751,8 @@ test_that("limitsEqual works", {
     e2 <- new("Intervals")
     expect_error(limitsEqual(e1, e2),
                  "one dimension has 2 intervals but other has none")
-    expect_that(limitsEqual(new("Intervals"),
-                            new("Intervals")),
-                is_true())
+    expect_true(limitsEqual(new("Intervals"),
+                            new("Intervals")))
 })
 
 test_that("limitsGreaterOrEqual works", {
