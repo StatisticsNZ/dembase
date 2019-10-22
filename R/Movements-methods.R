@@ -147,9 +147,14 @@ setMethod("summary",
               names.components <- object@namesComponents
               metadata <- metadata(object)
               i.time.popn <- match("time", dimtypes(population))
+              has_iter <- "iteration" %in% dimtypes(population)
               population <- new("Counts",
                                 .Data = population@.Data,
                                 metadata = population@metadata)
+              if (has_iter) {
+                  population <- collapseIterations(population, FUN = mean)
+                  population <- toInteger(population, force = TRUE)
+              }
               population <- collapseDimension(population,
                                               margin = i.time.popn)
               population <- matrix(population@.Data,
@@ -168,6 +173,11 @@ setMethod("summary",
                       sign <- "."
                   else
                       sign <- if (is.pos) "+" else "-"
+                  if (has_iter) {
+                      component <- as(component, "Counts")
+                      component <- collapseIterations(component, FUN = mean)
+                      component <- toInteger(component, force = TRUE)
+                  }
                   component <- collapseDimension(component,
                                                  margin = i.time.comp)
                   if (i == 1L)
