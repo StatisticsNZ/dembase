@@ -4,8 +4,7 @@
 \alias{ageToAgeGroup}
 \title{Convert exact ages to age groups}
 \usage{
-ageToAgeGroup(age, breaks = seq(0, 100, 5), firstOpen = FALSE,
-  lastOpen = TRUE)
+ageToAgeGroup(age, breaks = seq(0, 100, 5), firstOpen = FALSE, lastOpen = TRUE)
 }
 \arguments{
 \item{age}{A vector of exact ages. A numeric vector, or a vector

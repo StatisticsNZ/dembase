@@ -6160,7 +6160,10 @@ makeAxStart <- function(mx) {
 
 ## HAS_TESTS
 tidyConcordanceList <- function(concordances, object) {
-    metadata <- metadata(object)
+    if (methods::is(object, "MetaData"))
+        metadata <- object
+    else
+        metadata <- metadata(object)
     names.obj <- names(metadata)
     n <- length(names.obj)
     ans <- rep(list(NULL), times = n)

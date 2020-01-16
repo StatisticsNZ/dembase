@@ -292,7 +292,7 @@ setMethod("as.data.frame",
 #' @export
 setMethod("canMakeCompatible",
           signature(x = "Counts", y = "DemographicArray"),
-          function(x, y, subset = FALSE, concordances, allowCopyIterDim = TRUE) {
+          function(x, y, subset = FALSE, concordances = list(), allowCopyIterDim = TRUE) {
               doesNotHaveQuantiles(x)
               doesNotHaveQuantiles(y)
               alsoHasIterations(x = x, y = y)
@@ -457,9 +457,12 @@ setMethod("checkAndTidyWeights",
 #' @export
 setMethod("collapse",
           signature(object = "Counts", transform = "CollapseTransform"),
-          function(object, transform) {
-              metadata <- collapse(metadata(object), transform = transform)
-              .Data <- collapse(object@.Data, transform = transform)
+          function(object, transform, concordances = list()) {
+              metadata <- collapse(metadata(object),
+                                   transform = transform,
+                                   concordances = concordances)
+              .Data <- collapse(object@.Data,
+                                transform = transform)
               .Data <- array(.Data,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
@@ -1766,13 +1769,23 @@ setMethod("growth",
 #' @export
 setMethod("makeCompatible",
           signature(x = "Counts", y = "DemographicArray"),
-          function(x, y, subset = FALSE, check = TRUE) {
+          function(x, y, subset = FALSE, concordances = list(), check = TRUE) {
               if (check)
-                  canMakeCompatible(x = x, y = y, subset = subset,
+                  canMakeCompatible(x = x,
+                                    y = y,
+                                    subset = subset,
+                                    concordances = concordances,
                                     allowCopyIterDim = TRUE)
-              x <- copyIterDim(x = x, y = y)
-              transform <- makeTransform(x = x, y = y, subset = subset, check = FALSE)
-              collapse(object = x, transform = transform)
+              x <- copyIterDim(x = x,
+                               y = y)
+              transform <- makeTransform(x = x,
+                                         y = y,
+                                         subset = subset,
+                                         concordances = concordances,
+                                         check = FALSE)
+              collapse(object = x,
+                       transform = transform,
+                       concordances = concordances)
           })
 
 ## HAS_TESTS

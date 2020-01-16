@@ -9,14 +9,17 @@
 \usage{
 datesToAgeGroups(date, dob, step = "1 year", lastOpen = TRUE)
 
-datesToCohorts(dob, step = "years", monthStart = "January",
-  yearStart = 2000)
+datesToCohorts(dob, step = "years", monthStart = "January", yearStart = 2000)
 
-datesToPeriods(date, step = "years", monthStart = "January",
-  yearStart = 2000)
+datesToPeriods(date, step = "years", monthStart = "January", yearStart = 2000)
 
-datesToTriangles(date, dob, step = "years", monthStart = "January",
-  yearStart = 2000)
+datesToTriangles(
+  date,
+  dob,
+  step = "years",
+  monthStart = "January",
+  yearStart = 2000
+)
 }
 \arguments{
 \item{date}{A vector of class \code{\link[base]{Date}}.  All elements of
@@ -61,7 +64,7 @@ Other starting months can be specified via \code{monthStart}.
 See below for examples.
 
 Multi-year periods are assumed to start on years beginning with 0 or 5.
-Other values can be specified via \code{yearStart}.  See below for examples.
+Other values can be specified via \code{yearStart}.  See below for examples. 
 
 These functions handle leap years differently from \code{\link{seq.Date}}.
 Like most people, but unlike \code{\link{seq.Date}}, they treat 29 February

@@ -877,7 +877,7 @@ test_that("canMakePairCompatible works with dimtype Iteration", {
                 "one object has dimension with dimtype \"iteration\" but other does not")
 })
 
-test_that("collapse works", {
+test_that("collapse works - no concordances", {
     collapse <- dembase:::collapse
     x <- Counts(array(1:6,
                       dim = c(3, 2),
@@ -1039,6 +1039,27 @@ test_that("collapse works", {
     expect_identical(collapse(x, transform = transform),
                      y)
 })
+
+test_that("collapse works - with concordances", {
+    collapse <- dembase:::collapse
+    x <- Counts(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(eth = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    y <- Counts(array(c(4L, 11L, 1L, 5L),
+                      dim = c(2, 2),
+                      dimnames = list(eth = c("X", "Y"),
+                                      sex = c("f", "m"))))
+    transform <- new("CollapseTransform",
+                     dims = 1:2,
+                     indices = list(c(1L, 2L, 2L), 2:1),
+                     dimBefore = c(3L, 2L),
+                     dimAfter = c(2L, 2L))
+    concordances <- list(eth = Concordance(data.frame(from = c("c", "b", "a", "d"),
+                                                      to = c("Y", "Y", "X", "Z"))))
+    expect_identical(collapse(x, transform = transform, concordances = concordances), y)
+})
+
 
 test_that("canMakeSharedDimScalesCompatible works", {
     canMakeSharedDimScalesCompatible <- dembase:::canMakeSharedDimScalesCompatible
@@ -2599,6 +2620,17 @@ test_that("makeCompatible works", {
                       sex = c("m", "f"),
                       sim = 1:3)))
     expect_identical(makeCompatible(x, y), y)
+    x <- Counts(array(1:6,
+                      dim = 3:2,
+                      dimnames = list(reg = c("a", "b", "c"),
+                      sex = c("m", "f"))))
+    y <- Counts(array(c(1L, 5L, 4L, 11L),
+                      dim = c(2, 2),
+                      dimnames = list(reg = c("A", "B"),
+                                      sex = c("m", "f"))))
+    conc <- list(reg = Concordance(data.frame(from = c("a", "b", "c"),
+                                              to = c("A", "B", "B"))))
+    expect_identical(makeCompatible(x, y, concordances = conc), y)
 })
 
 

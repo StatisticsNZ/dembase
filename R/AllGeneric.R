@@ -1100,7 +1100,7 @@ setGeneric("codesAmbiguous",
 #' @rdname exported-not-api
 #' @export
 setGeneric("collapse",
-           function(object, transform)
+           function(object, transform, concordances = list())
            standardGeneric("collapse"))
 
 #' Collapse multiple categories into a single category.
@@ -1242,7 +1242,7 @@ setGeneric("collapseDimension",
            standardGeneric("collapseDimension"))
 
 setGeneric("collapseDimScale",
-           function(object, index)
+           function(object, index, concordance = NULL)
            standardGeneric("collapseDimScale"))
 
 #' Collapse intervals.
@@ -2887,7 +2887,7 @@ setGeneric("limits",
 #' @rdname exported-not-api
 #' @export
 setGeneric("makeCompatible",
-           function(x, y, subset = FALSE, check = TRUE)
+           function(x, y, subset = FALSE, concordances = list(), check = TRUE)
            standardGeneric("makeCompatible"))
 
 #' Make a demographic account internally consistent.

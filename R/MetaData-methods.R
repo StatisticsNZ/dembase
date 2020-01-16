@@ -180,7 +180,7 @@ setMethod("pairAligned",
 #' @export
 setMethod("collapse",
           signature(object = "MetaData", transform = "CollapseTransform"),
-          function(object, transform) {
+          function(object, transform, concordances = list()) {
               ## preliminaries
               dim.before <- dim(object)
               if (!identical(dim.before, transform@dimBefore))
@@ -191,6 +191,8 @@ setMethod("collapse",
               DimScales.before <- DimScales(object, use.names = FALSE)
               dims <- transform@dims
               indices <- transform@indices
+              concordances <- tidyConcordanceList(concordances = concordances,
+                                                  object = object)
               cellsAggregated <- function(x) any(duplicated(x[x != 0L]))
               ## if object has quantile dimension, prohibit aggregation of cells
               if ("quantile" %in% dimtypes(object)) {
@@ -212,6 +214,7 @@ setMethod("collapse",
               DimScales.after <- mapply(collapseDimScale,
                                         object = DimScales.before[inverse.dims],
                                         index = indices[inverse.dims],
+                                        concordance = concordances[inverse.dims],
                                         SIMPLIFY = FALSE,
                                         USE.NAMES = FALSE)
               ## first attempt at new dimtypes

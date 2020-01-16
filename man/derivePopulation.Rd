@@ -4,9 +4,17 @@
 \alias{derivePopulation}
 \title{Derive population counts from initial population and components.}
 \usage{
-derivePopulation(initial, births = NULL, internal = NULL,
-  entries = list(), exits = list(), net = list(), movements = TRUE,
-  adjust = FALSE, scale = 0.1)
+derivePopulation(
+  initial,
+  births = NULL,
+  internal = NULL,
+  entries = list(),
+  exits = list(),
+  net = list(),
+  movements = TRUE,
+  adjust = FALSE,
+  scale = 0.1
+)
 }
 \arguments{
 \item{initial}{The starting or jump-off population. An object of

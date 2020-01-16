@@ -117,6 +117,24 @@ setMethod("canMakeDimScalesCompatible",
               TRUE
           })
 
+
+setMethod("collapseDimScale",
+          signature(object = "Categories", index = "integer"),
+          function(object, index, concordance = NULL) {
+              dimvalues <- dimvalues(object)
+              if (!is.null(concordance))
+                  dimvalues <- translate(object = dimvalues,
+                                         concordance = concordance)
+              s <- seq_along(index)
+              i <- match(s, index, nomatch = 0L)
+              dimvalues <- dimvalues[i]
+              if (any(duplicated(dimvalues)))
+                  stop(gettextf("'%s' have duplicates", "dimvalues"))
+              methods::new(class(object),
+                           dimvalues = dimvalues)
+          })
+
+
 ## HAS_TESTS
 setMethod("inferDimvalues",
           signature(DimScale = "Categories", labels = "character"),

@@ -282,8 +282,6 @@ test_that("collapseDimScale works", {
                      new("Categories", dimvalues = c("0", "5-9")))
     expect_identical(collapseDimScale(x, index = 3:1),
                      new("Categories", dimvalues = c("5-9", "1-4", "0")))
-    expect_error(collapseDimScale(x, index = c(2L, 2L, 1L)),
-                 "'index' has duplicates")
     expect_identical(collapseDimScale(x, index = integer()),
                      new("Intervals"))
     x <- new("Intervals", dimvalues = c(-5, 0, 1, 5, 10, 15, Inf))

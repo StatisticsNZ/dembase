@@ -134,7 +134,22 @@ test_that("canMakeDimScalesCompatible works", {
                                             collapse = FALSE, concordance = conc),
                  sprintf("value not found in classification \"from\" : %s",
                          dQuote("d")))
-})    
+})
+
+test_that("collapseDimScale works", {
+    collapseDimScale <- dembase:::collapseDimScale
+    x <- new("Categories", dimvalues = c("a", "b", "c"))
+    y <- new("Categories", dimvalues = c("A", "B"))
+    conc <- Concordance(data.frame(from = c("a", "b", "c"),
+                                   to = c("A", "A", "B")))
+    expect_identical(collapseDimScale(x, index = c(1L, 1L, 2L), concordance = conc), y)
+    expect_identical(collapseDimScale(x, index = integer()), new("Categories"))
+    collapseDimScale <- dembase:::collapseDimScale
+    x <- new("Categories", dimvalues = c("a", "b", "c"))
+    y <- new("Categories", dimvalues = c("b", "a"))
+    expect_identical(collapseDimScale(x, index = c(2L, 1L, 0L)), y)
+})
+
                 
 test_that("labels method for Categories works", {
     labels <- dembase:::labels

@@ -288,20 +288,18 @@ test_that("canMakeDimScalesCompatible method for DimScales works with Triangles"
 
 test_that("collapseDimScale works", {
     collapseDimScale <- dembase:::collapseDimScale
-    x <- new("Categories", dimvalues = c("a", "b", "c"))
-    y <- new("Categories", dimvalues = c("c", "a", "b"))
-    expect_identical(collapseDimScale(x, index = c(2L, 3L, 1L)), y)
-    expect_identical(collapseDimScale(x, index = integer()), new("Categories"))
+    x <- new("Iterations", dimvalues = c(2L, 1L))
+    y <- new("Iterations", dimvalues = c(1L, 2L))
+    expect_identical(collapseDimScale(x, index = c(2L, 1L)), y)
+    expect_identical(collapseDimScale(x, index = integer()), new("Iterations"))
     collapseDimScale <- dembase:::collapseDimScale
     x <- new("Categories", dimvalues = c("a", "b", "c"))
-    y <- new("Categories", dimvalues = c("b", "a"))
-    expect_identical(collapseDimScale(x, index = c(2L, 1L, 0L)), y)
+    y <- new("Categories", dimvalues = c("a", "c"))
+    expect_identical(collapseDimScale(x, index = c(1L, 0L, 3L)), y)
     x <- new("Points", dimvalues = 1:3)
     expect_identical(collapseDimScale(x, index = 1:3), x)
     x <- new("Iterations")
     expect_identical(collapseDimScale(x, index = integer()), x)
-    x <- new("Categories", dimvalues = c("a", "b", "c"))
-    expect_error(collapseDimScale(x, index = c(1L, 1L, 2L)))
 })
 
 test_that("dbindDimScales works", {

@@ -250,7 +250,7 @@ setMethod("canMakeDimScalesCompatible",
 ## length(dimvalues(object)) - 1.
 setMethod("collapseDimScale",
           signature(object = "Intervals", index = "integer"),
-          function(object, index) {
+          function(object, index, concordance = NULL) {
               if (all(index == 0L))
                   return(methods::new("Intervals"))
               i.last.positive <- max(which(index > 0L))

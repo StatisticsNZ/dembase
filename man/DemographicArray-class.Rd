@@ -31,13 +31,13 @@ Classes for representing demographic arrays: esssentially, arrays plus metadata.
  \code{DemographicArray} are added together, the dimensions of the two
  objects are automatically aligned.
 
-Objects of class \code{Counts} hold data about numbers of people or
+  Objects of class \code{Counts} hold data about numbers of people or
   events, while objects of class \code{Values} hold information about
   characteristics or attributes.  Some functions, such as ones that
   aggregate cells, treat objects of class {"Counts"} differently from
   objects of class {"Values"}.
 
-Unlike ordinary arrays, objects of class \code{DemographicArray}
+  Unlike ordinary arrays, objects of class \code{DemographicArray}
    must have a complete set of dimnames, meaning that each dimension
    must be named, and within a dimension the labels must be
    unique.
@@ -146,5 +146,5 @@ collapseDimension(y, dimension = "age", weights = x)
 \seealso{
 \code{\link{Counts}}, \code{\link{Values}}, \code{\link{dimtypes}}
  \code{\link{dimscales}}.  The main new functions for manipulating
-demographic arrays are listed in \code{\link{dembase-package}}.
+demographic arrays are listed in \pkg{dembase}.
 }

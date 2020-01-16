@@ -6,7 +6,6 @@
 %   R/Movements-methods.R, R/Quantiles-methods.R,
 %   R/SummaryDemographic-generator.R, R/SummaryDemographic-methods.R,
 %   R/Values-methods.R
-\docType{methods}
 \name{internal-methods}
 \alias{internal-methods}
 \alias{aperm,Net-method}
@@ -116,8 +115,7 @@
 
 \S4method{[}{DemographicArray,ANY}(x, i, j, ..., drop = TRUE)
 
-\S4method{aperm}{DemographicArray}(a, perm, resize = TRUE,
-  keep.class = TRUE, ...)
+\S4method{aperm}{DemographicArray}(a, perm, resize = TRUE, keep.class = TRUE, ...)
 
 \S4method{as.array}{DemographicArray}(x, ...)
 

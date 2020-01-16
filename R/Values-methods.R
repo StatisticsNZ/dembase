@@ -315,7 +315,7 @@ setMethod("canMakeSharedDimScalesCompatible",
 #' @export
 setMethod("collapse",
           signature(object = "Values", transform = "CollapseTransform"),
-          function(object, transform) {
+          function(object, transform, concordances = list()) {
               dims <- transform@dims
               indices <- transform@indices
               s <- seq_along(dim(object))
@@ -323,8 +323,11 @@ setMethod("collapse",
               if (any(sapply(indices, containsDuplicates)))
                   stop(gettextf("attempt to collapse elements of object with class \"%s\"",
                                 class(object)))
-              metadata <- collapse(metadata(object), transform = transform)
-              .Data <- collapse(object@.Data, transform = transform)
+              metadata <- collapse(metadata(object),
+                                   transform = transform,
+                                   concordances = concordances)
+              .Data <- collapse(object@.Data,
+                                transform = transform)
               .Data <- array(.Data,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))
@@ -956,12 +959,20 @@ setMethod("growth",
 #' @export
 setMethod("makeCompatible",
           signature(x = "Values", y = "DemographicArray"),
-          function(x, y, subset = FALSE, check = TRUE) {
+          function(x, y, subset = FALSE, concordances = list(), check = TRUE) {
               if (check)
-                  canMakeCompatible(x = x, y = y, subset = subset)
+                  canMakeCompatible(x = x,
+                                    y = y,
+                                    concordances = concordances,
+                                    subset = subset)
               metadata <- metadata(y)
-              transform <- makeTransform(x = x, y = y, subset = subset, check = FALSE)
-              .Data <- extend(x@.Data, transform = transform)
+              transform <- makeTransform(x = x,
+                                         y = y,
+                                         subset = subset,
+                                         concordances = concordances,
+                                         check = FALSE)
+              .Data <- extend(x@.Data,
+                              transform = transform)
               .Data <- array(.Data,
                              dim = dim(metadata),
                              dimnames = dimnames(metadata))

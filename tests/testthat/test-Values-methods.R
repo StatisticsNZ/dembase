@@ -756,7 +756,7 @@ test_that("canMakeSharedDimScalesCompatible works", {
                                                  concordances = concordances))
 })
 
-test_that("collapse works", {
+test_that("collapse works - no concordances", {
     collapse <- dembase:::collapse
     x <- Values(array(0,
                       dim = c(3, 2),
@@ -777,6 +777,35 @@ test_that("collapse works", {
                      dimBefore = c(3L, 2L),
                      dimAfter = 3L)
     expect_error(collapse(x, transform = transform),
+                 "attempt to collapse elements of object with class \"Values\"")
+})
+
+test_that("collapse works - no concordances", {
+    collapse <- dembase:::collapse
+    x <- Values(array(0,
+                      dim = c(3, 2),
+                      dimnames = list(reg = c("a", "b", "c"),
+                                      sex = c("m", "f"))))
+    y <- Values(array(0,
+                      dim = c(2, 2),
+                      dimnames = list(reg = c("A", "B"),
+                                      sex = c("m", "f"))))
+    transform <- new("CollapseTransform",
+                     dims = 1:2,
+                     indices = list(c(1:2, 0L), 1:2),
+                     dimBefore = c(3L, 2L),
+                     dimAfter = c(2L, 2L))
+    concordances <- list(reg = Concordance(data.frame(from = c("a", "b", "c"),
+                                                      to = c("A", "B", "B"))))
+    expect_identical(collapse(x, transform = transform, concordances = concordances)
+                    ,
+                     y)
+    transform <- new("CollapseTransform",
+                     dims = c(1L, 0L),
+                     indices = list(1:3, c(1L, 1L)),
+                     dimBefore = c(3L, 2L),
+                     dimAfter = 3L)
+    expect_error(collapse(x, transform = transform, concordances = concordances),
                  "attempt to collapse elements of object with class \"Values\"")
 })
 

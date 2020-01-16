@@ -126,7 +126,7 @@ setMethod("canMakeDimScalesCompatible",
 ## (which are accepted by "Intervals" method)
 setMethod("collapseDimScale",
           signature(object = "DimScale", index = "integer"),
-          function(object, index) {
+          function(object, index, concordance = NULL) {
               if (any(duplicated(index[index != 0L])))
                   stop(gettextf("'%s' has duplicates", "index"))
               index <- match(seq_along(index), index, nomatch = 0L)

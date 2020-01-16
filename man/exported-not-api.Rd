@@ -72,10 +72,15 @@ DimScales(object, use.names = TRUE)
 
 DimScales(object) <- value
 
-canMakeCompatible(x, y, subset = FALSE, concordances = list(),
-  allowCopyIterDim = TRUE)
+canMakeCompatible(
+  x,
+  y,
+  subset = FALSE,
+  concordances = list(),
+  allowCopyIterDim = TRUE
+)
 
-collapse(object, transform)
+collapse(object, transform, concordances = list())
 
 extend(object, transform)
 
@@ -83,10 +88,9 @@ incrementDimScale(object, n)
 
 isPositiveIncrement(object)
 
-makeCompatible(x, y, subset = FALSE, check = TRUE)
+makeCompatible(x, y, subset = FALSE, concordances = list(), check = TRUE)
 
-makeTransform(x, y, subset = FALSE, concordances = list(),
-  check = TRUE)
+makeTransform(x, y, subset = FALSE, concordances = list(), check = TRUE)
 
 stepLengths(object)
 
@@ -100,19 +104,21 @@ stepLengths(object)
 
 \S4method{isPositiveIncrement}{NetMovements}(object)
 
-\S4method{canMakeCompatible}{Counts,DemographicArray}(x, y,
-  subset = FALSE, concordances = list(), allowCopyIterDim = TRUE)
+\S4method{canMakeCompatible}{Counts,DemographicArray}(
+  x,
+  y,
+  subset = FALSE,
+  concordances = list(),
+  allowCopyIterDim = TRUE
+)
 
-\S4method{collapse}{Counts,CollapseTransform}(object, transform)
+\S4method{collapse}{Counts,CollapseTransform}(object, transform, concordances = list())
 
-\S4method{makeCompatible}{Counts,DemographicArray}(x, y, subset = FALSE,
-  check = TRUE)
+\S4method{makeCompatible}{Counts,DemographicArray}(x, y, subset = FALSE, concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{Counts,DemographicArray}(x, y, subset = FALSE,
-  concordances = list(), check = TRUE)
+\S4method{makeTransform}{Counts,DemographicArray}(x, y, subset = FALSE, concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{Counts,numeric}(x, y, subset = FALSE,
-  check = TRUE)
+\S4method{makeTransform}{Counts,numeric}(x, y, subset = FALSE, check = TRUE)
 
 \S4method{DimScales}{DemographicAccount}(object, use.names = TRUE)
 
@@ -128,7 +134,7 @@ stepLengths(object)
 
 \S4method{stepLengths}{Intervals}(object)
 
-\S4method{collapse}{MetaData,CollapseTransform}(object, transform)
+\S4method{collapse}{MetaData,CollapseTransform}(object, transform, concordances = list())
 
 \S4method{DimScales}{MetaData}(object, use.names = TRUE)
 
@@ -138,26 +144,26 @@ stepLengths(object)
 
 \S4method{stepLengths}{Quantiles}(object)
 
-\S4method{canMakeCompatible}{Values,DemographicArray}(x, y,
-  subset = FALSE, concordances)
+\S4method{canMakeCompatible}{Values,DemographicArray}(x, y, subset = FALSE, concordances)
 
-\S4method{collapse}{Values,CollapseTransform}(object, transform)
+\S4method{collapse}{Values,CollapseTransform}(object, transform, concordances = list())
 
-\S4method{makeCompatible}{Values,DemographicArray}(x, y, subset = FALSE,
-  check = TRUE)
+\S4method{makeCompatible}{Values,DemographicArray}(x, y, subset = FALSE, concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{Values,DemographicArray}(x, y, subset = FALSE,
-  concordances = list(), check = TRUE)
+\S4method{makeTransform}{Values,DemographicArray}(x, y, subset = FALSE, concordances = list(), check = TRUE)
 
-\S4method{makeTransform}{numeric,Values}(x, y, subset = FALSE,
-  check = TRUE)
+\S4method{makeTransform}{numeric,Values}(x, y, subset = FALSE, check = TRUE)
 
 \S4method{collapse}{array,CollapseTransform}(object, transform)
 
 \S4method{extend}{array,ExtendTransform}(object, transform)
 
-checkAndTidyAlong(along, metadata, numericDimScales,
-  checkNumericDimscales = TRUE)
+checkAndTidyAlong(
+  along,
+  metadata,
+  numericDimScales,
+  checkNumericDimscales = TRUE
+)
 
 iFemale(DimScale)
 
@@ -173,8 +179,14 @@ getIShared(i, transform, useC = FALSE)
 
 makeMetaDataSubarraysBefore(metadata, transform)
 
-checkAge(object, minAges = 2L, regular = FALSE, openLeftOK = FALSE,
-  openRightOK = FALSE, expectedDimscale = "Intervals")
+checkAge(
+  object,
+  minAges = 2L,
+  regular = FALSE,
+  openLeftOK = FALSE,
+  openRightOK = FALSE,
+  expectedDimscale = "Intervals"
+)
 
 inferDimScale(dimtype, dimscale = NULL, labels, name)
 

@@ -296,7 +296,7 @@ setClassUnion("MetaDataOrNULL",
 #'
 #' @seealso   \code{\link{Counts}}, \code{\link{Values}}, \code{\link{dimtypes}}
 #'  \code{\link{dimscales}}.  The main new functions for manipulating
-#' demographic arrays are listed in \code{\link{dembase-package}}.
+#' demographic arrays are listed in \pkg{dembase}.
 #'
 #' @examples
 #' a <- array(stats::rpois(n = 6, lambda = 10),

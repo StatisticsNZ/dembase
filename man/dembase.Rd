@@ -3,7 +3,6 @@
 \docType{package}
 \name{dembase}
 \alias{dembase}
-\alias{dembase-package}
 \title{Analysing cross-classified data about populations}
 \description{
 General-purpose tools for demographic analysis, broadly defined.
