@@ -865,18 +865,18 @@ test_that("collapseCategories method for Values works with concordance", {
     x <- Counts(array(1:6,
                       dim = 3:2,
                       dimnames = list(reg = c("a", "b", "c"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     y <- Counts(array(c(4L, 2L, 10L, 5L),
                       dim = c(2, 2),
                       dimnames = list(reg = c("d", "b"),
-                          sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     w <- Counts(array(6:1,
                       dim = 3:2,
                       dimnames = list(reg = c("a", "b", "c"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     vals <- x / w
     conc <- Concordance(data.frame(c1 = c("a", "b", "c"),
-                                    c2 = c("d", "b", "d")))
+                                   c2 = c("d", "b", "d")))
     w.col <- collapseCategories(w, dim = "reg", concordance = conc)
     expect_identical(collapseCategories(vals, dimension = "reg",
                                         concordance = conc,
@@ -885,15 +885,15 @@ test_that("collapseCategories method for Values works with concordance", {
     x <- Values(array(1:6,
                       dim = 3:2,
                       dimnames = list(reg = c("a", "b", "c"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     y <- Values(array(1:6,
                       dim = 3:2,
                       dimnames = list(reg = c("A", "B", "C"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     w <- Counts(array(6:1,
                       dim = 3:2,
                       dimnames = list(reg = c("a", "b", "c"),
-                      sex = c("m", "f"))))
+                                      sex = c("m", "f"))))
     conc <- Concordance(data.frame(c1 = c("a", "b", "c"),
                                    c2 = c("A", "B", "C")))
     expect_identical(collapseCategories(x,
@@ -911,13 +911,13 @@ test_that("collapseCategories method for Values works with concordance", {
     x <- Values(array(c(Inf, 2, 3, 4, 5, 6, 7, 8, 9),
                       dim = c(3, 3),
                       dimnames = list(eth_parent = c("a", "b", "c"),
-                      eth_child = c("a", "b", "c"))))
+                                      eth_child = c("a", "b", "c"))))
     y <- Values(array(c(Inf, 2.5, 5.5, 7),
                       dim = c(2, 2),
                       dimnames = list(eth_parent = c("a", "d"),
-                      eth_child = c("a", "d"))))
+                                      eth_child = c("a", "d"))))
     conc <- Concordance(data.frame(c1 = c("a", "b", "c"),
-                                    c2 = c("a", "d", "d")))
+                                   c2 = c("a", "d", "d")))
     expect_identical(collapseCategories(x, dimension = "eth",
                                         concordance = conc,
                                         weights = 1),
@@ -925,33 +925,55 @@ test_that("collapseCategories method for Values works with concordance", {
     x <- Counts(array(c(NA, 2, 3, 4, 5, 6, 7, 8, 9),
                       dim = c(3, 3),
                       dimnames = list(reg1 = c("a", "b", "c"),
-                          reg2 = c("a", "b", "c"))))
+                                      reg2 = c("a", "b", "c"))))
     w <- Counts(array(1:3,
                       dim = 3,
                       dimnames = list(reg1 = c("a", "b", "c"))))
     w.expand <- Counts(array(1:3,
                              dim = c(3, 3),
                              dimnames = list(reg1 = c("a", "b", "c"),
-                                 reg2 = c("a", "b", "c"))))
+                                             reg2 = c("a", "b", "c"))))
     vals <- x / w.expand
     conc <- Concordance(data.frame(c1 = c("a", "b", "c"),
-                                    c2 = c("d", "b", "d")))
+                                   c2 = c("d", "b", "d")))
     y <- collapseCategories(x, conc = conc) /
         collapseCategories(w.expand, conc = conc)
     expect_identical(collapseCategories(vals, conc = conc,
                                         weights = w),
                      y)
     vals <- Values(array(c(NA, 2, 3, 4, 5, 6, 7, 8, 9),
-                      dim = c(3, 3),
-                      dimnames = list(reg1 = c("a", "b", "wrong"),
-                          reg2 = c("a", "b", "c"))))
+                         dim = c(3, 3),
+                         dimnames = list(reg1 = c("a", "b", "wrong"),
+                                         reg2 = c("a", "b", "c"))))
     w <- Counts(array(1:3,
                       dim = 3,
                       dimnames = list(reg1 = c("a", "b", "wrong"))))
     conc <- Concordance(data.frame(c1 = c("a", "b", "c"),
-                                    c2 = c("d", "b", "d")))    
+                                   c2 = c("d", "b", "d")))    
     expect_error(collapseCategories(vals, conc = conc, weights = w),
                  "cannot collapse categories for dimension \"reg1\" : value \"wrong\" not found in classification 'c1'")
+    x <- Values(array(10L,
+                      dim = c(2, 4),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+")))))
+    y <- Values(array(10L,
+                      dim = c(2, 4),
+                      dimnames = c(list(sex = c("F", "M"),
+                                        age = c("0-19", "20-39", "40-59", "60+")))))
+    concordance <- Concordance(data.frame(from = c("F", "M", "Female", "Male"),
+                                          to = c("F", "M", "F", "M")))
+    expect_equal(collapseCategories(x,
+                                    dimension = "sex",
+                                    concordance = concordance,
+                                    weights = 1),
+                 y)
+    concordance <- Concordance(data.frame(from = c("0-19", "20-39", "40-59", "60+"),
+                                          to = c("0", "1", "2", "3")))
+    expect_error(collapseCategories(x,
+                                    dimension = "age",
+                                    concordance = concordance,
+                                    weights = 1),
+                 "dimension \"age\" has dimscale \"Intervals\"")
 })
 
 test_that("collapseDimension works when weights supplied", {

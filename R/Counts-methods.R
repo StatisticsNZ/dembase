@@ -602,6 +602,9 @@ setMethod("collapseCategories",
               dims <- seq_along(dim.obj)
               indices <- lapply(dim.obj, seq_len)
               for (i in dimension) {
+                  if (!methods::is(DimScales[[i]], "Categories"))
+                      stop(gettextf("dimension \"%s\" has dimscale \"%s\"",
+                                    names[i], class(DimScales[[i]])))
                   dv.obj <- dimvalues(DimScales[[i]])
                   i.from <- match(dv.obj, codes.from, nomatch = 0L)
                   found.in.from <- i.from > 0L
@@ -613,7 +616,7 @@ setMethod("collapseCategories",
                   dv.obj.translated <- codes.to[i.from]
                   dv.ans <- unique(dv.obj.translated)
                   ind.ans <- match(dv.obj.translated, dv.ans)
-                  DimScales[[i]] <- methods::new("Categories", dimvalues = dv.ans)
+                  DimScales[[i]] <- methods::new(class(DimScales[[i]]), dimvalues = dv.ans)
                   indices[[i]] <- ind.ans
               }
               metadata.ans <- methods::new("MetaData",
