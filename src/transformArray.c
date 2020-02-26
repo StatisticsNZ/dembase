@@ -317,7 +317,7 @@ get_transformed_index_R(SEXP x_R, SEXP transform)
 
 /* This function finds the set of indices in the original array that
  * affect an index in the transformed array. This calculation is based
- * on a transform of type CollapseTransform.
+p * on a transform of type CollapseTransform.
  *
  * The provided index is a single int vector.
  *
