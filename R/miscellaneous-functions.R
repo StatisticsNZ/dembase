@@ -4982,19 +4982,27 @@ combineDimvaluesForPoints <- function(e1, e2, along) {
 dbind <- function(..., args = list(), along) {
     ## Construction of names is based on idea from
     ## Venables & Ripley. 2000. S Programming. p46
-    dots.subs <- as.list(substitute(list(...)))[-1L]
-    args.subs <- as.list(substitute(args))[-1L]
-    dots.args.subs <- c(dots.subs, args.subs)
-    names <- names(dots.args.subs)
-    if (is.null(names))
-        i.missing <- seq_along(dots.args.subs)
+    dots <- as.list(substitute(list(...)))[-1L]
+    names.dots <- names(dots)
+    if (is.null(names.dots))
+        i.missing.dots <- seq_along(dots)
     else
-        i.missing <- which(names == "")
-    if (length(i.missing) > 0L) {
-        derived.names <- sapply(dots.args.subs[i.missing],
-                                function(x) deparse(x)[[1L]])
-        names[i.missing] <- derived.names
+        i.missing.dots <- which(names.dots == "")
+    if (length(i.missing.dots) > 0L) {
+        derived.names.dots <- sapply(dots[i.missing.dots],
+                                     function(x) deparse(x)[[1L]])
+        names.dots[i.missing.dots] <- derived.names.dots
     }
+    names.args <- names(args)
+    if (is.null(names.args))
+        i.missing.args <- seq_along(args)
+    else
+        i.missing.args <- which(names.args == "")
+    if (length(i.missing.args) > 0L) {
+        derived.names.args <- paste0("X", seq_along(i.missing.args))
+        names.args[i.missing.args] <- derived.names.args
+    }
+    names <- make.unique(c(names.dots, names.args))
     objects <- c(list(...), args)
     not.demographic <- !sapply(objects, methods::is,"DemographicArray")
     if (any(not.demographic)) {

@@ -4020,6 +4020,32 @@ test_that("dbind works", {
                         dimnames = list(period = c("2001-2010", "2011-2015"),
                             reg = c("a", "b", "y"))))
     expect_identical(dbind(x, y, along = "reg"), ans)
+    x <- Counts(array(1:6,
+                      dim = c(3, 2),
+                      dimnames = list(period = c("2001-2005", "2006-2010",
+                                          "2011-2015"),
+                          reg = c("a", "b"))))
+    y <- Counts(array(1:4,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("m", "f"), period = c("2001-2010",
+                                                             "2011-2015"))))
+    ans <- Counts(array(c(3L, 3L, 9L, 6L, 3L, 7L),
+                        dim = c(2, 3),
+                        dimnames = list(period = c("2001-2010", "2011-2015"),
+                            reg = c("a", "b", "X2"))))
+    expect_identical(dbind(args = list(x, y), along = "reg"), ans)
+    x <- Counts(array(0L,
+                      dim = 3,
+                      dimnames = list(period = c("2001-2005", "2006-2010",
+                                          "2011-2015"))))
+    y <- Counts(array(0L,
+                      dim = c(2, 2),
+                      dimnames = list(sex = c("m", "f"), period = c("2001-2010",
+                                                             "2011-2015"))))
+    ans <- Counts(array(0L,
+                        dim = c(2, 2),
+                        dimnames = list(period = c("2001-2010", "2011-2015"),
+                            reg = c("X1", "X2"))))
     expect_identical(dbind(args = list(x, y), along = "reg"), ans)
     x <- Counts(array(1:6,
                       dim = c(3, 2),
