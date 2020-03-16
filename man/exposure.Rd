@@ -5,9 +5,9 @@
 \alias{exposure,Counts-method}
 \title{Calculate exposure from population counts.}
 \usage{
-exposure(object, triangles = FALSE)
+exposure(object, triangles = FALSE, openTriangles = c("weighted", "standard"))
 
-\S4method{exposure}{Counts}(object, triangles = FALSE)
+\S4method{exposure}{Counts}(object, triangles = FALSE, openTriangles = c("weighted", "standard"))
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{Counts}}.}
@@ -15,6 +15,8 @@ exposure(object, triangles = FALSE)
 \item{triangles}{Logical.  If \code{TRUE}, the return value
 includes a dimension with \code{\link{dimtype}} code{"triangle"}.
 Defaults to \code{FALSE}.}
+
+\item{openTriangles}{\code{"weighted"} (the default) or \code{"standard"}.}
 }
 \value{
 An object of class \code{\linkS4class{Counts}}.
@@ -39,6 +41,16 @@ If \code{triangles} is \code{TRUE}, then exposure is calculated
 separately for lower and upper Lexis triangles.  \code{triangles}
 can only by \code{TRUE} if  \code{object} has dimensions with
 \code{\link{dimtype}} \code{"time"} and \code{"age"}.
+
+Argument \code{openTriangles} governs the way that the exposures
+for the final age group are calculated when the final age group is
+open (ie has no upper age limit) and \code{triangles} is \code{TRUE}.
+The \emph{sum} of the exposures for the upper and lower triangles is unaffected.
+When \code{openTriangles} is \code{"weighted"}, exposure for the upper triangle
+is twice as large as exposure for the lower triangle (reflecting the
+fact that the upper triangle includes multiple cohorts).
+When \code{openTriangles} is \code{"standard"}
+exposure is calculated the same way as it is for other age groups.
 }
 \examples{
 ## prepare data
@@ -54,6 +66,10 @@ exposure(popn)
 ## with triangles
 exposure(popn, triangles = TRUE)
 
+## with triangles, openTriangles is "standard"
+exposure(popn, triangles = TRUE, openTriangles = "standard")
+
+
 ## cohort
 popn <- Counts(array(4:1,
                      dim = c(1, 4),
@@ -64,5 +80,5 @@ exposure(popn)
 \seealso{
 To calculate exposure for births, see \code{\link{exposureBirths}}
 To calculate exposure for origin-destination or parent-child
-arrays, see \code{\link{addPair}}.
+arrays, see \code{\link{addPair}}
 }

@@ -5041,7 +5041,7 @@ test_that("exposureNoTriangles works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("exposureWithTriangles works", {
+test_that("exposureWithTriangles works - openTriangles is 'weighted'", {
     exposureWithTriangles <- dembase:::exposureWithTriangles
     exposureNoTriangles <- dembase:::exposureNoTriangles
     ## time is last dimension
@@ -5051,15 +5051,41 @@ test_that("exposureWithTriangles works", {
                                    age = c("0-4", "5-9", "10-14", "15-19",
                                        "20-24", "25-29", "30+"),
                                    time = c("2000", "2005", "2010"))))
-    ans.obtained <- exposureWithTriangles(population)
+    ans.obtained <- exposureWithTriangles(population, openTriangles = "weighted")
     lower <- 2.5 * population@.Data[,,2:3]
     upper <- 2.5 * population@.Data[,,1:2]
+    total <- lower[,7,] + upper[,7,]
+    lower[,7,] <- (1/3) * total
+    upper[,7,] <- (2/3) * total
     ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
                                  dim = c(2, 7, 2, 2),
                                  dimnames = list(reg = c("a", "b"),
                                      age = c("0-4", "5-9", "10-14", "15-19",
                                          "20-24", "25-29", "30+"),
                                      time = c("2001-2005", "2006-2010"),
+                                     triangle = c("Lower", "Upper"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
+                 exposureNoTriangles(population))
+    ## time is second dimension, last age group is open
+    population <- Counts(array(1:42,
+                               dim = c(2, 3, 7),
+                               dimnames = list(reg = c("a", "b"),
+                                   time = c("2000", "2005", "2010"),
+                                   age = c("0-4", "5-9", "10-14", "15-19",
+                                       "20-24", "25-29", "30+"))))
+    ans.obtained <- exposureWithTriangles(population, openTriangles = "weighted")
+    lower <- 2.5 * population@.Data[,2:3,]
+    upper <- 2.5 * population@.Data[,1:2,]
+    total <- lower[,,7] + upper[,,7]
+    lower[,,7] <- (1/3) * total
+    upper[,,7] <- (2/3) * total
+    ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
+                                 dim = c(2, 2, 7, 2),
+                                 dimnames = list(reg = c("a", "b"),
+                                     time = c("2001-2005", "2006-2010"),
+                                     age = c("0-4", "5-9", "10-14", "15-19",
+                                         "20-24", "25-29", "30+"),
                                      triangle = c("Lower", "Upper"))))
     expect_identical(ans.obtained, ans.expected)
     expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
@@ -5071,7 +5097,7 @@ test_that("exposureWithTriangles works", {
                                    time = c("2000", "2005", "2010"),
                                    age = c("0-4", "5-9", "10-14", "15-19",
                                        "20-24", "25-29", "30-34"))))
-    ans.obtained <- exposureWithTriangles(population)
+    ans.obtained <- exposureWithTriangles(population, openTriangles = "weighted")
     lower <- 2.5 * population@.Data[,2:3,]
     upper <- 2.5 * population@.Data[,1:2,]
     ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
@@ -5085,6 +5111,73 @@ test_that("exposureWithTriangles works", {
     expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
                      exposureNoTriangles(population))
 })
+
+
+test_that("exposureWithTriangles works - openTriangles is 'standard'", {
+    exposureWithTriangles <- dembase:::exposureWithTriangles
+    exposureNoTriangles <- dembase:::exposureNoTriangles
+    ## time is last dimension
+    population <- Counts(array(1:42,
+                               dim = c(2, 7, 3),
+                               dimnames = list(reg = c("a", "b"),
+                                   age = c("0-4", "5-9", "10-14", "15-19",
+                                       "20-24", "25-29", "30+"),
+                                   time = c("2000", "2005", "2010"))))
+    ans.obtained <- exposureWithTriangles(population, openTriangles = "standard")
+    lower <- 2.5 * population@.Data[,,2:3]
+    upper <- 2.5 * population@.Data[,,1:2]
+    ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
+                                 dim = c(2, 7, 2, 2),
+                                 dimnames = list(reg = c("a", "b"),
+                                     age = c("0-4", "5-9", "10-14", "15-19",
+                                         "20-24", "25-29", "30+"),
+                                     time = c("2001-2005", "2006-2010"),
+                                     triangle = c("Lower", "Upper"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
+                 exposureNoTriangles(population))    
+    ## time is second dimension, last age group is open
+    population <- Counts(array(1:42,
+                               dim = c(2, 3, 7),
+                               dimnames = list(reg = c("a", "b"),
+                                   time = c("2000", "2005", "2010"),
+                                   age = c("0-4", "5-9", "10-14", "15-19",
+                                       "20-24", "25-29", "30+"))))
+    ans.obtained <- exposureWithTriangles(population, openTriangles = "standard")
+    lower <- 2.5 * population@.Data[,2:3,]
+    upper <- 2.5 * population@.Data[,1:2,]
+    ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
+                                 dim = c(2, 2, 7, 2),
+                                 dimnames = list(reg = c("a", "b"),
+                                     time = c("2001-2005", "2006-2010"),
+                                     age = c("0-4", "5-9", "10-14", "15-19",
+                                         "20-24", "25-29", "30+"),
+                                     triangle = c("Lower", "Upper"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
+                     exposureNoTriangles(population))
+    ## time is second dimension, last age group is closed
+    population <- Counts(array(1:42,
+                               dim = c(2, 3, 7),
+                               dimnames = list(reg = c("a", "b"),
+                                   time = c("2000", "2005", "2010"),
+                                   age = c("0-4", "5-9", "10-14", "15-19",
+                                       "20-24", "25-29", "30-34"))))
+    ans.obtained <- exposureWithTriangles(population, openTriangles = "standard")
+    lower <- 2.5 * population@.Data[,2:3,]
+    upper <- 2.5 * population@.Data[,1:2,]
+    ans.expected <- Counts(array(c(as.numeric(lower), as.numeric(upper)),
+                                 dim = c(2, 2, 7, 2),
+                                 dimnames = list(reg = c("a", "b"),
+                                     time = c("2001-2005", "2006-2010"),
+                                     age = c("0-4", "5-9", "10-14", "15-19",
+                                         "20-24", "25-29", "30-34"),
+                                     triangle = c("Lower", "Upper"))))
+    expect_identical(ans.obtained, ans.expected)
+    expect_equal(collapseDimension(ans.obtained, dimension = "triangle"),
+                     exposureNoTriangles(population))
+})
+
 
 test_that("getDimScaleTimePopn works", {
     getDimScaleTimePopn <- dembase:::getDimScaleTimePopn

@@ -2127,7 +2127,22 @@ test_that("exposure works when 'triangles' is TRUE", {
                       dimnames = list(time = c(2000, 2005, 2010),
                           sex = c("f", "m"),
                           age = c("0-4", "5-9", "10-14", "15+"))))
+    ## openTriangles is "weighted"
     ans.obtained <- exposure(x, triangles = TRUE)
+    lower <- 2.5 * x@.Data[2:3,,]
+    upper <- 2.5 * x@.Data[1:2,,]
+    total <- lower[,,4] + upper[,,4]
+    lower[,,4] <- (1/3) * total
+    upper[,,4] <- (2/3) * total
+    ans.expected <- Counts(array(c(lower, upper),
+                                 dim = c(2, 2, 4, 2),
+                                 dimnames = list(time = c("2001-2005", "2006-2010"),
+                                     sex = c("f", "m"),
+                                     age = c("0-4", "5-9", "10-14", "15+"),
+                                     triangle = c("Lower", "Upper"))))
+    expect_identical(ans.obtained, ans.expected)
+    ## openTriangles is "standard"
+    ans.obtained <- exposure(x, triangles = TRUE, openTriangles = "standard")
     lower <- 2.5 * x@.Data[2:3,,]
     upper <- 2.5 * x@.Data[1:2,,]
     ans.expected <- Counts(array(c(lower, upper),

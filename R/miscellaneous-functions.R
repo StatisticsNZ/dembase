@@ -4065,7 +4065,7 @@ exposureNoTriangles <- function(object) {
 }
 
 ## HAS_TESTS
-exposureWithTriangles <- function(object) {
+exposureWithTriangles <- function(object, openTriangles) {
     .Data <- object@.Data
     dim <- dim(object)
     dimtypes <- dimtypes(object, use.names = FALSE)
@@ -4077,13 +4077,20 @@ exposureWithTriangles <- function(object) {
     n.age <- dim[i.age]
     DimScale.age <- DimScales[[i.age]]
     dimvalues.age <- dimvalues(DimScale.age)
-    last.age.open <- is.infinite(dimvalues.age[n.age + 1L])
     index.time <- slice.index(.Data, MARGIN = i.time)
     popn.start <- .Data[index.time < n.time]
     popn.end <- .Data[index.time > 1L]
     dim.lower.upper <- replace(dim, list = i.time, values = n.time - 1L)
     lower <- array(0.5 * time.step * popn.end, dim = dim.lower.upper)
     upper <- array(0.5 * time.step * popn.start, dim = dim.lower.upper)
+    last.age.open <- is.infinite(dimvalues.age[n.age + 1L])
+    weighted <- identical(openTriangles, "weighted")
+    if (last.age.open && weighted) {
+        is.open <- slice.index(x = lower, MARGIN = i.age) == n.age
+        total <- lower[is.open] + upper[is.open]
+        lower[is.open] <- (1/3) * total
+        upper[is.open] <- (2/3) * total
+    }
     metadata <- makeMetadataForExposure(population = object, triangles = TRUE)
     .Data <- c(lower, upper)
     .Data <- array(.Data,

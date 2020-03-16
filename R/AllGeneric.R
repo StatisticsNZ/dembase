@@ -2087,17 +2087,28 @@ setGeneric("e1IsFirstDimScale",
 #' can only by \code{TRUE} if  \code{object} has dimensions with
 #' \code{\link{dimtype}} \code{"time"} and \code{"age"}.
 #'
+#' Argument \code{openTriangles} governs the way that the exposures
+#' for the final age group are calculated when the final age group is
+#' open (ie has no upper age limit) and \code{triangles} is \code{TRUE}.
+#' The \emph{sum} of the exposures for the upper and lower triangles is unaffected.
+#' When \code{openTriangles} is \code{"weighted"}, exposure for the upper triangle
+#' is twice as large as exposure for the lower triangle (reflecting the
+#' fact that the upper triangle includes multiple cohorts).
+#' When \code{openTriangles} is \code{"standard"}
+#' exposure is calculated the same way as it is for other age groups.
+#'
 #' @param object An object of class \code{\linkS4class{Counts}}.
 #' @param triangles  Logical.  If \code{TRUE}, the return value
 #' includes a dimension with \code{\link{dimtype}} code{"triangle"}.
 #' Defaults to \code{FALSE}.
+#' @param openTriangles \code{"weighted"} (the default) or \code{"standard"}.
 #'
 #' @return An object of class \code{\linkS4class{Counts}}.
 #'
 #' @seealso To calculate exposure for births, see \code{\link{exposureBirths}}
 #' To calculate exposure for origin-destination or parent-child
-#' arrays, see \code{\link{addPair}}.
-#'
+#' arrays, see \code{\link{addPair}}
+#' 
 #' @examples
 #' ## prepare data
 #' library(demdata)
@@ -2112,6 +2123,10 @@ setGeneric("e1IsFirstDimScale",
 #' ## with triangles
 #' exposure(popn, triangles = TRUE)
 #'
+#' ## with triangles, openTriangles is "standard"
+#' exposure(popn, triangles = TRUE, openTriangles = "standard")
+#' 
+#'
 #' ## cohort
 #' popn <- Counts(array(4:1,
 #'                      dim = c(1, 4),
@@ -2120,7 +2135,7 @@ setGeneric("e1IsFirstDimScale",
 #' exposure(popn)
 #' @export
 setGeneric("exposure",
-          function(object, triangles = FALSE)
+          function(object, triangles = FALSE, openTriangles = c("weighted", "standard"))
               standardGeneric("exposure"))
 
 #' Calculate exposure to use for modelling births.

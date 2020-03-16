@@ -1454,7 +1454,7 @@ setMethod("expandIntervals",
 #' @export
 setMethod("exposure",
           signature(object = "Counts"),
-          function(object, triangles = FALSE) {
+          function(object, triangles = FALSE, openTriangles = c("weighted", "standard")) {
               .Data <- object@.Data
               names <- names(object)
               dim <- dim(object)
@@ -1528,9 +1528,12 @@ setMethod("exposure",
                       stop(gettextf("'%s' is %s but age-time plan is not regular : %s",
                                     "triangles", "TRUE", value.is.regular$message))
               }
+              ## openTriangles
+              openTriangles <- match.arg(openTriangles)
               ## do calculations
               if (triangles)
-                  exposureWithTriangles(object)
+                  exposureWithTriangles(object = object,
+                                        openTriangles = openTriangles)
               else 
                   exposureNoTriangles(object)
           })
