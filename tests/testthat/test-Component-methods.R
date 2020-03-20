@@ -587,7 +587,7 @@ test_that("ExitsMovements method of incrementSquare works", {
 
 ## incrementUpperTri ################################################################
 
-test_that("default method of incrementUpperTri works", {
+test_that("default method of incrementUpperTri works - openAge is FALSE", {
     incrementUpperTri <- dembase:::incrementUpperTri
     Population <- dembase:::Population
     component <- Counts(array(1:12,
@@ -604,7 +604,8 @@ test_that("default method of incrementUpperTri works", {
                                    age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
     ans.obtained <- incrementUpperTri(component = component,
-                                       population = population)
+                                      population = population,
+                                      openAge = FALSE)
     ans.expected <- Counts(array(c(2L, 4L, 8L, 10L),
                                  dim = c(2, 2),
                                  dimnames = list(age = c("5", "10"),
@@ -612,6 +613,36 @@ test_that("default method of incrementUpperTri works", {
     ans.expected <- t(ans.expected)
     expect_identical(ans.obtained, ans.expected)
 })
+
+
+
+test_that("default method of incrementUpperTri works - openAge is TRUE", {
+    incrementUpperTri <- dembase:::incrementUpperTri
+    Population <- dembase:::Population
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("Lower", "Upper"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"))))
+    component <- new("EntriesMovements",
+                     .Data = component@.Data,
+                     metadata = component@metadata)
+    population <- Counts(array(1:9,
+                               dim = c(3, 3),
+                               dimnames = list(time = c(2000, 2005, 2010),
+                                               age = c("0-4", "5-9", "10+"))))
+    population <- Population(population)
+    ans.obtained <- incrementUpperTri(component = component,
+                                      population = population,
+                                      openAge = TRUE)
+    ans.expected <- Counts(array(c(2L, 4L, 6L, 8L, 10L, 12L),
+                                 dim = c(3, 2),
+                                 dimnames = list(age = c("5", "10", "15"),
+                                                 time = c("2001-2005", "2006-2010"))))
+    ans.expected <- t(ans.expected)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 
 test_that("BirthsMovements method of incrementUpperTri works", {
     incrementUpperTri <- dembase:::incrementUpperTri
@@ -672,7 +703,7 @@ test_that("BirthsMovements method of incrementUpperTri works", {
     expect_identical(ans.obtained, ans.expected)    
 })
 
-test_that("Pool method of incrementUpperTri works", {
+test_that("Pool method of incrementUpperTri works - openAge is FALSE", {
     incrementUpperTri <- dembase:::incrementUpperTri
     Population <- dembase:::Population
     InternalMovements <- dembase:::InternalMovements
@@ -700,7 +731,8 @@ test_that("Pool method of incrementUpperTri works", {
                                    age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
     ans.obtained <- incrementUpperTri(component = component,
-                                      population = population)
+                                      population = population,
+                                      openAge = FALSE)
     net <- slab(net, dimension = "triangle", elements = "Upper")
     net <- net[1:2,,]
     net@metadata@DimScales[[1]] <- new("Points", dimvalues = c(5, 10))
@@ -709,7 +741,44 @@ test_that("Pool method of incrementUpperTri works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("Orig-Dest method of incrementUpperTri works", {
+test_that("Pool method of incrementUpperTri works - openAge is TRUE", {
+    incrementUpperTri <- dembase:::incrementUpperTri
+    Population <- dembase:::Population
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("Lower", "Upper"),
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"),
+                                              reg_orig = c("a", "b"),
+                                              reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    component <- collapseOrigDest(component, base = "reg", to = "pool")
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                             dimnames = list(triangle = c("Lower", "Upper"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = c("2001-2005", "2006-2010"),
+                                             reg = c("a", "b"))))
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    population <- Counts(array(1L,
+                               dim = c(3, 2, 3),
+                               dimnames = list(time = c(2000, 2005, 2010),
+                                               reg = c("a", "b"),
+                                               age = c("0-4", "5-9", "10+"))))
+    population <- Population(population)
+    ans.obtained <- incrementUpperTri(component = component,
+                                      population = population,
+                                      openAge = TRUE)
+    net <- slab(net, dimension = "triangle", elements = "Upper")
+    net@metadata@DimScales[[1]] <- new("Points", dimvalues = c(5, 10, 15))
+    dimnames(net@.Data)[[1]] <- c("5", "10", "15")
+    ans.expected <- aperm(net, perm = names(population))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("Orig-Dest method of incrementUpperTri works - openAge is FALSE", {
     incrementUpperTri <- dembase:::incrementUpperTri
     Population <- dembase:::Population
     InternalMovements <- dembase:::InternalMovements
@@ -736,7 +805,8 @@ test_that("Orig-Dest method of incrementUpperTri works", {
                                    age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
     ans.obtained <- incrementUpperTri(component = component,
-                                      population = population)
+                                      population = population,
+                                      openAge = FALSE)
     net <- slab(net, dimension = "triangle", elements = "Upper")
     net <- net[1:2,,]
     net@metadata@DimScales[[1]] <- new("Points", dimvalues = c(5, 10))
@@ -745,7 +815,43 @@ test_that("Orig-Dest method of incrementUpperTri works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("ExitsMovements method of incrementUpperTri works", {
+test_that("Orig-Dest method of incrementUpperTri works - openAge is TRUE", {
+    incrementUpperTri <- dembase:::incrementUpperTri
+    Population <- dembase:::Population
+    InternalMovements <- dembase:::InternalMovements
+    component <- Counts(array(1:96,
+                              dim = c(2, 3, 2, 2, 2),
+                              dimnames = list(triangle = c("Lower", "Upper"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"),
+                                  reg_orig = c("a", "b"),
+                                  reg_dest = c("a", "b"))))
+    net <- collapseOrigDest(component, to = "net")
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 2, 2),
+                             dimnames = list(triangle = c("Lower", "Upper"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"),
+                                  reg = c("a", "b"))))
+    component <- InternalMovements(internal = component,
+                                   template = template)
+    population <- Counts(array(1L,
+                               dim = c(3, 2, 3),
+                               dimnames = list(time = c(2000, 2005, 2010),
+                                   reg = c("a", "b"),
+                                   age = c("0-4", "5-9", "10+"))))
+    population <- Population(population)
+    ans.obtained <- incrementUpperTri(component = component,
+                                      population = population,
+                                      openAge = TRUE)
+    net <- slab(net, dimension = "triangle", elements = "Upper")
+    net@metadata@DimScales[[1]] <- new("Points", dimvalues = c(5, 10, 15))
+    dimnames(net@.Data)[[1]] <- c("5", "10", "15")
+    ans.expected <- aperm(net, perm = names(population))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("ExitsMovements method of incrementUpperTri works - openAge is FALSE", {
     incrementUpperTri <- dembase:::incrementUpperTri
     Population <- dembase:::Population
     ExitsMovements <- dembase:::ExitsMovements
@@ -763,7 +869,8 @@ test_that("ExitsMovements method of incrementUpperTri works", {
                                    age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
     ans.obtained <- incrementUpperTri(component = component,
-                                       population = population)
+                                      population = population,
+                                      openAge = FALSE)
     ans.expected <- Counts(array(-1L * c(2L, 4L, 8L, 10L),
                                  dim = c(2, 2),
                                  dimnames = list(age = c("5", "10"),
@@ -771,6 +878,35 @@ test_that("ExitsMovements method of incrementUpperTri works", {
     ans.expected <- t(ans.expected)
     expect_identical(ans.obtained, ans.expected)
 })
+
+test_that("ExitsMovements method of incrementUpperTri works - openAge is TRUE", {
+    incrementUpperTri <- dembase:::incrementUpperTri
+    Population <- dembase:::Population
+    ExitsMovements <- dembase:::ExitsMovements
+    component <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
+                              dimnames = list(triangle = c("Lower", "Upper"),
+                                  age = c("0-4", "5-9", "10+"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- ExitsMovements(component,
+                                template = component,
+                                name = "emigration")
+    population <- Counts(array(1:9,
+                               dim = c(3, 3),
+                               dimnames = list(time = c(2000, 2005, 2010),
+                                   age = c("0-4", "5-9", "10+"))))
+    population <- Population(population)
+    ans.obtained <- incrementUpperTri(component = component,
+                                      population = population,
+                                      openAge = TRUE)
+    ans.expected <- Counts(array(-1L * c(2L, 4L, 6L, 8L, 10L, 12L),
+                                 dim = c(3, 2),
+                                 dimnames = list(age = c("5", "10", "15"),
+                                     time = c("2001-2005", "2006-2010"))))
+    ans.expected <- t(ans.expected)
+    expect_identical(ans.obtained, ans.expected)
+})
+
     
 
 ## isCompatibleWithPopn ################################################################

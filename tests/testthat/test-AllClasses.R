@@ -2134,6 +2134,28 @@ test_that("validity tests for Movements inherited from Movements work", {
                      components = list(births),
                      namesComponents = "Births"),
                  "'components' has elements not of class \"MovementsComponent\"")
+    ## accession valid
+    population <- Counts(array(10L,
+                               dim = c(3, 2, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               reg = c("a", "b"),
+                                               time = c("2000", "2005", "2010"))))
+    population <- new("Population",
+                      .Data = population@.Data,
+                      metadata = population@metadata)
+    deaths <- Counts(array(c(0L, 1L, 2L),
+                           dim = c(3, 2, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           reg = c("a", "b"),
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    deaths <- new("ExitsMovements",
+                  .Data = deaths@.Data,
+                  metadata = deaths@metadata)
+    x <- new("Movements",
+             population = population,
+             components = list(deaths),
+             namesComponents = "deaths")
 })
 
 test_that("can create valid object of class Transitions", {

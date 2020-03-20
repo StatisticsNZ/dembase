@@ -3441,7 +3441,7 @@ ageDimBirthsCompatibleWithPopn <- function(name, DimScale, namesPopn,
 }
 
 ## HAS_TESTS
-agePopnForwardUpperTri <- function(population) {
+agePopnForwardUpperTri <- function(population, openAge) {
     .Data <- population@.Data
     dim <- dim(population)
     names <- names(population)
@@ -3463,6 +3463,11 @@ agePopnForwardUpperTri <- function(population) {
                              list = i.time,
                              values = list(DS.time.ans))
     dv.age.ans <- dv.age[-c(1L, n.age + 1L)]
+    if (openAge) {
+        step <- diff(dv.age)[1L]
+        final <- dv.age.ans[n.age - 1L]
+        dv.age.ans <- c(dv.age.ans, final + step)
+    }
     DS.age.ans <- methods::new("Points",
                                dimvalues = dv.age.ans)
     DimScales.ans <- replace(DimScales.ans,
@@ -3472,9 +3477,13 @@ agePopnForwardUpperTri <- function(population) {
                                  nms = names,
                                  dimtypes = dimtypes,
                                  DimScales = DimScales.ans)
-    ind <- ((slice.index(.Data, MARGIN = i.time) != n.time)
-        & (slice.index(.Data, MARGIN = i.age) != n.age))
-    .Data.ans <- .Data[ind]
+    index.time <- slice.index(.Data, MARGIN = i.time)
+    include <- index.time != n.time
+    if (!openAge) {
+        index.age <- slice.index(.Data, MARGIN = i.age)
+        include <- include & (index.age != n.age)
+    }
+    .Data.ans <- .Data[include]
     .Data.ans <- array(.Data.ans,
                        dim = dim(metadata.ans),
                        dimnames = dimnames(metadata.ans))
@@ -4261,7 +4270,7 @@ incrementSquareHelper <- function(component) {
 }
 
 ## HAS_TESTS
-incrementUpperTriHelper <- function(component) {
+incrementUpperTriHelper <- function(component, openAge) {
     .Data.old <- component@.Data
     dim.old <- dim(component)
     names.old <- names(component)
@@ -4275,6 +4284,11 @@ incrementUpperTriHelper <- function(component) {
     dv.age.old <- dimvalues(DS.age.old)
     n.age.old <- dim.old[i.age.old]
     dv.age.new <- dv.age.old[-c(1L, n.age.old + 1L)]
+    if (openAge) {
+        step <- diff(dv.age.old)[1L]
+        final <- dv.age.new[n.age.old - 1L]
+        dv.age.new <- c(dv.age.new, final + step)
+    }
     DS.age.new <- methods::new("Points", dimvalues = dv.age.new)
     names.new <- names.old[-i.triangle.old]
     dimtypes.new <- dimtypes.old[-i.triangle.old]
@@ -4289,9 +4303,13 @@ incrementUpperTriHelper <- function(component) {
                                  DimScales = DimScales.new)
     dim.new <- dim(metadata.new)
     dimnames.new <- dimnames(metadata.new)
-    ind.old <- ((slice.index(.Data.old, MARGIN = i.triangle.old) == 2L)
-        & (slice.index(.Data.old, MARGIN = i.age.old) != n.age.old))
-    .Data.new <- .Data.old[ind.old]
+    index.tri <- slice.index(.Data.old, MARGIN = i.triangle.old)
+    include <- index.tri == 2L
+    if (!openAge) {
+        index.age <- slice.index(.Data.old, MARGIN = i.age.old)
+        include <- include & (index.age != n.age.old)
+    }
+    .Data.new <- .Data.old[include]
     .Data.new <- array(.Data.new,
                        dim = dim.new,
                        dimnames = dimnames.new)
@@ -4524,7 +4542,8 @@ popnEndWithAge <- function(object) {
                         dimtypes = dimtypes,
                         DimScales = DimScales.ans)
     accession <- accession(object,
-                           births = TRUE)
+                           births = TRUE,
+                           openAge = FALSE)
     .Data.ans <- array(accession@.Data,
                        dim = dim(metadata.ans),
                        dimnames = dimnames(metadata.ans))

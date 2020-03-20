@@ -3,7 +3,7 @@
 #' @rdname accession
 setMethod("accession",
           signature(object = "Movements"),
-          function(object, births = TRUE) {
+          function(object, births = TRUE, openAge = FALSE) {
               if (!is.logical(births))
                   stop(gettextf("'%s' does not have type \"%s\"",
                                 "births", "logical"))
@@ -13,6 +13,15 @@ setMethod("accession",
               if (is.na(births))
                   stop(gettextf("'%s' is missing",
                                 "births"))
+              if (!is.logical(openAge))
+                  stop(gettextf("'%s' does not have type \"%s\"",
+                                "openAge", "logical"))
+              if (!identical(length(openAge), 1L))
+                  stop(gettextf("'%s' does not have length %d",
+                                "openAge", 1L))
+              if (is.na(openAge))
+                  stop(gettextf("'%s' is missing",
+                                "openAge"))
               population <- object@population
               components <- object@components
               .Data <- population@.Data
@@ -26,11 +35,13 @@ setMethod("accession",
               has.age <- i.age > 0L
               if (!has.age)
                   return(NULL)
-              ans <- agePopnForwardUpperTri(population)
+              ans <- agePopnForwardUpperTri(population = population,
+                                            openAge = openAge)
               is.births <- sapply(components, methods::is, "Births")
               for (component in components[!is.births]) {
                   increment.upper.tri <- incrementUpperTri(component = component,
-                                                           population = population)
+                                                           population = population,
+                                                           openAge = openAge)
                   ans <- ans + increment.upper.tri
               }
               if (births) {
@@ -72,7 +83,7 @@ setMethod("accession",
               ans
           })
 
-## NO_TESTS
+## HAS_TESTS
 #' @rdname makeConsistent
 setMethod("makeConsistent",
           signature(object = "Movements"),
@@ -113,24 +124,58 @@ setMethod("isConsistent",
           function(object) {
               population <- object@population
               components <- object@components
-              metadata = metadata(object)
+              metadata <- metadata(object)
               dimtypes <- dimtypes(population,
                                    use.names = FALSE)
               i.age <- match("age", dimtypes, nomatch = 0L)
-              i.time <- match("time", dimtypes)
               has.age <- i.age > 0L
+              i.time <- match("time", dimtypes)
               n.time.popn <- dim(population)[i.time]
-              ## obtained
+              s.time.popn <- seq.int(from = 2L, to = n.time.popn)
+              ## population change consistent with
+              ## increments/decrements
               if (has.age)
                   popn.end.obtained <- popnEndWithAge(object)
               else
                   popn.end.obtained <- popnEndNoAge(object)
-              ## expected
               elements <- seq.int(from = 2L, to = n.time.popn)
               popn.end.expected <- slab(population,
                                         dimension = i.time,
-                                        elements = elements)
+                                        elements = s.time.popn)
               ans <- popn.end.obtained == popn.end.expected
+              if (has.age) {
+                  ## accession non-negative (including oldest age group)
+                  accession <- accession(object = object,
+                                         births = FALSE, 
+                                         openAge = TRUE)
+                  is.acc.nonneg <- accession >= 0L
+                  is.acc.nonneg <- as.integer(is.acc.nonneg)
+                  ans <- ans & is.acc.nonneg
+                  ## population of oldest age group as least
+                  ## as large as final accession
+                  n.age <- dim(population)[i.age]
+                  popn.last <- slab(population,
+                                    dimension = i.age,
+                                    elements = n.age,
+                                    drop = FALSE)
+                  popn.last <- slab(popn.last,
+                                    dimension = i.time,
+                                    elements = s.time.popn,
+                                    drop = FALSE)
+                  popn.last <- as.integer(popn.last)
+                  acc.last <- slab(accession,
+                                   dimension = i.age,
+                                   elements = n.age,
+                                   drop = FALSE)
+                  acc.last <- as.integer(acc.last)
+                  is.popn.ge.acc.last <- popn.last >= acc.last
+                  is.popn.ge.acc <- array(TRUE,
+                                          dim = dim(ans),
+                                          dimnames(ans))
+                  index.last <- slice.index(is.popn.ge.acc, MARGIN = i.age) == n.age
+                  is.popn.ge.acc[index.last] <- is.popn.ge.acc.last
+                  ans <- ans & is.popn.ge.acc 
+              }
               ans <- array(ans,
                            dim = dim(metadata),
                            dimnames = dimnames(metadata))

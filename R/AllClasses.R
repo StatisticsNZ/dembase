@@ -1626,6 +1626,8 @@ setClass("DemographicAccount",
              population <- object@population
              components <- object@components
              namesComponents <- object@namesComponents
+             i.age <- match("age", dimtypes(population), nomatch = 0L)
+             has.age <- i.age > 0L
              ## population is valid
              value <- tryCatch(validObject(population),
                                error = function(e) e)
@@ -1650,8 +1652,6 @@ setClass("DemographicAccount",
              else {
                  ## if has births, first age group starts at 0
                  if (n.births == 1L) {
-                     i.age <- match("age", dimtypes(population), nomatch = 0L)
-                     has.age <- i.age > 0L
                      if (has.age) {
                          DS.age <- DimScales(population)[[i.age]]
                          min.age <- dimvalues(DS.age)[1L]
@@ -1693,6 +1693,8 @@ setClass("Movements",
              population <- object@population
              components <- object@components
              namesComponents <- object@namesComponents
+             i.age <- match("age", dimtypes(population), nomatch = 0L)
+             has.age <- i.age > 0L
              ## all components have class "MovementsComponent"
              if (!all(sapply(components, methods::is,"MovementsComponent")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
@@ -1708,6 +1710,15 @@ setClass("Movements",
                                                       name = name.component)
                  if (!isTRUE(return.value))
                      return(return.value)
+             }
+             ## accession valid (if present)
+             if (has.age) {
+                 accession <- tryCatch(error = function(e) e,
+                                       accession(object = object,
+                                                 births = FALSE, 
+                                                 openAge = TRUE))
+                 if (inherits(accession, "error"))
+                     return(accession$message)
              }
              TRUE
          })

@@ -516,10 +516,18 @@ setGeneric("Values",
 #' the return value to \code{accession} includess age 0.
 #' If the account does not in fact include births, then accession
 #' to age 0 is set to 0.
+#'
+#' When \code{openAge} is \code{TRUE}, the analogue of accession
+#' is calculated for the oldest age group: the
+#' number of people reaching the next oldest age group.
+#' This differs from accession for other age groups since
+#' the oldest age group potentially contains many cohorts.
 #' 
 #' @param object A \code{\linkS4class{Movements}} account.
 #' @param births If \code{TRUE} (the default), births are included in the
 #' answer; if \code{FALSE}, they are not.
+#' @param openAge If \code{TRUE}, the equivalent of accession is calculated
+#' for the oldest (open) age group. Defaults to \code{FALSE}.
 #'
 #' @return An object of class \code{\linkS4class{Counts}}.
 #'
@@ -542,9 +550,10 @@ setGeneric("Values",
 #' 
 #' accession(account)
 #' accession(account, births = FALSE)
+#' accession(account, openAge = TRUE)
 #' @export
 setGeneric("accession",
-           function(object, births = TRUE)
+           function(object, births = TRUE, openAge = FALSE)
                standardGeneric("accession"))
 
 setGeneric("addBreaks",
@@ -2592,7 +2601,7 @@ setGeneric("incrementSquare",
                standardGeneric("incrementSquare"))
 
 setGeneric("incrementUpperTri",
-           function(component, population)
+           function(component, population, openAge)
                standardGeneric("incrementUpperTri"))
 
 setGeneric("inferDimvalues",
@@ -2805,7 +2814,9 @@ setGeneric("isCompatibleWithPopn",
 #' Test whether the components and population counts counts of a 
 #' \code{\linkS4class{DemographicAccount}} conform to the accounting identity
 #' that population at the end of a period equals population at the beginning
-#' of a period plus entries minus exits.  Entries include events such as
+#' of a period plus entries minus exits, along with the constraint
+#' that population counts and the number of people reaching each exact
+#' age, are always non-negative.  Entries include events such as
 #' births and in-migration, and exits include events such as deaths
 #' and out-migration. The accounting identities are applied cell by cell.
 #'

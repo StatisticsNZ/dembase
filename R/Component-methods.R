@@ -386,8 +386,9 @@ setMethod("incrementSquare",
 setMethod("incrementUpperTri",
           signature(component = "Component",
                     population = "Population"),
-          function(component, population) {
-              ans <- incrementUpperTriHelper(component)
+          function(component, population, openAge) {
+              ans <- incrementUpperTriHelper(component = component,
+                                             openAge = openAge)
               perm <- names(population)
               aperm(ans, perm = perm)
           })
@@ -396,7 +397,7 @@ setMethod("incrementUpperTri",
 setMethod("incrementUpperTri",
           signature(component = "BirthsMovements",
                     population = "Population"),
-          function(component, population) {
+          function(component, population, openAge) { # 'openAge' argument ignored
               names.popn <- names(population)
               dimtypes.comp <- dimtypes(component,
                                         use.names = FALSE)
@@ -430,7 +431,7 @@ setMethod("incrementUpperTri",
 setMethod("incrementUpperTri",
           signature(component = "InternalMovementsPool",
                     population = "Population"),
-          function(component, population) {
+          function(component, population, openAge) {
               i.direction <- component@iDirection
               ins <- slab(component,
                           dimension = i.direction,
@@ -438,8 +439,10 @@ setMethod("incrementUpperTri",
               outs <- slab(component,
                            dimension = i.direction,
                            elements = "Out")
-              ins <- incrementUpperTriHelper(ins)
-              outs <- incrementUpperTriHelper(outs)
+              ins <- incrementUpperTriHelper(component = ins,
+                                             openAge = openAge)
+              outs <- incrementUpperTriHelper(component = outs,
+                                              openAge = openAge)
               ans <- ins - outs
               perm <- names(population)
               aperm(ans, perm = perm)
@@ -449,13 +452,15 @@ setMethod("incrementUpperTri",
 setMethod("incrementUpperTri",
           signature(component = "InternalMovementsOrigDest",
                     population = "Population"),
-          function(component, population) {
+          function(component, population, openAge) {
               ins <- collapseOrigDest(component,
                                       to = "in")
               outs <- collapseOrigDest(component,
                                        to = "out")
-              ins <- incrementUpperTriHelper(ins)
-              outs <- incrementUpperTriHelper(outs)
+              ins <- incrementUpperTriHelper(component = ins,
+                                             openAge = openAge)
+              outs <- incrementUpperTriHelper(component = outs,
+                                              openAge = openAge)
               ans <- ins - outs
               perm <- names(population)
               aperm(ans, perm = perm)
@@ -465,7 +470,7 @@ setMethod("incrementUpperTri",
 setMethod("incrementUpperTri",
           signature(component = "ExitsMovements",
                     population = "Population"),
-          function(component, population) {
+          function(component, population, openAge) {
               ans <- methods::callNextMethod()
               -1L * ans
           })

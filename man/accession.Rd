@@ -5,15 +5,18 @@
 \alias{accession,Movements-method}
 \title{Calculate accession from a movements account.}
 \usage{
-accession(object, births = TRUE)
+accession(object, births = TRUE, openAge = FALSE)
 
-\S4method{accession}{Movements}(object, births = TRUE)
+\S4method{accession}{Movements}(object, births = TRUE, openAge = FALSE)
 }
 \arguments{
 \item{object}{A \code{\linkS4class{Movements}} account.}
 
 \item{births}{If \code{TRUE} (the default), births are included in the
 answer; if \code{FALSE}, they are not.}
+
+\item{openAge}{If \code{TRUE}, the equivalent of accession is calculated
+for the oldest (open) age group. Defaults to \code{FALSE}.}
 }
 \value{
 An object of class \code{\linkS4class{Counts}}.
@@ -29,6 +32,12 @@ Births can be considered as accession to age 0.  By default,
 the return value to \code{accession} includess age 0.
 If the account does not in fact include births, then accession
 to age 0 is set to 0.
+
+When \code{openAge} is \code{TRUE}, the analogue of accession
+is calculated for the oldest age group: the
+number of people reaching the next oldest age group.
+This differs from accession for other age groups since
+the oldest age group potentially contains many cohorts.
 }
 \examples{
 population <- Counts(array(c(10, 15, 13, 16),
@@ -49,4 +58,5 @@ account <- Movements(population = population,
 
 accession(account)
 accession(account, births = FALSE)
+accession(account, openAge = TRUE)
 }

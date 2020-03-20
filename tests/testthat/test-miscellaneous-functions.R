@@ -4426,7 +4426,7 @@ test_that("ageDimBirthsCompatibleWithPopn works", {
                      "\"age\" dimensions have incompatible dimscales")    
 })
 
-test_that("default version of agePopnForwardUpperTri works", {
+test_that("default version of agePopnForwardUpperTri works - openAge is FALSE", {
     agePopnForwardUpperTri <- dembase:::agePopnForwardUpperTri
     Population <- dembase:::Population
     population <- Counts(array(1:42,
@@ -4436,11 +4436,30 @@ test_that("default version of agePopnForwardUpperTri works", {
                                                        "20-24", "25-29", "30+"),
                                                time = c("2000", "2005", "2010"))))
     population <- Population(population)
-    ans.obtained <- agePopnForwardUpperTri(population)
+    ans.obtained <- agePopnForwardUpperTri(population, openAge = FALSE)
     ans.expected <- Counts(array(c(1:12, 15:26),
                                  dim = c(2, 6, 2),
                                  dimnames = list(reg = c("a", "b"),
                                                  age = c(5, 10, 15, 20, 25, 30),
+                                                 time = c("2001-2005", "2006-2010"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("default version of agePopnForwardUpperTri works - openAge is TRUE", {
+    agePopnForwardUpperTri <- dembase:::agePopnForwardUpperTri
+    Population <- dembase:::Population
+    population <- Counts(array(1:42,
+                               dim = c(2, 7, 3),
+                               dimnames = list(reg = c("a", "b"),
+                                               age = c("0-4", "5-9", "10-14", "15-19",
+                                                       "20-24", "25-29", "30+"),
+                                               time = c("2000", "2005", "2010"))))
+    population <- Population(population)
+    ans.obtained <- agePopnForwardUpperTri(population, openAge = TRUE)
+    ans.expected <- Counts(array(1:28,
+                                 dim = c(2, 7, 2),
+                                 dimnames = list(reg = c("a", "b"),
+                                                 age = c(5, 10, 15, 20, 25, 30, 35),
                                                  time = c("2001-2005", "2006-2010"))))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -5301,7 +5320,7 @@ test_that("incrementSquareHelper works", {
     expect_identical(ans.obtained, ans.expected)
 })
 
-test_that("incrementUpperTriHelper works", {
+test_that("incrementUpperTriHelper works - openAge is FALSE", {
     incrementUpperTriHelper <- dembase:::incrementUpperTriHelper
     EntriesMovements <- dembase:::EntriesMovements
     component <- Counts(array(1:12,
@@ -5312,10 +5331,29 @@ test_that("incrementUpperTriHelper works", {
     component <- EntriesMovements(component,
                                   template = component,
                                   name = "immigration")
-    ans.obtained <- incrementUpperTriHelper(component)
+    ans.obtained <- incrementUpperTriHelper(component, openAge = FALSE)
     ans.expected <- Counts(array(c(4:5, 10:11),
                               dim = c(2, 2),
                               dimnames = list(age = c("5", "10"),
+                                  time = c("2001-2005", "2006-2010"))))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("incrementUpperTriHelper works - openAge is TRUE", {
+    incrementUpperTriHelper <- dembase:::incrementUpperTriHelper
+    EntriesMovements <- dembase:::EntriesMovements
+    component <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
+                              dimnames = list(age = c("0-4", "5-9", "10+"),
+                                  triangle = c("Lower", "Upper"),
+                                  time = c("2001-2005", "2006-2010"))))
+    component <- EntriesMovements(component,
+                                  template = component,
+                                  name = "immigration")
+    ans.obtained <- incrementUpperTriHelper(component, openAge = TRUE)
+    ans.expected <- Counts(array(c(4:6, 10:12),
+                              dim = c(3, 2),
+                              dimnames = list(age = c("5", "10", "15"),
                                   time = c("2001-2005", "2006-2010"))))
     expect_identical(ans.obtained, ans.expected)
 })
