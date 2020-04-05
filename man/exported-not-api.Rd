@@ -63,6 +63,7 @@
 \alias{checkAge}
 \alias{inferDimScale}
 \alias{addIterationsToMetadata}
+\alias{exposureHMD}
 \alias{expandAx}
 \alias{makeAxStart}
 \alias{extend,numeric,ExtendTransform-method}
@@ -191,6 +192,8 @@ checkAge(
 inferDimScale(dimtype, dimscale = NULL, labels, name)
 
 addIterationsToMetadata(object, iterations)
+
+exposureHMD(object)
 
 expandAx(ax, object)
 

@@ -4044,6 +4044,71 @@ dimCompEqualToPopn <- function(name, dimtype, DimScale,
     TRUE
 }
 
+
+## This function is an extension of the calculations presented in Section E
+## (especially p66) of the HMD Methods Protocol, Version 6. Rather than
+## deaths we used net increments. We also allow for age-time steps not
+## equal to 1.
+#' @rdname exported-not-api
+#' @export
+exposureHMD <- function(object) {
+    if (!methods::is(object, "Movements"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "object", class(object)))
+    if (!all(isConsistent(object)))
+        stop(gettextf("'%s' is not consistent",
+                      "object"))
+    population <- object@population ## 'population' function strips Population class
+    dimtypes.popn <- dimtypes(population, use.names = FALSE)
+    i.age.popn <- match("age", dimtypes.popn, nomatch = 0L)
+    has.age <- i.age.popn > 0L
+    ans <- exposure(object = population,
+                    triangles = has.age,
+                    openTriangles = "standard")
+    if (has.age) {
+        components <- object@components ## 'components' function strips classes
+        is.births <- sapply(components, methods::is, "Births")
+        components <- components[!is.births]
+        increment.lower <- lapply(components,
+                                  incrementLowerTri,
+                                  population = population)
+        increment.upper <- lapply(components,
+                                  incrementUpperTri,
+                                  population = population,
+                                  openAge = TRUE)
+        increment.lower <- Reduce("+", increment.lower)
+        increment.upper <- Reduce("+", increment.upper)
+        step.length <- ageTimeStep(ans)
+        dimtypes.ans <- dimtypes(ans, use.names = FALSE)
+        dimtypes.incr <- dimtypes(increment.lower, use.names = FALSE)
+        i.time.popn <- match("time", dimtypes.popn)
+        i.tri.ans <- match("triangle", dimtypes.ans)
+        i.age.incr <- match("age", dimtypes.incr)
+        dim.popn <- dim(population)
+        n.time.popn <- dim.popn[i.time.popn]
+        n.age <- dim.popn[i.age.popn]
+        index.time.popn <- slice.index(population, MARGIN = i.time.popn)
+        index.age.popn <- slice.index(population, MARGIN = i.age.popn)
+        index.tri.ans <- slice.index(ans, MARGIN = i.tri.ans)
+        index.age.incr <- slice.index(increment.lower, MARGIN = i.age.incr)        
+        increment.lower <- as.numeric(increment.lower)
+        increment.upper <- as.numeric(increment.upper)
+        popn.start.oldest <- population[(index.time.popn != n.time.popn) & (index.age.popn == n.age)]
+        popn.start.oldest <- as.numeric(popn.start.oldest)
+        adj.lower <- (1/6) * step.length * increment.lower
+        adj.upper <- (1/6) * step.length * increment.upper
+        adj.lower[index.age.incr == n.age] <- (adj.lower[index.age.incr == n.age] 
+            + (1/2) * step.length * popn.start.oldest
+            + (1/2) * step.length * increment.upper[index.age.incr == n.age])
+        adj.upper[index.age.incr == n.age] <- (adj.upper[index.age.incr == n.age] 
+            + (1/2) * step.length * popn.start.oldest
+            + (1/3) * step.length * increment.upper[index.age.incr == n.age])
+        ans[index.tri.ans == 1L] <- ans[index.tri.ans == 1L] - adj.lower ## opposite of HMD because 
+        ans[index.tri.ans == 2L] <- ans[index.tri.ans == 2L] + adj.upper ## increment not decrement
+    }
+    ans
+}
+
 ## HAS_TESTS
 exposureNoTriangles <- function(object) {
     .Data <- object@.Data

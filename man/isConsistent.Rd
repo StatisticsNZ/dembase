@@ -19,7 +19,9 @@ An array of logical values.
 Test whether the components and population counts counts of a 
 \code{\linkS4class{DemographicAccount}} conform to the accounting identity
 that population at the end of a period equals population at the beginning
-of a period plus entries minus exits.  Entries include events such as
+of a period plus entries minus exits, along with the constraint
+that population counts and the number of people reaching each exact
+age, are always non-negative.  Entries include events such as
 births and in-migration, and exits include events such as deaths
 and out-migration. The accounting identities are applied cell by cell.
 }

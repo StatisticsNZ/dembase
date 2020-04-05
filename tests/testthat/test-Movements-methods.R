@@ -225,8 +225,6 @@ test_that("accession works with Movements - with age, account contains births - 
     expect_identical(ans.obtained, ans.expected)
 })
 
-
-
 test_that("accession works with Movements - with age, account does not contain births", {
     population <- Counts(array(rpois(n = 90, lambda = 100),
                                dim = c(3, 2, 4, 3),

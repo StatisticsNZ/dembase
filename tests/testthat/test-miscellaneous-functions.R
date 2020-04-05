@@ -4995,6 +4995,135 @@ test_that("dimCompEqualToPopn works", {
                      "\"sex\" dimensions have incompatible dimscales")
 })
 
+test_that("exposureHMD works with Movements - no age", {
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = 15,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = 5,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    x <- Movements(population = population,
+                   births = births,
+                   exits = list(deaths = deaths))
+    ans.obtained <- exposureHMD(x)
+    ans.expected <- exposure(x@population)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("exposureHMD works with Movements - with age, simple account", {
+    population <- Counts(array(c(100, 100, 100, 0, 90, 140),
+                               dim = c(3, 2),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               time = c(2000, 2005))))
+    deaths <- Counts(array(c(0, 5, 10, 5, 10, 40),
+                           dim = c(3, 2, 1),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           triangle = c("Lower", "Upper"),
+                                           time = "2001-2005")))
+    x <- Movements(population = population,
+                   exits = list(deaths = deaths))
+    ans.obtained <- exposureHMD(x)
+    ans.expected <- Counts(array(5 * c(0,
+                                       90/2 + 5/6,
+                                       140/2 - 100/2 + 40/2 + 10/6,
+                                       100/2 - 5/6,
+                                       100/2 - 10/6,
+                                       100 - 40/2),
+                                 dim = c(3, 1, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 time = "2001-2005",
+                                                 triangle = c("Lower", "Upper"))))
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+
+
+test_that("exposureHMD works with Movements - with age, complicated account", {
+    population <- Counts(array(rpois(n = 90, lambda = 100),
+                               dim = c(3, 2, 4, 3),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               sex = c("f", "m"),
+                                               reg = 1:4,
+                                               time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 4, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:4,
+                                           time = c("2001-2005", "2006-2010"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 10),
+                             dim = c(3, 2, 5, 5, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 4, 3),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 4:1,
+                                           time = c("2001-2005", "2006-2010", "2011-2015"))))
+    immigration <- Counts(array(rpois(n = 72, lambda = 5),
+                                dim = c(3, 2, 4, 2),
+                                dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                sex = c("m", "f"),
+                                                reg = 1:4,
+                                                time = c("2001-2005", "2006-2010"))))
+    emigration <- Counts(array(rpois(n = 72, lambda = 5),
+                               dim = c(3, 2, 4, 2),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               sex = c("m", "f"),
+                                               reg = 1:4,
+                                               time = c("2001-2005", "2006-2010"))))
+    x <- Movements(population = population,
+                   births = births,
+                   internal = internal,
+                   entries = list(immigration = immigration),
+                   exits = list(deaths = deaths, emigration = emigration))
+    set.seed(1)
+    x <- makeConsistent(x)
+    ans.obtained <- exposureHMD(x)
+    ans.expected <- exposure(x@population, triangles = TRUE, openTriangles = "standard")
+    incr.internal <- collapseOrigDest(x@components[[2]])
+    incr.deaths <- x@components[[4]]
+    incr.im <- x@components[[3]]
+    incr.em <- x@components[[5]]
+    ans.expected[,,,,1] <- ans.expected[,,,,1] - (5/6) * as.array(incr.internal)[,,,,1]
+    ans.expected[,,,,1] <- ans.expected[,,,,1] + (5/6) * as.array(incr.deaths)[,,,,1]
+    ans.expected[,,,,1] <- ans.expected[,,,,1] - (5/6) * as.array(incr.im)[,,,,1]
+    ans.expected[,,,,1] <- ans.expected[,,,,1] + (5/6) * as.array(incr.em)[,,,,1]
+    ans.expected[,,,,2] <- ans.expected[,,,,2] + (5/6) * as.array(incr.internal)[,,,,2]
+    ans.expected[,,,,2] <- ans.expected[,,,,2] - (5/6) * as.array(incr.deaths)[,,,,2]
+    ans.expected[,,,,2] <- ans.expected[,,,,2] + (5/6) * as.array(incr.im)[,,,,2]
+    ans.expected[,,,,2] <- ans.expected[,,,,2] - (5/6) * as.array(incr.em)[,,,,2]
+    ans.expected[3,,,,1] <- ans.expected[3,,,,1] - (5/2) * (
+        as.integer(as.array(x@population)[3,,,-3])
+        + as.array(incr.internal)[3,,,,2]
+        - as.array(incr.deaths)[3,,,,2]
+        + as.array(incr.im)[3,,,,2]
+        - as.array(incr.em)[3,,,,2])
+    ans.expected[3,,,,2] <- ans.expected[3,,,,2] + (
+        (5/2) * as.integer(as.array(x@population)[3,,,-3])
+        + (5/3) * as.array(incr.internal)[3,,,,2]
+        - (5/3) * as.array(incr.deaths)[3,,,,2]
+        + (5/3) * as.array(incr.im)[3,,,,2]
+        - (5/3) * as.array(incr.em)[3,,,,2])
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
+    
+    
+
+
+
 test_that("exposureNoTriangles works", {
     exposureNoTriangles <- dembase:::exposureNoTriangles
     ## time is last dimension; equal time steps
