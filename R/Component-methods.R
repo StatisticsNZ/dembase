@@ -132,10 +132,12 @@ setMethod("incrementLowerTri",
               i.direction <- component@iDirection
               ins <- slab(component,
                           dimension = i.direction,
-                          elements = "In")
+                          elements = "In",
+                          drop = "dimension")
               outs <- slab(component,
                            dimension = i.direction,
-                           elements = "Out")
+                           elements = "Out",
+                           drop = "dimension")
               ins <- incrementLowerTriHelper(ins)
               outs <- incrementLowerTriHelper(outs)
               ans <- ins - outs
@@ -260,10 +262,12 @@ setMethod("incrementOpen",
               i.direction <- component@iDirection
               ins <- slab(component,
                           dimension = i.direction,
-                          elements = "In")
+                          elements = "In",
+                          drop = "dimension")
               outs <- slab(component,
                            dimension = i.direction,
-                           elements = "Out")
+                           elements = "Out",
+                           drop = "dimension")
               ins <- incrementOpenHelper(ins)
               outs <- incrementOpenHelper(outs)
               ans <- ins - outs
@@ -435,10 +439,12 @@ setMethod("incrementUpperTri",
               i.direction <- component@iDirection
               ins <- slab(component,
                           dimension = i.direction,
-                          elements = "In")
+                          elements = "In",
+                          drop = "dimension")
               outs <- slab(component,
                            dimension = i.direction,
-                           elements = "Out")
+                           elements = "Out",
+                           drop = "dimension")
               ins <- incrementUpperTriHelper(component = ins,
                                              openAge = openAge)
               outs <- incrementUpperTriHelper(component = outs,
