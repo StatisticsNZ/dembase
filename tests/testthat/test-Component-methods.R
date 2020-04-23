@@ -43,22 +43,22 @@ test_that("default method of incrementLowerTri works", {
     component <- Counts(array(1:12,
                               dim = c(2, 3, 2),
                               dimnames = list(triangle = c("Lower", "Upper"),
-                                  age = c("0-4", "5-9", "10+"),
-                                  time = c("2001-2005", "2006-2010"))))
+                                              age = c("0-4", "5-9", "10+"),
+                                              time = c("2001-2005", "2006-2010"))))
     component <- new("EntriesMovements",
                      .Data = component@.Data,
                      metadata = component@metadata)
     population <- Counts(array(1:9,
                                dim = c(3, 3),
                                dimnames = list(time = c(2000, 2005, 2010),
-                                   age = c("0-4", "5-9", "10+"))))
+                                               age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
     ans.obtained <- incrementLowerTri(component = component,
-                                       population = population)
+                                      population = population)
     ans.expected <- Counts(array(c(1L, 3L, 5L, 7L, 9L, 11L),
                                  dim = c(3, 2),
                                  dimnames = list(age = c("0-4", "5-9", "10+"),
-                                     time = c("2005", "2010"))))
+                                                 time = c("2005", "2010"))))
     ans.expected <- t(ans.expected)
     expect_identical(ans.obtained, ans.expected)
 })
@@ -87,7 +87,11 @@ test_that("BirthsMovements method of incrementLowerTri works", {
     population <- Population(population)
     ans.obtained <- incrementLowerTri(component = component,
                                       population = population)
-    ans.expected <- 0L
+    ans.expected <- Counts(array(0L,
+                               dim = c(2, 6),
+                               dimnames = list(time = c(2005, 2010),
+                                               age = c("0-4", "5-9", "10-14",
+                                                       "15-19", "20-24", "25+"))))
     expect_identical(ans.obtained, ans.expected)
 })
 

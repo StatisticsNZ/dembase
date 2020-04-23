@@ -120,7 +120,16 @@ setMethod("incrementLowerTri",
           signature(component = "BirthsMovements",
                     population = "Population"),
           function(component, population) {
-              0L
+              dimtypes.popn <- dimtypes(population, use.names = FALSE)
+              i.time.popn <- match("time", dimtypes.popn)
+              n.time.popn <- dim(population)[i.time.popn]
+              s <- seq.int(from = 2L, to = n.time.popn)
+              ans <- slab(population,
+                          dimension = i.time.popn,
+                          elements = s,
+                          drop = FALSE)
+              ans[] <- 0L
+              ans
           })
 
 ## HAS_TESTS
