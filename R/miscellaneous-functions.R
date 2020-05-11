@@ -4069,42 +4069,58 @@ exposureHMD <- function(object) {
         components <- object@components ## 'components' function strips classes
         is.births <- sapply(components, methods::is, "Births")
         components <- components[!is.births]
-        increment.lower <- lapply(components,
-                                  incrementLowerTri,
-                                  population = population)
-        increment.upper <- lapply(components,
-                                  incrementUpperTri,
-                                  population = population,
-                                  openAge = TRUE)
-        increment.lower <- Reduce("+", increment.lower)
-        increment.upper <- Reduce("+", increment.upper)
         step.length <- ageTimeStep(ans)
         dimtypes.ans <- dimtypes(ans, use.names = FALSE)
-        dimtypes.incr <- dimtypes(increment.lower, use.names = FALSE)
-        i.time.popn <- match("time", dimtypes.popn)
+        i.age.ans <- match("age", dimtypes.ans)
         i.tri.ans <- match("triangle", dimtypes.ans)
-        i.age.incr <- match("age", dimtypes.incr)
+        ## deal with population
+        i.time.popn <- match("time", dimtypes.popn)
         dim.popn <- dim(population)
         n.time.popn <- dim.popn[i.time.popn]
         n.age <- dim.popn[i.age.popn]
         index.time.popn <- slice.index(population, MARGIN = i.time.popn)
         index.age.popn <- slice.index(population, MARGIN = i.age.popn)
         index.tri.ans <- slice.index(ans, MARGIN = i.tri.ans)
-        index.age.incr <- slice.index(increment.lower, MARGIN = i.age.incr)        
-        increment.lower <- as.numeric(increment.lower)
-        increment.upper <- as.numeric(increment.upper)
+        index.age.ans <- slice.index(ans, MARGIN = i.age.ans)
         popn.start.oldest <- population[(index.time.popn != n.time.popn) & (index.age.popn == n.age)]
         popn.start.oldest <- as.numeric(popn.start.oldest)
-        adj.lower <- (1/6) * step.length * increment.lower
-        adj.upper <- (1/6) * step.length * increment.upper
-        adj.lower[index.age.incr == n.age] <- (adj.lower[index.age.incr == n.age] 
-            + (1/2) * step.length * popn.start.oldest
-            + (1/2) * step.length * increment.upper[index.age.incr == n.age])
-        adj.upper[index.age.incr == n.age] <- (adj.upper[index.age.incr == n.age] 
-            + (1/2) * step.length * popn.start.oldest
-            + (1/3) * step.length * increment.upper[index.age.incr == n.age])
-        ans[index.tri.ans == 1L] <- ans[index.tri.ans == 1L] - adj.lower ## opposite of HMD because 
-        ans[index.tri.ans == 2L] <- ans[index.tri.ans == 2L] + adj.upper ## increment not decrement
+        dim.ans <- dim(ans)
+        dim.adj <- dim.ans[-i.tri.ans]
+        dimtypes.adj <- dimtypes.ans[-i.tri.ans]
+        adj.lower <- array(0, dim = dim.adj)
+        adj.upper <- adj.lower
+        i.age.adj  <- match("age", dimtypes.adj)
+        index.age.adj <- slice.index(adj.lower, MARGIN = i.age.adj)
+        adj.lower[index.age.adj == n.age] <- -1 * (1/2) * step.length * popn.start.oldest
+        adj.upper[index.age.adj == n.age] <- (1/2) * step.length * popn.start.oldest
+        ans[index.tri.ans == 1L] <- ans[index.tri.ans == 1L] + adj.lower
+        ans[index.tri.ans == 2L] <- ans[index.tri.ans == 2L] + adj.upper
+        ## deal with increments - note that not needed if there is only one
+        ## component, and that component is births
+        if (length(components) > 0L) {
+            increment.lower <- lapply(components,
+                                      incrementLowerTri,
+                                      population = population)
+            increment.upper <- lapply(components,
+                                      incrementUpperTri,
+                                      population = population,
+                                      openAge = TRUE)
+            increment.lower <- Reduce("+", increment.lower)
+            increment.upper <- Reduce("+", increment.upper)
+            dimtypes.incr <- dimtypes(increment.lower, use.names = FALSE)
+            i.age.incr <- match("age", dimtypes.incr)
+            index.age.incr <- slice.index(increment.lower, MARGIN = i.age.incr)        
+            increment.lower <- as.numeric(increment.lower)
+            increment.upper <- as.numeric(increment.upper)
+            adj.lower <- -1 * (1/6) * step.length * increment.lower
+            adj.upper <- (1/6) * step.length * increment.upper
+            adj.lower[index.age.incr == n.age] <- (adj.lower[index.age.incr == n.age] 
+                - (1/2) * step.length * increment.upper[index.age.incr == n.age])
+            adj.upper[index.age.incr == n.age] <- (adj.upper[index.age.incr == n.age] 
+                + (1/3) * step.length * increment.upper[index.age.incr == n.age])
+            ans[index.tri.ans == 1L] <- ans[index.tri.ans == 1L] + adj.lower
+            ans[index.tri.ans == 2L] <- ans[index.tri.ans == 2L] + adj.upper
+        }
     }
     ans
 }

@@ -5042,7 +5042,6 @@ test_that("exposureHMD works with Movements - with age, simple account", {
         expect_equal(ans.obtained, ans.expected)
 })
 
-
 test_that("exposureHMD works with Movements - with age, complicated account", {
     population <- Counts(array(rpois(n = 90, lambda = 100),
                                dim = c(3, 2, 4, 3),
@@ -5119,9 +5118,29 @@ test_that("exposureHMD works with Movements - with age, complicated account", {
     else
         expect_equal(ans.obtained, ans.expected)
 })
-    
-    
 
+
+test_that("exposureHMD works with Movements - with age, only component is births", {
+    population <- Counts(array(c(100, 100, 100, 10, 100, 200),
+                               dim = c(3, 2),
+                               dimnames = list(age = c("0-9", "10-19", "20+"),
+                                               time = c(2000, 2010))))
+    births <- Counts(array(c(5, 5),
+                           dim = c(1, 2, 1),
+                           dimnames = list(age = "10-19", 
+                                           triangle = c("Lower", "Upper"),
+                                           time = "2001-2010")))
+    x <- Movements(population = population,
+                   births = births)
+    ans.obtained <- exposureHMD(x)
+    ans.expected <- exposure(x@population, triangles = TRUE, openTriangles = "standard")
+    ans.expected[3,1,1] <- ans.expected[3,1,1] - 0.5 * 10 * population[3,1]
+    ans.expected[3,1,2] <- ans.expected[3,1,2] + 0.5 * 10 * population[3,1]
+    if (test.identity)
+        expect_identical(ans.obtained, ans.expected)
+    else
+        expect_equal(ans.obtained, ans.expected)
+})
 
 
 test_that("exposureNoTriangles works", {
