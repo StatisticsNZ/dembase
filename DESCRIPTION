@@ -1,8 +1,8 @@
 Package: dembase
 Type: Package
 Title: Analysing Cross-Classified Data about Populations
-Version: 0.0.0.117
-Date: 2020-05-11
+Version: 0.0.0.118
+Date: 2020-05-26
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
@@ -38,4 +38,4 @@ Suggests:
     dplyr,
     knitr,
 VignetteBuilder: knitr
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0

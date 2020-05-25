@@ -1109,7 +1109,10 @@ setMethod("impute",
               values <- .Data[!is.na(.Data)]
               is.integer.vals <- isTRUE(all.equal(round(values), values))
               is.integer.type <- is.integer(.Data)
-              d <- as.data.frame(object, direction = "long", midpoints = TRUE)
+              d <- as.data.frame(object,
+                                 direction = "long",
+                                 midpoints = TRUE,
+                                 stringsAsFactors = TRUE)
               if (mult) {
                   n <- length(d)
                   is.zero <- !is.na(d[[n]]) & (d[[n]] == 0L)
@@ -1121,10 +1124,12 @@ setMethod("impute",
               d <- d[!is.factor.one.level]
               p <- min(length(d) - 1L, sum(stats::complete.cases(d)))
               if (p > 1L)
-                  predictors <- paste(names(d)[seq_len(p)], sep = " + ")
+                  predictors <- paste(names(d)[seq_len(p)], collapse = " + ")
               else
                   predictors <- "1"
-              formula <- stats::as.formula(sprintf("%s ~ %s", names(d)[length(d)], predictors))
+              formula <- stats::as.formula(sprintf("%s ~ %s",
+                                                   names(d)[length(d)],
+                                                   predictors))
               mod <- stats::lm(formula, data = d)
               xlevels <- mod$xlevels
               for (name in names(xlevels)) {

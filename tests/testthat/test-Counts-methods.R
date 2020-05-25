@@ -285,7 +285,7 @@ test_that("Ops works when e2 is an array", {
 test_that("Ops works with tables and xtabs", {
     x <- Counts(array(1,
                       dim = c(2, 3),
-                      dimnames = list(gender = c("m", "f"), year = 2000:2002)),
+                      dimnames = list(gender = c("f", "m"), year = 2000:2002)),
                 dimscales = c(year = "Points"))
     d <- as.data.frame(x, direction = "long")
     xt <- xtabs(count ~ gender + year, d)
@@ -415,8 +415,9 @@ test_that("as.data.frame works", {
                region = c("a", "b")))
     d <- data.frame(expand.grid(age = c(2.5, 7.5, 12.5),
                                  sex = c("Male", "Female"),
-                                 region = c("a", "b")),
-                     count = 1:12)
+                                region = c("a", "b"),
+                                stringsAsFactors = FALSE),
+                    count = 1:12)
     x <- Counts(a)
     expect_identical(as.data.frame(x, direction = "wide"), as.data.frame(a))
     expect_identical(as.data.frame(x, direction = "wide", midpoints = TRUE), as.data.frame(b))
@@ -450,7 +451,7 @@ test_that("as.data.frame works", {
     x <- Counts(array(1:6,
                       dim = c(2, 3),
                       dimnames = list(sex = c("f", "m"), quantile = c("0%", "50%", "100%"))))
-    df <- as.data.frame(x)
+    df <- as.data.frame(x, stringsAsFactors = TRUE)
     expect_identical(levels(df$quantile), c("0%", "50%", "100%"))
     x <- Counts(array(1:6,
                       dim = c(2, 3),

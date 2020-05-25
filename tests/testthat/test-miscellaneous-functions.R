@@ -3267,8 +3267,8 @@ test_that("asDataFrame works", {
                       quantile = c("5%", "50%", "95%"))))
     y <- as.data.frame.table(x@.Data, stringsAsFactors = TRUE, responseName = "count")
     y$age <- as.numeric(levels(y$age))[y$age]
-    expect_identical(asDataFrame(x, responseName = "count"), y)
-    expect_identical(sapply(asDataFrame(x, responseName = "count"), class),
+    expect_identical(asDataFrame(x, responseName = "count", stringsAsFactors = TRUE), y)
+    expect_identical(sapply(asDataFrame(x, responseName = "count", stringsAsFactors = TRUE), class),
                      c(sex = "factor", age = "numeric",
                        quantile = "factor", count = "integer"))
     x <- Counts(array(1:18,
@@ -3277,15 +3277,13 @@ test_that("asDataFrame works", {
                       age = c(0, 5, 10),
                       quantile = c("5%", "20%", "95%"))))
     y <- as.data.frame.table(x@.Data,
-                             stringsAsFactors = FALSE,
-                             responseName = "count")
+                             responseName = "count",
+                             stringsAsFactors = FALSE)
     y$age <- as.numeric(y$age)
-    expect_identical(asDataFrame(x, responseName = "count",
-                                 stringsAsFactors = FALSE),
+    expect_identical(asDataFrame(x, responseName = "count"),
                      y)
     expect_identical(sapply(asDataFrame(x,
-                                        responseName = "count",
-                                        stringsAsFactors = FALSE), class),
+                                        responseName = "count"), class),
                      c(sex = "character",
                        age = "numeric", quantile = "character",
                        count = "integer"))
@@ -3294,10 +3292,11 @@ test_that("asDataFrame works", {
                       dimnames = list(sex = c("f", "m"),
                       age = c(0, 5, 10),
                       quantile = c("5%", "20%", "95%"))))
-    y <- as.data.frame.table(x@.Data, responseName = "count")
+    y <- as.data.frame.table(x@.Data, responseName = "count",
+                             stringsAsFactors = TRUE)
     y$age <- as.numeric(levels(y$age))[y$age]
     levels(y$quantile) <- c("5%", "20%", "95%")
-    expect_identical(asDataFrame(x, responseName = "count"), y)
+    expect_identical(asDataFrame(x, responseName = "count", stringsAsFactors = TRUE), y)
     x <- Counts(array(1:18,
                       dim = c(2, 3, 3),
                       dimnames = list(sex = c("f", "m"),
@@ -3306,17 +3305,16 @@ test_that("asDataFrame works", {
     y <- as.data.frame.table(x@.Data, responseName = "number")
     y$age <- as.numeric(levels(y$age))[y$age]
     levels(y$quantile) <- c("5%", "20%", "95%")
-    expect_identical(asDataFrame(x, responseName = "number"), y)
+    expect_identical(asDataFrame(x, responseName = "number", stringsAsFactors = TRUE), y)
     x <- Counts(array(1:18,
                       dim = c(2, 3, 3),
                       dimnames = list(sex = c("f", "m"),
                       age = c(0, 5, 10),
                       region = c("a", "b", "c"))))
-    ans.obtained <- asDataFrame(x, responseName = "count",
-                                stringsAsFactors = FALSE)
+    ans.obtained <- asDataFrame(x, responseName = "count", stringsAsFactors = TRUE)
     ans.expected <- as.data.frame.table(x@.Data, responseName = "count",
-                                        stringsAsFactors = FALSE)
-    ans.expected$age <- as.numeric(ans.expected$age)
+                                        stringsAsFactors = TRUE)
+    ans.expected$age <- as.numeric(levels(ans.expected$age))[ans.expected$age]
     expect_identical(ans.obtained, ans.expected)
     x <- Counts(array(1:18,
                       dim = c(2, 3, 3),

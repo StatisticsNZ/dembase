@@ -2545,7 +2545,7 @@ inferDimtypes <- function(names) {
 
 ## HAS_TESTS
 ## helper for 'as' methods and 'as.data.frame'
-asDataFrame <- function(object, responseName, stringsAsFactors = TRUE) {
+asDataFrame <- function(object, responseName, stringsAsFactors = FALSE) {
     if (length(object) > 0L)
         ans <- as.data.frame.table(object@.Data,
                                    responseName = responseName,

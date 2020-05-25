@@ -409,7 +409,8 @@ test_that("as.data.frame works", {
     x <- Values(a, dimscales = c(period = "Points"))
     df <- data.frame(expand.grid(period = as.numeric(2000:2002),
                                  sex = c("Male", "Female"),
-                                 region = c("a", "b")),
+                                 region = c("a", "b"),
+                                 stringsAsFactors = FALSE),
                      value = 1:12)
     expect_identical(as.data.frame(x, direction = "long", midpoints = TRUE),
                      df)
@@ -421,7 +422,8 @@ test_that("as.data.frame works", {
     x <- Values(a, dimscales = c(period = "Intervals"))
     df <- data.frame(expand.grid(period = c(1999.5, 2000.5, 2001.5),
                                  sex = c("Male", "Female"),
-                                 region = c("a", "b")),
+                                 region = c("a", "b"),
+                                 stringsAsFactors = FALSE),
                      value = 1:12)
     expect_identical(as.data.frame(x, midpoints = TRUE),
                      df)

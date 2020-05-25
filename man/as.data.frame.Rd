@@ -11,7 +11,7 @@
   x,
   row.names = NULL,
   optional = FALSE,
-  stringsAsFactors = TRUE,
+  stringsAsFactors = FALSE,
   responseName = "count",
   direction = c("long", "wide"),
   midpoints = FALSE,
@@ -22,7 +22,7 @@
   x,
   row.names = NULL,
   optional = FALSE,
-  stringsAsFactors = TRUE,
+  stringsAsFactors = FALSE,
   responseName = "value",
   direction = c("long", "wide"),
   midpoints = FALSE,
@@ -37,8 +37,8 @@ data frame.  See \code{\link[base]{as.data.frame}}.}
 
 \item{optional}{Logical.  See \code{\link[base]{as.data.frame}}.}
 
-\item{stringsAsFactors}{Logical.  If \code{TRUE} (the default) factors are
-used to represent qualitative variables.}
+\item{stringsAsFactors}{Logical.  If \code{TRUE} factors are
+used to represent qualitative variables. Defaults to \code{FALSE}.}
 
 \item{responseName}{Name of column with numeric values when \code{direction}
 is \code{"long"}.  Defaults to \code{"count"} if \code{object} is

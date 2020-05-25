@@ -54,8 +54,6 @@ if \code{TRUE}, values are set equal to their means.}
 \item{n}{Number of iterations to generate.  Ignored if \code{counts} or
 \code{weights} has a dimension with \code{\link{dimtype}}
 \code{"iteration"}.}
-
-\item{\dots}{Not currently used.}
 }
 \description{
 Using a \code{\linkS4class{ManyToOne}} concordance, expand the categories

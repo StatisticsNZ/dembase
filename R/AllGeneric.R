@@ -133,8 +133,8 @@ setGeneric("as.array")
 #' @param optional Logical.  See \code{\link[base]{as.data.frame}}.
 #' @param direction Character.  Whether data are converted to
 #' \code{"long"} format (the default) or \code{"wide"} format.
-#' @param stringsAsFactors Logical.  If \code{TRUE} (the default) factors are
-#' used to represent qualitative variables.
+#' @param stringsAsFactors Logical.  If \code{TRUE} factors are
+#' used to represent qualitative variables. Defaults to \code{FALSE}.
 #' @param responseName Name of column with numeric values when \code{direction}
 #' is \code{"long"}.  Defaults to \code{"count"} if \code{object} is
 #' \code{\linkS4class{Counts}} and \code{"value"} if \code{object} is
@@ -2254,7 +2254,6 @@ setGeneric("extend",
 #' @param n Number of iterations to generate.  Ignored if \code{counts} or
 #' \code{weights} has a dimension with \code{\link{dimtype}}
 #' \code{"iteration"}.
-#' @param \dots Not currently used.
 #'
 #' @seealso   \code{\link{collapseCategories}}
 #' @export

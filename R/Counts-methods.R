@@ -258,7 +258,7 @@ setMethod("addPair",
 #' @method as.data.frame Counts
 #' @export
 as.data.frame.Counts <- function(x, row.names = NULL, optional = FALSE,
-                                 stringsAsFactors = TRUE, responseName = "count",
+                                 stringsAsFactors = FALSE, responseName = "count",
                                  direction = c("long", "wide"),
                                  midpoints = FALSE, ...) {
     direction <- match.arg(direction)
@@ -1168,7 +1168,10 @@ setMethod("dplot",
                   data <- collapseIterations(data, probs = probs, ...)
               ## convert data to data frame, with quantile stored as attribute
               i.quantile <- match("quantile", dimtypes(data), nomatch = 0L)
-              data <- as.data.frame(data, direction = "long", midpoints = midpoints)
+              data <- as.data.frame(data,
+                                    direction = "long",
+                                    midpoints = midpoints,
+                                    stringsAsFactors = TRUE)
               if (i.quantile > 0L) {
                   quantile <-  data[[i.quantile]]
                   data <- data[-i.quantile]

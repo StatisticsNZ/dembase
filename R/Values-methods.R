@@ -172,7 +172,7 @@ setMethod("Ops",
 #' @method as.data.frame Values
 #' @export
 as.data.frame.Values <- function(x, row.names = NULL, optional = FALSE,
-                                 stringsAsFactors = TRUE,
+                                 stringsAsFactors = FALSE,
                                  responseName = "value",
                                  direction = c("long", "wide"),
                                  midpoints = FALSE, ...) {
@@ -667,7 +667,10 @@ setMethod("dplot",
                   data <- collapseIterations(data, probs = probs, ...)
               ## convert data to data frame, with quantile stored as attribute
               i.quantile <- match("quantile", dimtypes(data), nomatch = 0L)
-              data <- as.data.frame(data, direction = "long", midpoints = midpoints)
+              data <- as.data.frame(data,
+                                    direction = "long",
+                                    midpoints = midpoints,
+                                    stringsAsFactors = TRUE)
               if (i.quantile > 0L) {
                   quantile <-  data[[i.quantile]]
                   data <- data[-i.quantile]
