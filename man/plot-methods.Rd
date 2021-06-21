@@ -14,6 +14,8 @@
   col.main = "black",
   font.main = 2,
   las = 1,
+  mar = NULL,
+  mfrow = NULL,
   ...
 )
 
@@ -25,6 +27,8 @@
   col.main = "black",
   font.main = 2,
   las = 1,
+  mar = NULL,
+  mfrow = NULL,
   ...
 )
 }
@@ -38,6 +42,10 @@ and font to be used for \code{main}.}
 
 \item{las}{Parameter governing orientation of axis labels.  One of \code{0},
 \code{1}, \code{2}, or \code{3}.  See \code{\link[graphics]{par}}.}
+
+\item{mar}{Size of plotting margins. See \code{\link[graphics]{par}}.}
+
+\item{mfrow}{Layout of multiple plots. See \code{\link[graphics]{par}}.}
 
 \item{\dots}{Other arguments, which are passed to the underlying plotting
 functions.}

@@ -221,6 +221,8 @@ setGeneric("median")
 #' and font to be used for \code{main}.
 #' @param las Parameter governing orientation of axis labels.  One of \code{0},
 #' \code{1}, \code{2}, or \code{3}.  See \code{\link[graphics]{par}}.
+#' @param mar Size of plotting margins. See \code{\link[graphics]{par}}.
+#' @param mfrow Layout of multiple plots. See \code{\link[graphics]{par}}.
 #' @param \dots Other arguments, which are passed to the underlying plotting
 #' functions.
 #' @seealso \code{plot} calls functions \code{\link{barchart}},

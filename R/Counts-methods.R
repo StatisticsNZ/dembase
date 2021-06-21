@@ -2165,13 +2165,18 @@ setMethod("makeTransform",
 #' @method plot Counts
 #' @export
 plot.Counts <- function(x, main = NULL, cex.main = 1.2, col.main = "black",
-                        font.main = 2, las = 1, ...) {
+                        font.main = 2, las = 1, mar = NULL,
+                        mfrow = NULL,
+                        ...) {
     n <- length(names(x))
-    nrow <- ceiling(sqrt(n))
-    ncol <- ceiling(n / nrow)
-    mfrow <- c(nrow, ncol)
+    if (is.null(mfrow)) {
+        nrow <- ceiling(sqrt(n))
+        ncol <- ceiling(n / nrow)
+        mfrow <- c(nrow, ncol)
+    }
     oma <- if (is.null(main)) rep(0, 4) else c(0, 0, 3, 0)
-    mar <- c(3, 6, 2, 1)
+    if (is.null(mar))
+        mar <- c(3, 6, 2, 1)
     old.par <- graphics::par(mfrow = mfrow, oma = oma, mar = mar)
     on.exit(graphics::par(old.par))
     .Data <- x@.Data
