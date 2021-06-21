@@ -23,7 +23,7 @@ The main functions are:
 Install `dembase` from github with:
 ```{r, echo = FALSE}
 library(devtools)
-install_github("statisticsnz/dembase")
+install_github("statisticsnz/dembase", build_vignettes = TRUE)
 ```
 
 ---
