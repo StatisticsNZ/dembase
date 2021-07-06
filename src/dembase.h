@@ -10,21 +10,22 @@
 //#define DEBUGGING
 
 /* everything in "x_sym" form here must be macro defined in init.c */
-SEXP indices_sym,
-     dims_sym,
-     dimBefore_sym,
-     dimAfter_sym,
-     invIndices_sym,
-     multiplierBefore_sym,
-     multiplierAfter_sym,
-     map_sym,
-     iTime_sym,
-     iOrigin_sym,
-     iDest_sym,
-     iDirection_sym,
-     iAge_sym,
-     iTriangle_sym,
-     dUpper_sym;
+// extern SEXP 
+//     indices_sym,
+//     dims_sym,
+//     dimBefore_sym,
+//     dimAfter_sym,
+//     invIndices_sym,
+//     multiplierBefore_sym,
+//     multiplierAfter_sym,
+//     map_sym,
+//     iTime_sym,
+//     iOrigin_sym,
+//     iDest_sym,
+//     iDirection_sym,
+//     iAge_sym,
+//     iTriangle_sym,
+//     dUpper_sym;
 
 
 /* array transformations */
