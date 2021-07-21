@@ -3175,11 +3175,11 @@ test_that("inferDimScale works", {
                                    dimscale = NULL,
                                    labels = c("0-4", "5+")),
                      new("Intervals", dimvalues = c(0, 5, Inf)))
-    expect_message(inferDimScale(dimtype = "age",
-                                 dimscale = NULL,
-                                 labels = c("0", "1"),
-                                 name = "Age"),
-                   "assuming dimension \"Age\" with dimtype \"age\" has dimscale \"Intervals\"")
+    ## expect_message(inferDimScale(dimtype = "age",
+    ##                              dimscale = NULL,
+    ##                              labels = c("0", "1"),
+    ##                              name = "Age"),
+    ##                "assuming dimension \"Age\" with dimtype \"age\" has dimscale \"Intervals\"")
     expect_identical(inferDimScale(dimtype = "time",
                                    dimscale = "Points",
                                    labels = c("0", "1"),

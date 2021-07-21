@@ -2468,8 +2468,8 @@ inferDimScale <- function(dimtype, dimscale = NULL, labels, name) {
     else {
         if (dimtype == "age") {
             is.intervals <- sapply(answers, methods::is, "Intervals")
-            message(gettextf("assuming dimension \"%s\" with %s \"%s\" has %s \"%s\"",
-                             name, "dimtype", dimtype, "dimscale", "Intervals"))
+            ## message(gettextf("assuming dimension \"%s\" with %s \"%s\" has %s \"%s\"",
+            ##                  name, "dimtype", dimtype, "dimscale", "Intervals"))
             i.intervals <- which(is.intervals)
             answers[[i.intervals]]
         }
