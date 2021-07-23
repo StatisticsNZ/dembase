@@ -20,10 +20,10 @@
 \alias{Ops,table,Counts-method}
 \alias{Ops,Counts,xtabs-method}
 \alias{Ops,xtabs,Counts-method}
-\alias{[,CountsWithSubtotals,ANY,ANY,ANY-method}
+\alias{[,CountsWithSubtotals,ANY-method}
 \alias{show,CountsWithSubtotals-method}
 \alias{show,DemographicAccount-method}
-\alias{[,DemographicArray,ANY,ANY,ANY-method}
+\alias{[,DemographicArray,ANY-method}
 \alias{aperm,DemographicArray-method}
 \alias{as.array,DemographicArray-method}
 \alias{as.matrix,DemographicArray-method}
@@ -39,14 +39,14 @@
 \alias{show,DemographicArray-method}
 \alias{t,DemographicArray-method}
 \alias{unname,DemographicArray-method}
-\alias{[,DimScale,integer,ANY,ANY-method}
+\alias{[,DimScale,integer-method}
 \alias{\%in\%,DimScale-method}
 \alias{Compare,DimScale,ANY-method}
 \alias{Compare,ANY,DimScale-method}
 \alias{Compare,DimScale,DimScale-method}
 \alias{labels,DimScale-method}
 \alias{length,DimScale-method}
-\alias{[,Intervals,integer,ANY,ANY-method}
+\alias{[,Intervals,integer-method}
 \alias{\%in\%,Intervals-method}
 \alias{Compare,Intervals,ANY-method}
 \alias{Compare,ANY,Intervals-method}
@@ -55,9 +55,9 @@
 \alias{Compare,Intervals,Intervals-method}
 \alias{labels,Intervals-method}
 \alias{length,Intervals-method}
-\alias{[,MetaData,numeric,ANY,ANY-method}
-\alias{[,MetaData,character,ANY,ANY-method}
-\alias{[,MetaData,logical,ANY,ANY-method}
+\alias{[,MetaData,numeric-method}
+\alias{[,MetaData,character-method}
+\alias{[,MetaData,logical-method}
 \alias{dim,MetaData-method}
 \alias{dimnames,MetaData-method}
 \alias{length,MetaData-method}
@@ -107,13 +107,13 @@
 
 \S4method{Ops}{xtabs,Counts}(e1, e2)
 
-\S4method{[}{CountsWithSubtotals,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{CountsWithSubtotals,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{CountsWithSubtotals}(object)
 
 \S4method{show}{DemographicAccount}(object)
 
-\S4method{[}{DemographicArray,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
+\S4method{[}{DemographicArray,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{aperm}{DemographicArray}(a, perm, resize = TRUE, keep.class = TRUE, ...)
 
@@ -145,7 +145,7 @@
 
 \S4method{unname}{DemographicArray}(obj, force = FALSE)
 
-\S4method{[}{DimScale,integer,ANY,ANY}(x, i)
+\S4method{[}{DimScale,integer}(x, i)
 
 \S4method{\%in\%}{DimScale}(x, table)
 
@@ -159,7 +159,7 @@
 
 \S4method{length}{DimScale}(x)
 
-\S4method{[}{Intervals,integer,ANY,ANY}(x, i)
+\S4method{[}{Intervals,integer}(x, i)
 
 \S4method{\%in\%}{Intervals}(x, table)
 
@@ -177,11 +177,11 @@
 
 \S4method{length}{Intervals}(x)
 
-\S4method{[}{MetaData,numeric,ANY,ANY}(x, i)
+\S4method{[}{MetaData,numeric}(x, i)
 
-\S4method{[}{MetaData,character,ANY,ANY}(x, i)
+\S4method{[}{MetaData,character}(x, i)
 
-\S4method{[}{MetaData,logical,ANY,ANY}(x, i)
+\S4method{[}{MetaData,logical}(x, i)
 
 \S4method{dim}{MetaData}(x)
 
