@@ -87,11 +87,22 @@ setMethod("accession",
 #' @rdname makeConsistent
 setMethod("makeConsistent",
           signature(object = "Movements"),
-          function(object, adjust = TRUE, scale = 0.1) {
+          function(object, adjust = TRUE, scale = 0.1, fixed = character()) {
               checkAdjustAndScale(adjust = adjust,
                                   scale = scale)
               population <- object@population
               components <- object@components
+              namesComponents <- object@namesComponents
+              iFixed <- pmatch(x = fixed,
+                               table = namesComponents,
+                               nomatch = NA)
+              i.unmatched <- match(NA, iFixed, nomatch = 0L)
+              if (i.unmatched > 0L)
+                  stop(gettextf("'%s' has element [\"%s\"] that is not the name of a component",
+                                "fixed", fixed[i.unmatched]))
+              if (identical(length(fixed), length(components)))
+                  stop(gettextf("'%s' includes every component",
+                                "fixed"))
               dimtypes <- dimtypes(population,
                                    use.names = FALSE)
               i.age <- match("age", dimtypes, nomatch = 0L)
@@ -110,11 +121,13 @@ setMethod("makeConsistent",
               if (has.age)
                   derivePopnMoveHasAge(object = object,
                                        adjust = adjust,
-                                       scale = scale)
+                                       scale = scale,
+                                       iFixed = iFixed)
               else
                   derivePopnMoveNoAge(object = object,
                                       adjust = adjust,
-                                      scale = scale)
+                                      scale = scale,
+                                      iFixed = iFixed)
           })
 
 ## HAS_TESTS

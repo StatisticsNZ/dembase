@@ -1,5 +1,5 @@
 
-context("Movements-methods")
+test.extended <- FALSE
 
 test_that("accession works with Movements - no age", {
     population <- CountsOne(values = seq(100, 200, 10),
@@ -419,8 +419,28 @@ test_that("makeConsistent works with Movements - no age", {
     expect_true(all(isConsistent(x)))
 })
 
+test_that("makeConsistent works with Movements - no age, births fixed", {
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = 15,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = 10,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths[1] <- NA
+    x0 <- Movements(population = population,
+                   births = births,
+                   exits = list(deaths = deaths))
+    expect_false(all(isConsistent(x0)))
+    x1 <- makeConsistent(x0, fixed = "births")
+    expect_true(all(isConsistent(x1)))
+    expect_identical(x0@components[[1]], x1@components[[1]])
+})
 
 test_that("isConsistent works with Movements - with age", {
+    set.seed(0)
     population <- Counts(array(rpois(n = 90, lambda = 100),
                                dim = c(3, 2, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -465,11 +485,11 @@ test_that("isConsistent works with Movements - with age", {
                                                      time = c("2001-2005", "2006-2010"),
                                                      reg = 1:4)))
     x0 <- Movements(population = population,
-                   births = births,
-                   internal = internal,
-                   entries = list(immigration = immigration),
-                   exits = list(deaths = deaths, emigration = emigration),
-                   net = list(reclassification = reclassification))
+                    births = births,
+                    internal = internal,
+                    entries = list(immigration = immigration),
+                    exits = list(deaths = deaths, emigration = emigration),
+                    net = list(reclassification = reclassification))
     expect_false(all(isConsistent(x0)))
     x1 <- makeConsistent(x0)
     expect_true(all(isConsistent(x1)))
@@ -493,6 +513,36 @@ test_that("isConsistent works with Movements - with age", {
         x5@components[[5]]["10+", "f", "1", "2001-2005", "Lower"] + 10000L # emigration
     expect_false(isConsistent(x5)["10+", "f", "1", "2001-2005"])
     expect_identical(sum(!isConsistent(x5)), 1L)
-    
+    if (test.extended) {
+        ## emigration fixed
+        x6 <- makeConsistent(x0, fixed = "emig")
+        expect_true(all(isConsistent(x6)))
+        expect_identical(x0@components[[5]], x6@components[[5]])
+    }
 })
+
+test_that("makeConsistent throws expected errors", {
+    population <- CountsOne(values = seq(100, 200, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = 15,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = 10,
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths[1] <- NA
+    x <- Movements(population = population,
+                   births = births,
+                   exits = list(deaths = deaths))
+    expect_error(makeConsistent(x, fixed = "wrong"),
+                 "'fixed' has element \\[\"wrong\"\\] that is not the name of a component")
+    expect_error(makeConsistent(x, fixed = c("births", "deaths")),
+                 "'fixed' includes every component")
+})
+
+
+
+
+
 

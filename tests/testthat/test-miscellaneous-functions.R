@@ -4683,7 +4683,8 @@ test_that("derivePopnMoveNoAge works when population is large", {
                         exits = list(deaths = deaths))
     ans.obtained <- derivePopnMoveNoAge(object,
                                         adjust = FALSE,
-                                        scale = 0.1)
+                                        scale = 0.1,
+                                        iFixed = integer())
     expect_true(validObject(ans.obtained))
     expect_false(all(ans.obtained@population[,1] == ans.obtained@population[,10]))
     expect_true(all(isConsistent(ans.obtained)))
@@ -4732,15 +4733,61 @@ test_that("derivePopnMoveNoAge works when population is small", {
                         net = list(net.mig = net.mig))
     expect_error(derivePopnMoveNoAge(object,
                                      adjust = FALSE,
-                                     scale = 0.1),
+                                     scale = 0.1,
+                                     iFixed = integer()),
                  "population has negative values")
     ans.obtained <- derivePopnMoveNoAge(object,
                                         adjust = TRUE,
-                                        scale = 0.1)
+                                        scale = 0.1,
+                                        iFixed = integer())
     expect_true(validObject(ans.obtained))
     expect_false(all(ans.obtained@population[,1] == ans.obtained@population[,10]))
     expect_true(all(isConsistent(ans.obtained)))
 })
+
+test_that("derivePopnMoveNoAge works when deaths is fixed", {
+    set.seed(1)
+    derivePopnMoveNoAge <- dembase:::derivePopnMoveNoAge
+    population <- Counts(array(1001:1015,
+                               dim = c(5, 10),
+                               dimnames = list(region = 1:5,
+                                               year = seq(2000, 2045, 5))))
+    births <- array(0,
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    internal <- array(1:10,
+                      dim = c(5, 5, 9),
+                      dimnames = list(region_orig = 1:5,
+                                      region_dest = 1:5,
+                                      year = paste(seq(2001, 2041, 5),
+                                                   seq(2005, 2045, 5),
+                                                   sep = "-")))
+    deaths <- array(1:4,
+                    dim = c(5, 9),
+                    dimnames = list(region = 1:5,
+                                    year = paste(seq(2001, 2041, 5),
+                                                 seq(2005, 2045, 5),
+                                                 sep = "-")))
+    births <- Counts(births)
+    deaths <- Counts(deaths)
+    internal <- Counts(internal)
+    object <- Movements(population = population,
+                        births = births,
+                        internal = internal,
+                        exits = list(deaths = deaths))
+    stopifnot(!all(isConsistent(object)))
+    ans.obtained <- derivePopnMoveNoAge(object,
+                                        adjust = TRUE,
+                                        scale = 0.1,
+                                        iFixed = 3L)
+    expect_true(validObject(ans.obtained))
+    expect_true(all(isConsistent(ans.obtained)))
+    expect_identical(ans.obtained@components[[3]], object@components[[3]])
+})
+
 
 test_that("derivePopnMoveHasAge works", {
     set.seed(1)
@@ -4780,13 +4827,23 @@ test_that("derivePopnMoveHasAge works", {
                         exits = list(deaths = deaths))
     expect_error(derivePopnMoveHasAge(object,
                                       adjust = FALSE,
-                                      scale = 0.1),
+                                      scale = 0.1,
+                                      iFixed = integer()),
                  "population has negative values")
     ans.obtained <- derivePopnMoveHasAge(object,
                                          adjust = TRUE,
-                                         scale = 0.1)
+                                         scale = 0.1,
+                                         iFixed = integer())
     expect_true(validObject(ans.obtained))
     expect_false(all(ans.obtained@population@.Data[,,1] == ans.obtained@population@.Data[,,5]))
+    expect_true(all(isConsistent(ans.obtained)))
+    ## internal fixed
+    ans.obtained <- derivePopnMoveHasAge(object,
+                                         adjust = TRUE,
+                                         scale = 0.1,
+                                         iFixed = 2L)
+    expect_true(validObject(ans.obtained))
+    expect_identical(ans.obtained@components[[2]], object@components[[2]])
     expect_true(all(isConsistent(ans.obtained)))
 })
 
