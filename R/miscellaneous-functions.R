@@ -2468,8 +2468,8 @@ inferDimScale <- function(dimtype, dimscale = NULL, labels, name) {
     else {
         if (dimtype == "age") {
             is.intervals <- sapply(answers, methods::is, "Intervals")
-            message(gettextf("assuming dimension \"%s\" with %s \"%s\" has %s \"%s\"",
-                             name, "dimtype", dimtype, "dimscale", "Intervals"))
+            ## message(gettextf("assuming dimension \"%s\" with %s \"%s\" has %s \"%s\"",
+            ##                  name, "dimtype", dimtype, "dimscale", "Intervals"))
             i.intervals <- which(is.intervals)
             answers[[i.intervals]]
         }
@@ -3621,7 +3621,7 @@ checkNamesComponents <- function(names, componentType) {
 }
 
 ## HAS_TESTS
-derivePopnMoveNoAge <- function(object, adjust, scale) {
+derivePopnMoveNoAge <- function(object, adjust, scale, iFixed) {
     population <- object@population
     components <- object@components
     names.components <- object@namesComponents
@@ -3652,6 +3652,8 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
     index.time.comps <- lapply(components, makeDimtypeIndex, dimtype = "time")
     slices.comp <- vector(mode = "list", length = n.comp)
     is.pos.increment.comp <- sapply(components, isPositiveIncrement)
+    choices <- seq_len(n.comp)
+    choices <- setdiff(choices, iFixed)
     for (it in seq_len(n.time.popn - 1L)) {
         slice.popn.start <- slab(population,
                                  dimension = i.time.popn,
@@ -3677,7 +3679,7 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
             stop(gettext("population has negative values"))
         updated.comp <- rep(FALSE, times = n.comp)
         while (any(popn.end < 0L)) {
-            ic <- safeSample1(seq_len(n.comp))
+            ic <- safeSample1(choices)
             updated.comp[ic] <- TRUE
             if (ic == i.births) {
                 multiplier <- ifelse(popn.end < 0L, scale, 0)
@@ -3737,8 +3739,9 @@ derivePopnMoveNoAge <- function(object, adjust, scale) {
         namesComponents = names.components)
 }
 
+
 ## HAS_TESTS
-derivePopnMoveHasAge <- function(object, adjust, scale) {
+derivePopnMoveHasAge <- function(object, adjust, scale, iFixed) {
     population <- object@population
     components <- object@components
     names.components <- object@namesComponents
@@ -3763,6 +3766,9 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
         i.internal <- 0L
     i.comp <- seq_len(n.comp)
     i.comp.not.births <- setdiff(i.comp, i.births)
+    choices.with.births <- setdiff(i.comp, iFixed)
+    choices.without.births <- setdiff(i.comp.not.births, iFixed)
+    n.choices.without.births <- length(choices.without.births)
     dim.popn <- dim(population)
     i.time.popn <- match("time", dimtypes(population))
     i.time.comps <- sapply(components, function(x) match("time", dimtypes(x)))
@@ -3839,7 +3845,13 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                 stop(gettext("population has negative values"))
             updated.comp <- rep(FALSE, times = n.comp)
             while (any(popn.end < 0L)) {
-                choices <- if (ia == 1L) i.comp else i.comp.not.births
+                if (ia == 1L)
+                    choices <- choices.with.births
+                else {
+                    if (identical(n.choices.without.births, 0L))
+                        stop(gettext("unable to resolve inconsistences because all non-birth components fixed"))
+                    choices <- choices.without.births
+                }
                 ic <- safeSample1(choices)
                 updated.comp[ic] <- TRUE
                 if (ic == i.births) {
@@ -3917,7 +3929,7 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
                 stop(gettext("population has negative values"))
             updated.comp <- rep(FALSE, times = n.comp)
             while (any(accession < 0L)) {
-                ic <- safeSample1(i.comp.not.births)
+                ic <- safeSample1(choices.without.births)
                 updated.comp[ic] <- TRUE
                 if (ic == i.internal) {
                     increment.old <- incrementInteger(slices.comp.a.up[[ic]])
@@ -3969,6 +3981,7 @@ derivePopnMoveHasAge <- function(object, adjust, scale) {
         components = components,
         namesComponents = names.components)
 }
+
 
 ## HAS_TESTS
 dimCompCompatibleWithPopn <- function(name, dimtype, DimScale,

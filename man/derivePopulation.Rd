@@ -13,7 +13,8 @@ derivePopulation(
   net = list(),
   movements = TRUE,
   adjust = FALSE,
-  scale = 0.1
+  scale = 0.1,
+  fixed = character()
 )
 }
 \arguments{
@@ -44,6 +45,9 @@ until negative population counts are eliminated.}
 
 \item{scale}{A non-negative number governing the size of the steps
 made when adjusting.}
+
+\item{fixed}{Names of components that should not
+be adjusted.}
 }
 \value{
 A \code{\linkS4class{DemographicAccount}}.

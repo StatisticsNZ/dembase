@@ -135,6 +135,8 @@ Movements <- function(population, births = NULL, internal = NULL,
 #' until negative population counts are eliminated.
 #' @param scale A non-negative number governing the size of the steps
 #' made when adjusting.
+#' @param fixed Names of components that should not
+#' be adjusted.
 #'
 #' @return A \code{\linkS4class{DemographicAccount}}.
 #'
@@ -187,7 +189,8 @@ Movements <- function(population, births = NULL, internal = NULL,
 #' @export
 derivePopulation <- function(initial, births = NULL, internal = NULL,
                              entries = list(), exits = list(), net = list(),
-                             movements = TRUE, adjust = FALSE, scale = 0.1) {
+                             movements = TRUE, adjust = FALSE, scale = 0.1,
+                             fixed = character()) {
     if (!isTRUE(movements))
         stop("currently can only deal with movements accounts")
     if (!is.null(births))
@@ -294,5 +297,6 @@ derivePopulation <- function(initial, births = NULL, internal = NULL,
                          net = net)
     makeConsistent(object = account,
                    adjust = adjust,
-                   scale = scale)
+                   scale = scale,
+                   fixed = fixed)
 }

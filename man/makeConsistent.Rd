@@ -5,9 +5,9 @@
 \alias{makeConsistent,Movements-method}
 \title{Make a demographic account internally consistent.}
 \usage{
-makeConsistent(object, adjust = TRUE, scale = 0.1)
+makeConsistent(object, adjust = TRUE, scale = 0.1, fixed = character())
 
-\S4method{makeConsistent}{Movements}(object, adjust = TRUE, scale = 0.1)
+\S4method{makeConsistent}{Movements}(object, adjust = TRUE, scale = 0.1, fixed = character())
 }
 \arguments{
 \item{object}{An object of class \code{\linkS4class{DemographicAccount}}.}
@@ -17,6 +17,9 @@ and deaths are adjusted to avoid negative populations.}
 
 \item{scale}{A non-negative number governing the size of
 the steps if components are adjusted.}
+
+\item{fixed}{Names of components that should not
+be adjusted.}
 }
 \value{
 A consistent \code{\linkS4class{DemographicAccount}}.

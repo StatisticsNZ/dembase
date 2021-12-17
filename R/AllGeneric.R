@@ -2947,6 +2947,8 @@ setGeneric("makeCompatible",
 #' and deaths are adjusted to avoid negative populations.
 #' @param scale A non-negative number governing the size of
 #' the steps if components are adjusted.
+#' @param fixed Names of components that should not
+#' be adjusted.
 #'
 #' @return A consistent \code{\linkS4class{DemographicAccount}}.
 #'
@@ -2975,7 +2977,7 @@ setGeneric("makeCompatible",
 #' isConsistent(consistent.account)
 #' @export
 setGeneric("makeConsistent",
-           function(object, adjust = TRUE, scale = 0.1)
+           function(object, adjust = TRUE, scale = 0.1, fixed = character())
                standardGeneric("makeConsistent"))
 
 setGeneric("makeIndices",

@@ -73,7 +73,6 @@ setMethod("[",
           signature(x = "DemographicArray"),
           `[.DemographicArray`)
 
-
 ## HAS_TESTS
 #' @rdname Statistical-Functions
 #' @export
