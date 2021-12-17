@@ -9,3 +9,5 @@ src-x86_64
 *.DS_Store
 symbols.rds
 *.dll
+doc
+Meta
